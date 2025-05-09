@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 232 236 242; /* slate-100 */
+    --foreground: 30 41 59; /* slate-800 */
+
+    --card: 243 244 246; /* slate-100/200 */
+    --card-foreground: 30 41 59;
+
+    --popover: 243 244 246;
+    --popover-foreground: 30 41 59;
+
+    --primary: 51 102 204; /* soft blue */
+    --primary-foreground: 255 255 255;
+
+    --secondary: 226 232 240; /* slate-200 */
+    --secondary-foreground: 30 41 59;
+
+    --muted: 226 232 240;
+    --muted-foreground: 100 116 139; /* slate-500 */
+
+    --accent: 226 232 240;
+    --accent-foreground: 30 41 59;
+
+    --destructive: 220 38 38;
+    --destructive-foreground: 255 255 255;
+
+    --success: 14 165 233; /* sky-500 */
+    --success-foreground: 255 255 255;
+
+    --warning: 234 179 8;
+    --warning-foreground: 30 41 59;
+
+    --border: 203 213 225; /* slate-300 */
+    --input: 203 213 225;
+    --ring: 71 85 105; /* slate-600 */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 232 236 242; /* slate-100 */
+    --foreground: 30 41 59; /* slate-800 */
+
+    --card: 243 244 246; /* slate-100/200 */
+    --card-foreground: 30 41 59;
+
+    --popover: 243 244 246;
+    --popover-foreground: 30 41 59;
+
+    --primary: 51 102 204; /* soft blue */
+    --primary-foreground: 255 255 255;
+
+    --secondary: 226 232 240; /* slate-200 */
+    --secondary-foreground: 30 41 59;
+
+    --muted: 226 232 240;
+    --muted-foreground: 100 116 139; /* slate-500 */
+
+    --accent: 226 232 240;
+    --accent-foreground: 30 41 59;
+
+    --destructive: 220 38 38;
+    --destructive-foreground: 255 255 255;
+
+    --success: 14 165 233; /* sky-500 */
+    --success-foreground: 255 255 255;
+
+    --warning: 234 179 8;
+    --warning-foreground: 30 41 59;
+
+    --border: 203 213 225; /* slate-300 */
+    --input: 203 213 225;
+    --ring: 71 85 105; /* slate-600 */
+
+    --radius: 0.5rem;
+  }
+}

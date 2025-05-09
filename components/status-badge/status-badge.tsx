@@ -1,0 +1,86 @@
+import { cn } from "@/lib/utils";
+import {
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  XCircle,
+  RefreshCw,
+  PauseCircle,
+  RotateCcw,
+  Info,
+} from "lucide-react";
+
+interface StatusBadgeProps {
+  status: string;
+  className?: string;
+  showIcon?: boolean;
+}
+
+export function StatusBadge({
+  status,
+  className,
+  showIcon = true,
+}: StatusBadgeProps) {
+  const getStatusStyles = (status: string): string => {
+    switch (status) {
+      case "completed":
+      case "Выполнен":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "processing":
+      case "Обработка":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "failed":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Ожидается оплата":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "На удержании":
+        return "bg-amber-100 text-amber-800 border-amber-200";
+      case "Отменен":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      case "Возврат":
+        return "bg-teal-100 text-teal-800 border-teal-200";
+      case "Новый":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+      case "Выполнен":
+        return <CheckCircle className="h-3 w-3 mr-1" />;
+      case "processing":
+      case "Обработка":
+        return <RefreshCw className="h-3 w-3 mr-1 animate-spin" />;
+      case "failed":
+        return <XCircle className="h-3 w-3 mr-1" />;
+      case "Ожидается оплата":
+        return <Clock className="h-3 w-3 mr-1" />;
+      case "На удержании":
+        return <PauseCircle className="h-3 w-3 mr-1" />;
+      case "Отменен":
+        return <XCircle className="h-3 w-3 mr-1" />;
+      case "Возврат":
+        return <RotateCcw className="h-3 w-3 mr-1" />;
+      case "Новый":
+        return <Info className="h-3 w-3 mr-1" />;
+      default:
+        return <AlertTriangle className="h-3 w-3 mr-1" />;
+    }
+  };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors",
+        getStatusStyles(status),
+        className
+      )}
+    >
+      {showIcon && getStatusIcon(status)}
+      {status}
+    </span>
+  );
+}
