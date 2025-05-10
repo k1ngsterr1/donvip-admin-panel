@@ -23,6 +23,7 @@ import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api-client";
 import { Loader2, Plus, Trash } from "lucide-react";
 import Image from "next/image";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const replenishmentItemSchema = z.object({
   price: z.coerce.number().min(0.01, "Price must be greater than 0"),
@@ -229,239 +230,289 @@ export function ProductForm({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
+    <ScrollArea className="max-h-[calc(90vh-120px)]">
+      <div className="p-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Название товара
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Bigo LIVE"
+                          {...field}
+                          className="text-primary"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">Описание</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Подробное описание товара..."
+                          className="min-h-[120px] text-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="smile_api_game"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Smile API Game
+                      </FormLabel>
+                      <FormControl>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-primary"
+                          {...field}
+                        >
+                          <option value="" className="text-primary">
+                            Выберите игру
+                          </option>
+                          {loadingSmileProducts ? (
+                            <option disabled>Загрузка...</option>
+                          ) : (
+                            smileProducts?.map((game) => (
+                              <option
+                                key={game.id}
+                                value={game.id}
+                                className="text-primary"
+                              >
+                                {game.name}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </FormControl>
+                      <FormDescription className="text-gray-600">
+                        Выберите игру из Smile API для интеграции.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div>
                 <FormItem>
                   <FormLabel className="text-primary">
-                    Название товара
+                    Изображения товара
                   </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Bigo LIVE" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-primary">Описание</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Подробное описание товара..."
-                      className="min-h-[120px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="smile_api_game"
-              render={({ field }) => (
-                <FormItem className="text-primary">
-                  <FormLabel className="text-primary">Smile API Game</FormLabel>
-                  <FormControl>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      {...field}
-                    >
-                      <option value="" className="text-primary">
-                        Выберите игру
-                      </option>
-                      {loadingSmileProducts ? (
-                        <option disabled>Загрузка...</option>
-                      ) : (
-                        smileProducts?.map((game) => (
-                          <option
-                            key={game.id}
-                            value={game.id}
-                            className="text-primary"
-                          >
-                            {game.name}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </FormControl>
-                  <FormDescription className="text-primary">
-                    Выберите игру из Smile API для интеграции.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div>
-            <FormItem>
-              <FormLabel className="text-primary">Изображения товара</FormLabel>
-              <div className="mt-2 flex flex-col space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {previewImages.length > 0 ? (
-                    previewImages.map((preview, index) => (
-                      <div
-                        key={index}
-                        className="relative h-40 overflow-hidden rounded-md border"
-                      >
+                  <div className="mt-2 flex flex-col space-y-4">
+                    {previewImages.length === 0 ? (
+                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border">
+                        <p className="text-sm text-muted-foreground">
+                          Нет загруженных изображений
+                        </p>
+                      </div>
+                    ) : previewImages.length === 1 ? (
+                      <div className="relative h-40 w-full overflow-hidden rounded-md border">
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
                           className="absolute top-2 right-2 z-10 h-6 w-6"
-                          onClick={() => removeImage(index)}
+                          onClick={() => removeImage(0)}
                         >
                           <Trash className="h-4 w-4" />
                         </Button>
                         <Image
-                          src={preview || "/placeholder.svg"}
-                          alt={`Product preview ${index + 1}`}
+                          src={previewImages[0] || "/placeholder.svg"}
+                          alt="Product preview"
                           fill
                           className="object-cover"
                         />
                       </div>
-                    ))
-                  ) : (
-                    <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border">
-                      <p className="text-sm text-muted-foreground">
-                        Нет загруженных изображений
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImagesChange}
-                  className="w-full"
-                  multiple
-                />
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {previewImages.map((preview, index) => (
+                          <div
+                            key={index}
+                            className="relative h-40 overflow-hidden rounded-md border"
+                          >
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 z-10 h-6 w-6"
+                              onClick={() => removeImage(index)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                            <Image
+                              src={preview || "/placeholder.svg"}
+                              alt={`Product preview ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImagesChange}
+                      className="w-full text-primary"
+                      multiple
+                    />
+                  </div>
+                  <FormDescription className="text-gray-600">
+                    Загрузите изображения товара. Вы можете выбрать несколько
+                    файлов. Рекомендуемый размер: 800x600 пикселей.
+                  </FormDescription>
+                </FormItem>
               </div>
-              <FormDescription className="text-primary">
-                Загрузите изображения товара. Вы можете выбрать несколько
-                файлов. Рекомендуемый размер: 800x600 пикселей.
-              </FormDescription>
-            </FormItem>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <FormLabel className="text-gray-600">Варианты пополнения</FormLabel>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="bg-primary text-white"
-              onClick={addReplenishmentItem}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Добавить вариант
-            </Button>
-          </div>
-
-          {form.watch("replenishment").map((_, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border rounded-md"
-            >
-              <FormField
-                control={form.control}
-                name={`replenishment.${index}.amount`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-600">Количество</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={1} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`replenishment.${index}.type`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-600">Тип</FormLabel>
-                    <FormControl>
-                      <Input placeholder="diamonds" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`replenishment.${index}.price`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-600">Цена (₽)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        className="text-gray-600"
-                        min={0.01}
-                        step={0.01}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`replenishment.${index}.sku`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-600">SKU</FormLabel>
-                    <div className="flex items-center space-x-2">
-                      <FormControl>
-                        <Input
-                          placeholder="ML001"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeReplenishmentItem(index)}
-                        disabled={form.watch("replenishment").length <= 1}
-                      >
-                        <Trash className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-          ))}
-        </div>
 
-        <Button type="submit" className="bg-primary" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {productId ? "Обновить товар" : "Создать товар"}
-        </Button>
-      </form>
-    </Form>
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <FormLabel className="text-primary">
+                  Варианты пополнения
+                </FormLabel>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="bg-primary text-white"
+                  onClick={addReplenishmentItem}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Добавить вариант
+                </Button>
+              </div>
+
+              {form.watch("replenishment").map((_, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border rounded-md"
+                >
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.amount`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">
+                          Количество
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            {...field}
+                            className="text-primary"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.type`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">Тип</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="diamonds"
+                            {...field}
+                            className="text-primary"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.price`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">Цена (₽)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            className="text-primary"
+                            min={0.01}
+                            step={0.01}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.sku`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">SKU</FormLabel>
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              placeholder="ML001"
+                              {...field}
+                              value={field.value || ""}
+                              className="text-primary"
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeReplenishmentItem(index)}
+                            disabled={form.watch("replenishment").length <= 1}
+                          >
+                            <Trash className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <Button
+              type="submit"
+              className="bg-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {productId ? "Обновить товар" : "Создать товар"}
+            </Button>
+          </form>
+        </Form>
+      </div>
+    </ScrollArea>
   );
 }

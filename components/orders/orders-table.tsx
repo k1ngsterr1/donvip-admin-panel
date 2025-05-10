@@ -121,68 +121,8 @@ export function OrdersTable() {
     );
   }
 
-  // For demo purposes, using mock data if API call isn't implemented yet
-  const mockOrders = [
-    {
-      id: "15374",
-      price: 185.0,
-      amount: 100,
-      type: "diamonds",
-      payment: "card",
-      account_id: "evdokimovit88",
-      status: "Ожидается оплата",
-      date: "5 минут назад",
-      customer: "Виталий Евдокимов",
-    },
-    {
-      id: "15373",
-      price: 185.0,
-      amount: 100,
-      type: "diamonds",
-      payment: "card",
-      account_id: "alindem",
-      status: "Обработка",
-      date: "23 минуты назад",
-      customer: "Алина Демкина",
-    },
-    {
-      id: "15372",
-      price: 185.0,
-      amount: 100,
-      type: "diamonds",
-      payment: "Lwl.co",
-      account_id: "ka4karik",
-      status: "Выполнен",
-      date: "23 минуты назад",
-      customer: "Кирилл Абзалилов",
-    },
-    {
-      id: "15371",
-      price: 185.0,
-      amount: 100,
-      type: "diamonds",
-      payment: "Lwl.co",
-      account_id: "ka4karik",
-      status: "На удержании",
-      date: "27 минут назад",
-      customer: "Кирилл Абзалилов",
-    },
-    {
-      id: "15370",
-      price: 185.0,
-      amount: 100,
-      type: "diamonds",
-      payment: "Securepayments.tinkoff.ru",
-      account_id: "volk86",
-      server_id: "srv_123",
-      status: "На удержании",
-      date: "35 минут назад",
-      customer: "Волк Волк",
-    },
-  ];
-
   // Ensure orders is always an array
-  const orders: Order[] = Array.isArray(data) ? data : mockOrders;
+  const orders: Order[] = Array.isArray(data) ? data : [];
 
   return (
     <>

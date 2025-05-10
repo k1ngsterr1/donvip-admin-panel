@@ -1,7 +1,26 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export function RecentActivity() {
-  const activities = [
+interface Activity {
+  id: string | number;
+  type: string;
+  title: string;
+  description: string;
+  time: string;
+  initials: string;
+}
+
+interface RecentActivityProps {
+  isLoading?: boolean;
+  activities?: Activity[];
+}
+
+export function RecentActivity({
+  isLoading = false,
+  activities,
+}: RecentActivityProps) {
+  // Default activities for when API data is not available
+  const defaultActivities = [
     {
       id: 1,
       type: "order",
@@ -42,22 +61,44 @@ export function RecentActivity() {
       time: "3 hours ago",
       initials: "MB",
     },
-  ]
+  ];
+
+  // Use provided activities or fall back to default
+  const displayActivities = activities || defaultActivities;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex items-start gap-4">
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <div className="space-y-1 flex-1">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-1/4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {activities.map((activity) => (
+      {displayActivities.map((activity) => (
         <div key={activity.id} className="flex items-start gap-4">
           <Avatar className="h-9 w-9">
             <AvatarFallback>{activity.initials}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
             <p className="text-sm font-medium">{activity.title}</p>
-            <p className="text-sm text-muted-foreground">{activity.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {activity.description}
+            </p>
             <p className="text-xs text-muted-foreground">{activity.time}</p>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

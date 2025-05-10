@@ -23,7 +23,9 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Товары</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">
+            Товары
+          </h1>
           <p className="text-muted-foreground">
             Управление товарами и их деталями.
           </p>

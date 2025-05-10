@@ -1,16 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { toast } from "@/hooks/use-toast"
-import { api } from "@/lib/api-client"
-import { Loader2 } from "lucide-react"
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import { api } from "@/lib/api-client";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   code: z
@@ -30,23 +38,27 @@ const formSchema = z.object({
       message: "Discount cannot exceed 100%.",
     }),
   limit: z.coerce.number().optional(),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 interface CouponFormProps {
-  couponId?: number
+  couponId?: number;
   defaultValues?: {
-    code: string
-    discount: number
-    limit?: number
-  }
-  onSuccess?: () => void
+    code: string;
+    discount: number;
+    limit?: number;
+  };
+  onSuccess?: () => void;
 }
 
-export function CouponForm({ couponId, defaultValues, onSuccess }: CouponFormProps) {
-  const queryClient = useQueryClient()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function CouponForm({
+  couponId,
+  defaultValues,
+  onSuccess,
+}: CouponFormProps) {
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -55,62 +67,62 @@ export function CouponForm({ couponId, defaultValues, onSuccess }: CouponFormPro
       discount: 10,
       limit: undefined,
     },
-  })
+  });
 
   const createCouponMutation = useMutation({
     mutationFn: (data: FormValues) => api.coupons.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["coupons"] })
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
       toast({
         title: "Coupon created",
         description: "The coupon has been created successfully.",
-      })
-      if (onSuccess) onSuccess()
-      form.reset()
+      });
+      if (onSuccess) onSuccess();
+      form.reset();
     },
     onError: () => {
       toast({
         title: "Error",
         description: "Failed to create coupon. Please try again.",
         variant: "destructive",
-      })
+      });
     },
     onSettled: () => {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     },
-  })
+  });
 
   const updateCouponMutation = useMutation({
     mutationFn: (data: FormValues) => {
-      if (!couponId) throw new Error("Coupon ID is required for update")
-      return api.coupons.update(couponId, data)
+      if (!couponId) throw new Error("Coupon ID is required for update");
+      return api.coupons.update(couponId, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["coupons"] })
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
       toast({
         title: "Coupon updated",
         description: "The coupon has been updated successfully.",
-      })
-      if (onSuccess) onSuccess()
+      });
+      if (onSuccess) onSuccess();
     },
     onError: () => {
       toast({
         title: "Error",
         description: "Failed to update coupon. Please try again.",
         variant: "destructive",
-      })
+      });
     },
     onSettled: () => {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     },
-  })
+  });
 
   function onSubmit(values: FormValues) {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     if (couponId) {
-      updateCouponMutation.mutate(values)
+      updateCouponMutation.mutate(values);
     } else {
-      createCouponMutation.mutate(values)
+      createCouponMutation.mutate(values);
     }
   }
 
@@ -122,11 +134,17 @@ export function CouponForm({ couponId, defaultValues, onSuccess }: CouponFormPro
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Код промокода</FormLabel>
+              <FormLabel className="text-primary">Код промокода</FormLabel>
               <FormControl>
-                <Input placeholder="SUMMER20" {...field} className="uppercase" />
+                <Input
+                  placeholder="SUMMER20"
+                  {...field}
+                  className="uppercase text-gray-600"
+                />
               </FormControl>
-              <FormDescription>Код, который пользователи будут вводить для получения скидки.</FormDescription>
+              <FormDescription className="text-gray-600">
+                Код, который пользователи будут вводить для получения скидки.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -136,11 +154,19 @@ export function CouponForm({ couponId, defaultValues, onSuccess }: CouponFormPro
           name="discount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Скидка (%)</FormLabel>
+              <FormLabel className="text-primary">Скидка (%)</FormLabel>
               <FormControl>
-                <Input type="number" min={1} max={100} {...field} />
+                <Input
+                  type="number"
+                  className="placeholder:text-gray-600 text-gray-600"
+                  min={1}
+                  max={100}
+                  {...field}
+                />
               </FormControl>
-              <FormDescription>Процент скидки, который будет применен (от 1 до 100).</FormDescription>
+              <FormDescription>
+                Процент скидки, который будет применен (от 1 до 100).
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -150,22 +176,28 @@ export function CouponForm({ couponId, defaultValues, onSuccess }: CouponFormPro
           name="limit"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Лимит использований</FormLabel>
+              <FormLabel className="text-primary">
+                Лимит использований
+              </FormLabel>
               <FormControl>
                 <Input
-                  type="number"
                   min={1}
+                  className="placeholder:text-gray-600 text-gray-600"
                   placeholder="Без ограничений"
                   {...field}
                   value={field.value || ""}
                   onChange={(e) => {
-                    const value = e.target.value === "" ? undefined : Number.parseInt(e.target.value)
-                    field.onChange(value)
+                    const value =
+                      e.target.value === ""
+                        ? undefined
+                        : Number.parseInt(e.target.value);
+                    field.onChange(value);
                   }}
                 />
               </FormControl>
               <FormDescription>
-                Максимальное количество использований промокода. Оставьте пустым для неограниченного использования.
+                Максимальное количество использований промокода. Оставьте пустым
+                для неограниченного использования.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -177,5 +209,5 @@ export function CouponForm({ couponId, defaultValues, onSuccess }: CouponFormPro
         </Button>
       </form>
     </Form>
-  )
+  );
 }

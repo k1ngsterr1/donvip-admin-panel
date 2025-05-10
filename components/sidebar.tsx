@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -12,6 +12,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/lib/auth-store";
 
 const navItems = [
   {
@@ -43,6 +45,33 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    try {
+      // Call the logout function from the auth store
+      logout();
+
+      // Show success toast
+      toast({
+        title: "Выход выполнен",
+        description: "Вы успешно вышли из системы",
+      });
+
+      // Redirect to login page
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+
+      // Show error toast
+      toast({
+        title: "Ошибка",
+        description: "Не удалось выйти из системы",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="hidden border-r bg-white lg:block w-64">
@@ -77,7 +106,7 @@ export function Sidebar() {
           <Button
             variant="outline"
             className="w-full bg-red-200 border-none justify-start text-red-500 hover:bg-red-600 hover:text-white"
-            onClick={() => console.log("Logout")}
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Выйти
