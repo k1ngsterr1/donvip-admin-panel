@@ -1,17 +1,6 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthService } from "@/services";
@@ -22,7 +11,6 @@ export function Header() {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get user info from AuthService
     setUserIdentifier(AuthService.getUserIdentifier());
     setUserRole(AuthService.getUserRole());
   }, []);
@@ -32,7 +20,6 @@ export function Header() {
     router.push("/login");
   };
 
-  // Get user initials for avatar
   const getInitials = () => {
     if (!userIdentifier) return "U";
 
@@ -63,52 +50,6 @@ export function Header() {
             />
           </svg>
         </Button>
-      </div>
-      <div className="flex items-center gap-2 ml-auto">
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Bell className="h-4 w-4" />
-          <span className="sr-only">Уведомления</span>
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{getInitials()}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Мой аккаунт</DropdownMenuLabel>
-            {userIdentifier && (
-              <DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
-                {userIdentifier}
-              </DropdownMenuLabel>
-            )}
-            {userRole && (
-              <DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
-                Роль: {userRole}
-              </DropdownMenuLabel>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              <span>Профиль</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Настройки</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Выйти</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   );

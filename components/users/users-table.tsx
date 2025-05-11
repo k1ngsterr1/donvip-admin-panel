@@ -150,8 +150,8 @@ export function UsersTable() {
     router.push(`/dashboard/users/${userId}/payments`);
   };
 
-  const handleToggleBlock = (userId: string, currentStatus: string) => {
-    if (currentStatus === "blocked") {
+  const handleToggleBlock = (userId: string, currentStatus: boolean) => {
+    if (currentStatus === true) {
       unblockUserMutation.mutate(userId);
     } else {
       blockUserMutation.mutate(userId);
@@ -374,15 +374,17 @@ export function UsersTable() {
                         История платежей
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleToggleBlock(user.id, user.status)}
+                        onClick={() =>
+                          handleToggleBlock(user.id, user.is_banned)
+                        }
                         className={
-                          user.status === "blocked"
+                          user.is_banned === true
                             ? "text-green-600"
                             : "text-red-600"
                         }
                       >
                         <Ban className="mr-2 h-4 w-4" />
-                        {user.status === "blocked"
+                        {user.is_banned === true
                           ? "Разблокировать"
                           : "Заблокировать"}
                       </DropdownMenuItem>

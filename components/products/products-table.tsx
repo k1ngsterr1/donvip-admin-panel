@@ -134,7 +134,6 @@ export function ProductsTable() {
   const queryClient = useQueryClient();
   const { openPopup } = usePopupStore();
 
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -143,12 +142,10 @@ export function ProductsTable() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset to page 1 when search changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  // Update the query function to match the API spec with triple data.data.data
   const { data, isLoading, error, refetch } = useQuery<ProductsResponse>({
     queryKey: ["products", page, limit, debouncedSearch],
     queryFn: async () => {
@@ -238,21 +235,17 @@ export function ProductsTable() {
     }));
   };
 
-  // Ensure products is always an array using triple data.data.data
   const products = Array.isArray(data?.data?.data)
     ? data.data.data
     : data?.data?.data
     ? [data.data.data]
     : [];
 
-  // Parse replenishment data if it's a string
   const parseReplenishment = (product: Product) => {
     if (typeof product.replenishment === "string") {
       try {
-        // Check if the string already starts with a bracket
         let replenishmentStr = product.replenishment.trim();
 
-        // Handle the case where the string contains multiple objects without being in an array
         if (
           !replenishmentStr.startsWith("[") &&
           replenishmentStr.includes("},{")
@@ -270,7 +263,6 @@ export function ProductsTable() {
           replenishmentStr = "[" + replenishmentStr + "]";
         }
 
-        // Fix common JSON formatting issues
         replenishmentStr = replenishmentStr.replace(/\}\s*,\s*\{/g, "},{");
         replenishmentStr = replenishmentStr.replace(/,\s*\}/g, "}");
         replenishmentStr = replenishmentStr.replace(/,\s*\]/g, "]");
@@ -282,7 +274,6 @@ export function ProductsTable() {
           e,
           product.replenishment
         );
-        // Return the raw string if parsing fails
         return [{ error: "Parsing error", raw: product.replenishment }];
       }
     }
@@ -365,7 +356,6 @@ export function ProductsTable() {
 
   return (
     <div className="space-y-4">
-      {/* Search and filters */}
       <Card className="border-muted/40">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
@@ -409,16 +399,12 @@ export function ProductsTable() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Products count */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground text-primary">
           Показано {products.length} из {totalProducts || products.length}{" "}
           товаров
         </div>
       </div>
-
-      {/* Table */}
       <div className="rounded-md border shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
@@ -892,8 +878,6 @@ export function ProductsTable() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Pagination */}
       <div className="flex items-center justify-between py-4">
         <div className="text-sm text-muted-foreground text-primary">
           Страница {page} из {totalPages}
@@ -955,8 +939,6 @@ export function ProductsTable() {
           </Button>
         </div>
       </div>
-
-      {/* Edit Dialog */}
       <Dialog
         open={!!editingProduct}
         onOpenChange={(open) => !open && setEditingProduct(null)}
@@ -988,8 +970,6 @@ export function ProductsTable() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={!!deleteConfirmProduct}
         onOpenChange={(open) => !open && setDeleteConfirmProduct(null)}

@@ -18,6 +18,13 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // If the request contains FormData, remove the Content-Type header
+    // to let the browser set it automatically with the correct boundary
+    if (config.data instanceof FormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -83,22 +90,32 @@ export const api = {
     getById: (id: string) => apiClient.get(`/user/${id}`),
     updateProfile: (data: FormData) =>
       apiClient.patch("/user/update-profile", data),
-    blockUser: (id: string) => apiClient.post(`/user/${id}/block`),
-    unblockUser: (id: string) => apiClient.post(`/user/${id}/unblock`),
+    blockUser: (id: string) => apiClient.patch(`/user/${id}/ban`),
+    unblockUser: (id: string) => apiClient.patch(`/user/${id}/unban`),
     getUserPayments: (id: string, params?: { limit?: number; page?: number }) =>
       apiClient.get(`/user/${id}/payments`, { params }),
   },
 
-  // Products
   products: {
     getAll: (params?: { limit?: number; page?: number; search?: string }) =>
       apiClient.get("/product", { params }),
+
     getById: (id: number) => apiClient.get(`/product/${id}`),
-    create: (data: FormData) => apiClient.post("/product", data),
-    update: (id: number, data: FormData) =>
-      apiClient.patch(`/product/${id}`, data),
+
+    create: (data: FormData) => {
+      // Directly send the FormData object
+      return apiClient.post("/product", data);
+    },
+
+    update: (id: number, data: FormData) => {
+      // Directly send the FormData object
+      return apiClient.patch(`/product/${id}`, data);
+    },
+
     delete: (id: number) => apiClient.delete(`/product/${id}`),
+
     getSmileProducts: () => apiClient.get("/product/smile"),
+
     getSmileSKU: (apiGame: string) =>
       apiClient.get(`/product/smile/${apiGame}`),
   },

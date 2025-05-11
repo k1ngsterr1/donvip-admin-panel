@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+
 import type React from "react";
 
 import { useState } from "react";
@@ -21,17 +23,49 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api-client";
-import { Loader2, Plus, Trash } from "lucide-react";
+import { Loader2, Plus, Trash, AlertCircle, FileImage } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+
+// ProductType enum matching the backend
+enum ProductType {
+  Bigo = "Bigo",
+  Smile = "Smile",
+}
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/svg+xml",
+];
 
 const replenishmentItemSchema = z.object({
   price: z.coerce.number().min(0.01, "Price must be greater than 0"),
   amount: z.coerce.number().min(1, "Amount must be at least 1"),
   type: z.string().min(1, "Type is required"),
-  sku: z.string().optional(),
+  sku: z.string().min(1, "SKU is required"),
 });
 
+// Create a file validation schema
+const fileSchema = z
+  .instanceof(File)
+  .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 10MB.`)
+  .refine(
+    (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
+    "Only .jpg, .jpeg, .png, .webp and .svg formats are accepted."
+  );
+
+// Base form schema
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Product name must be at least 2 characters.",
@@ -39,11 +73,14 @@ const formSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  images: z.array(z.instanceof(File)).optional(),
+  image: z.union([fileSchema, z.instanceof(File).optional()]),
   replenishment: z
     .array(replenishmentItemSchema)
     .min(1, "At least one replenishment option is required"),
   smile_api_game: z.string().optional(),
+  type: z.nativeEnum(ProductType, {
+    errorMap: () => ({ message: "Type must be either 'Bigo' or 'Smile'" }),
+  }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -53,14 +90,15 @@ interface ProductFormProps {
   defaultValues?: {
     name: string;
     description: string;
-    images?: string[];
+    image?: string;
     replenishment: Array<{
       price: number;
       amount: number;
       type: string;
-      sku?: string;
+      sku: string;
     }>;
     smile_api_game?: string;
+    type?: ProductType;
   };
   onSuccess?: () => void;
 }
@@ -72,9 +110,11 @@ export function ProductForm({
 }: ProductFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewImages, setPreviewImages] = useState<string[]>(
-    defaultValues?.images || []
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    defaultValues?.image || null
   );
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Fetch Smile products for dropdown
   const { data: smileProducts, isLoading: loadingSmileProducts } = useQuery({
@@ -95,17 +135,19 @@ export function ProductForm({
     },
   });
 
+  // Create form without the image field initially
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: defaultValues?.name || "",
       description: defaultValues?.description || "",
-      images: [],
       replenishment: defaultValues?.replenishment || [
-        { price: 0, amount: 0, type: "" },
+        { price: 0, amount: 0, type: "", sku: "" },
       ],
       smile_api_game: defaultValues?.smile_api_game || "",
+      type: defaultValues?.type || undefined,
     },
+    mode: "onChange",
   });
 
   const createProductMutation = useMutation({
@@ -118,12 +160,16 @@ export function ProductForm({
       });
       if (onSuccess) onSuccess();
       form.reset();
-      setPreviewImages([]);
+      setPreviewImage(null);
+      setSelectedFile(null);
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("API Error:", error);
       toast({
         title: "Ошибка",
-        description: "Не удалось создать товар. Пожалуйста, попробуйте снова.",
+        description:
+          error?.message ||
+          "Не удалось создать товар. Пожалуйста, попробуйте снова.",
         variant: "destructive",
       });
     },
@@ -145,10 +191,13 @@ export function ProductForm({
       });
       if (onSuccess) onSuccess();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("API Error:", error);
       toast({
         title: "Ошибка",
-        description: "Не удалось обновить товар. Пожалуйста, попробуйте снова.",
+        description:
+          error?.message ||
+          "Не удалось обновить товар. Пожалуйста, попробуйте снова.",
         variant: "destructive",
       });
     },
@@ -159,63 +208,125 @@ export function ProductForm({
 
   function onSubmit(values: FormValues) {
     setIsSubmitting(true);
+    setFileError(null);
 
-    // Convert form values to FormData
-    const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("description", values.description);
+    // Check if image is provided for new products
+    if (!selectedFile && !productId) {
+      setFileError("Изображение товара обязательно для загрузки");
+      setIsSubmitting(false);
+      return;
+    }
 
-    if (values.images && values.images.length > 0) {
-      values.images.forEach((image, index) => {
-        formData.append(`images[${index}]`, image);
+    try {
+      // Convert form values to FormData
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("description", values.description);
+
+      // Only append image if a file is selected
+      if (selectedFile instanceof File) {
+        formData.append("image", selectedFile);
+        console.log(
+          "Appending image file:",
+          selectedFile.name,
+          selectedFile.type,
+          selectedFile.size
+        );
+      } else if (!productId) {
+        setFileError("Изображение товара обязательно для загрузки");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (values.smile_api_game) {
+        formData.append("smile_api_game", values.smile_api_game);
+      }
+
+      formData.append("type", values.type);
+
+      // Convert replenishment array to JSON string and append
+      formData.append("replenishment", JSON.stringify(values.replenishment));
+
+      // Log the FormData entries for debugging
+      console.log("FormData entries:");
+      for (const pair of formData.entries()) {
+        console.log(pair[0], typeof pair[1], pair[1]);
+      }
+
+      if (productId) {
+        updateProductMutation.mutate(formData);
+      } else {
+        createProductMutation.mutate(formData);
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      setIsSubmitting(false);
+      toast({
+        title: "Ошибка",
+        description:
+          "Произошла ошибка при отправке формы. Пожалуйста, проверьте данные и попробуйте снова.",
+        variant: "destructive",
       });
-    }
-
-    if (values.smile_api_game) {
-      formData.append("smile_api_game", values.smile_api_game);
-    }
-
-    // Convert replenishment array to JSON string and append
-    formData.append("replenishment", JSON.stringify(values.replenishment));
-
-    if (productId) {
-      updateProductMutation.mutate(formData);
-    } else {
-      createProductMutation.mutate(formData);
     }
   }
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const fileArray = Array.from(files);
-      const currentImages = form.getValues("images") || [];
-      form.setValue("images", [...currentImages, ...fileArray]);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFileError(null);
 
-      // Create preview URLs for each new image
-      fileArray.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewImages((prev) => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
+    if (!file) {
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError(`Размер файла слишком большой. Максимальный размер: 10MB.`);
+      return;
+    }
+
+    // Validate file type
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setFileError(
+        "Принимаются только форматы .jpg, .jpeg, .png, .webp и .svg."
+      );
+      return;
+    }
+
+    // Store the file for later use
+    setSelectedFile(file);
+
+    try {
+      // Set the value in the form
+      form.setValue("image", file, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
       });
+
+      // Create preview URL for the image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error setting image:", error);
+      setFileError("Ошибка при обработке изображения");
     }
   };
 
-  const removeImage = (index: number) => {
-    const currentImages = form.getValues("images") || [];
-    const newImages = currentImages.filter((_, i) => i !== index);
-    form.setValue("images", newImages);
-
-    setPreviewImages((prev) => prev.filter((_, i) => i !== index));
+  const removeImage = () => {
+    form.setValue("image", undefined as any);
+    setPreviewImage(null);
+    setSelectedFile(null);
+    setFileError(null);
   };
 
   const addReplenishmentItem = () => {
     const currentItems = form.getValues("replenishment");
     form.setValue("replenishment", [
       ...currentItems,
-      { price: 0, amount: 0, type: "" },
+      { price: 0, amount: 0, type: "", sku: "" },
     ]);
   };
 
@@ -234,6 +345,14 @@ export function ProductForm({
       <div className="p-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <AlertTitle>Обязательное поле</AlertTitle>
+              <AlertDescription>
+                Изображение товара обязательно для загрузки. Поддерживаемые
+                форматы: JPG, PNG, WebP, SVG.
+              </AlertDescription>
+            </Alert>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <FormField
@@ -269,6 +388,42 @@ export function ProductForm({
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">Тип</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder="Выберите тип"
+                              className="text-primary"
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Bigo" className="text-primary">
+                            Bigo
+                          </SelectItem>
+                          <SelectItem value="Smile" className="text-primary">
+                            Smile
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-gray-600">
+                        Выберите тип товара (Bigo или Smile)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -317,71 +472,151 @@ export function ProductForm({
               <div>
                 <FormItem>
                   <FormLabel className="text-primary">
-                    Изображения товара
+                    Изображение товара <span className="text-red-500">*</span>
                   </FormLabel>
                   <div className="mt-2 flex flex-col space-y-4">
-                    {previewImages.length === 0 ? (
-                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border">
-                        <p className="text-sm text-muted-foreground">
-                          Нет загруженных изображений
-                        </p>
+                    {!previewImage ? (
+                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed border-red-300">
+                        <div className="text-center">
+                          <FileImage className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                          <p className="text-sm text-red-600 font-medium">
+                            Требуется загрузить изображение
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Поддерживаемые форматы: JPG, PNG, WebP, SVG
+                          </p>
+                        </div>
                       </div>
-                    ) : previewImages.length === 1 ? (
+                    ) : (
                       <div className="relative h-40 w-full overflow-hidden rounded-md border">
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
                           className="absolute top-2 right-2 z-10 h-6 w-6"
-                          onClick={() => removeImage(0)}
+                          onClick={removeImage}
                         >
                           <Trash className="h-4 w-4" />
                         </Button>
                         <Image
-                          src={previewImages[0] || "/placeholder.svg"}
+                          src={previewImage || "/placeholder.svg"}
                           alt="Product preview"
                           fill
                           className="object-cover"
                         />
                       </div>
-                    ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {previewImages.map((preview, index) => (
-                          <div
-                            key={index}
-                            className="relative h-40 overflow-hidden rounded-md border"
-                          >
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 z-10 h-6 w-6"
-                              onClick={() => removeImage(index)}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                            <Image
-                              src={preview || "/placeholder.svg"}
-                              alt={`Product preview ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
                     )}
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImagesChange}
-                      className="w-full text-primary"
-                      multiple
-                    />
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            document.getElementById("file-upload")?.click()
+                          }
+                          className="w-full"
+                        >
+                          <FileImage className="h-4 w-4 mr-2" />
+                          Выбрать изображение
+                        </Button>
+                        {selectedFile && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={removeImage}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={async () => {
+                          try {
+                            setFileError(null);
+                            const defaultFile = await createDefaultImageFile();
+                            setSelectedFile(defaultFile);
+
+                            // Set the value in the form
+                            form.setValue("image", defaultFile, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                              shouldTouch: true,
+                            });
+
+                            // Create preview URL for the image
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setPreviewImage(reader.result as string);
+                            };
+                            reader.readAsDataURL(defaultFile);
+                          } catch (error) {
+                            console.error(
+                              "Error generating default image:",
+                              error
+                            );
+                            setFileError(
+                              "Ошибка при создании изображения по умолчанию"
+                            );
+                          }
+                        }}
+                        className="w-full mt-2"
+                      >
+                        <FileImage className="h-4 w-4 mr-2" />
+                        Создать стандартное изображение
+                      </Button>
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp,.svg"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      {selectedFile && (
+                        <div className="text-xs text-muted-foreground">
+                          Выбран файл: {selectedFile.name} (
+                          {Math.round(selectedFile.size / 1024)} KB)
+                        </div>
+                      )}
+                      {fileError && (
+                        <Alert variant="destructive" className="py-2">
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          <span className="text-sm">{fileError}</span>
+                        </Alert>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-700 border-blue-200"
+                        >
+                          JPG
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200"
+                        >
+                          PNG
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-purple-50 text-purple-700 border-purple-200"
+                        >
+                          WebP
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-50 text-amber-700 border-amber-200"
+                        >
+                          SVG
+                        </Badge>
+                      </div>
+                      <FormDescription className="text-gray-600">
+                        Загрузите изображение товара. Максимальный размер: 10MB.
+                      </FormDescription>
+                    </div>
                   </div>
-                  <FormDescription className="text-gray-600">
-                    Загрузите изображения товара. Вы можете выбрать несколько
-                    файлов. Рекомендуемый размер: 800x600 пикселей.
-                  </FormDescription>
                 </FormItem>
               </div>
             </div>
@@ -492,6 +727,9 @@ export function ProductForm({
                             <Trash className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
+                        <FormDescription className="text-gray-600">
+                          Обязательный идентификатор для Smile API
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -516,3 +754,44 @@ export function ProductForm({
     </ScrollArea>
   );
 }
+
+const createDefaultImageFile = async () => {
+  try {
+    // Create a canvas element
+    const canvas = document.createElement("canvas");
+    canvas.width = 300;
+    canvas.height = 300;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Could not get canvas context");
+    }
+
+    // Fill with a light gray background
+    ctx.fillStyle = "#f3f4f6";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Add text
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "bold 24px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Product Image", canvas.width / 2, canvas.height / 2);
+
+    // Convert to blob
+    return new Promise<File>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], "default-product-image.png", {
+            type: "image/png",
+          });
+          resolve(file);
+        } else {
+          reject(new Error("Could not create image blob"));
+        }
+      }, "image/png");
+    });
+  } catch (error) {
+    console.error("Error creating default image:", error);
+    throw error;
+  }
+};
