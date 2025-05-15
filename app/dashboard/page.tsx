@@ -135,12 +135,7 @@ export default function DashboardPage() {
         title: "Новый пользователь",
         description: `${user.name || user.identifier} создал аккаунт`,
         time: user.createdAt,
-        initials: user.name
-          ? user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-          : user.identifier[0].toUpperCase(),
+        initials: "test",
       });
     });
   }
