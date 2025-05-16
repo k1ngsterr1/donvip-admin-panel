@@ -25,7 +25,6 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
-  Eye,
   Search,
   PlusCircle,
   RefreshCw,
@@ -39,10 +38,6 @@ import {
   Tag,
   Gem,
   Info,
-  Filter,
-  SlidersHorizontal,
-  Download,
-  Upload,
   Copy,
   CheckCircle2,
   XCircle,
@@ -106,6 +101,8 @@ interface Product {
   replenishment: ReplenishmentOption[] | string;
   smile_api_game?: string;
   type?: string;
+  currency_image?: string;
+  currency_name?: string;
 }
 
 interface ProductsResponse {
@@ -460,6 +457,7 @@ export function ProductsTable() {
                                 src={
                                   product.images[0] ||
                                   "/placeholder.svg?height=48&width=48&query=product" ||
+                                  "/placeholder.svg" ||
                                   "/placeholder.svg"
                                 }
                                 alt={product.name}
@@ -477,6 +475,7 @@ export function ProductsTable() {
                               src={
                                 product.image ||
                                 "/placeholder.svg?height=48&width=48&query=product" ||
+                                "/placeholder.svg" ||
                                 "/placeholder.svg"
                               }
                               alt={product.name}
@@ -739,6 +738,7 @@ export function ProductsTable() {
                                         src={
                                           product.image ||
                                           "/placeholder.svg?height=96&width=96&query=product" ||
+                                          "/placeholder.svg" ||
                                           "/placeholder.svg"
                                         }
                                         alt={product.name}
@@ -746,6 +746,31 @@ export function ProductsTable() {
                                         className="object-cover"
                                       />
                                     </div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground text-primary">
+                                    Валюта
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    {product.currency_image ? (
+                                      <div className="h-6 w-6 relative rounded-full overflow-hidden border">
+                                        <Image
+                                          src={
+                                            product.currency_image ||
+                                            "/placeholder.svg"
+                                          }
+                                          alt={
+                                            product.currency_name || "Currency"
+                                          }
+                                          fill
+                                          className="object-cover"
+                                        />
+                                      </div>
+                                    ) : null}
+                                    <span className="text-primary">
+                                      {product.currency_name || "Не указана"}
+                                    </span>
                                   </div>
                                 </div>
                               </CardContent>
@@ -861,6 +886,8 @@ export function ProductsTable() {
                                     replenishment_parsed: replenishmentOptions, // Also show the parsed version
                                     smile_api_game: product.smile_api_game,
                                     type: product.type,
+                                    currency_image: product.currency_image,
+                                    currency_name: product.currency_name,
                                   },
                                   null,
                                   2
@@ -964,6 +991,8 @@ export function ProductsTable() {
                 replenishment: parseReplenishment(editingProduct),
                 smile_api_game: editingProduct.smile_api_game,
                 type: editingProduct.type,
+                currency_image: editingProduct.currency_image,
+                currency_name: editingProduct.currency_name,
               }}
               onSuccess={handleEditSuccess}
             />

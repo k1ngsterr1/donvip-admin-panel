@@ -81,6 +81,8 @@ const formSchema = z.object({
   type: z.nativeEnum(ProductType, {
     errorMap: () => ({ message: "Type must be either 'Bigo' or 'Smile'" }),
   }),
+  currency_image: z.string().min(1, "Currency image URL is required"),
+  currency_name: z.string().min(1, "Currency name is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -99,6 +101,8 @@ interface ProductFormProps {
     }>;
     smile_api_game?: string;
     type?: ProductType;
+    currency_image?: string;
+    currency_name?: string;
   };
   onSuccess?: () => void;
 }
@@ -146,6 +150,8 @@ export function ProductForm({
       ],
       smile_api_game: defaultValues?.smile_api_game || "",
       type: defaultValues?.type || undefined,
+      currency_image: defaultValues?.currency_image || "",
+      currency_name: defaultValues?.currency_name || "",
     },
     mode: "onChange",
   });
@@ -246,6 +252,10 @@ export function ProductForm({
 
       // Convert replenishment array to JSON string and append
       formData.append("replenishment", JSON.stringify(values.replenishment));
+
+      // Add these lines after appending type
+      formData.append("currency_image", values.currency_image);
+      formData.append("currency_name", values.currency_name);
 
       // Log the FormData entries for debugging
       console.log("FormData entries:");
@@ -462,6 +472,52 @@ export function ProductForm({
                       </FormControl>
                       <FormDescription className="text-gray-600">
                         Выберите игру из Smile API для интеграции.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="currency_image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Currency Image URL
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://cdn.example.com/icons/usd.png"
+                          {...field}
+                          className="text-primary"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-gray-600">
+                        URL to the currency icon image
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="currency_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Currency Name
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="USD"
+                          {...field}
+                          className="text-primary"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-gray-600">
+                        Name of the currency (e.g., USD, EUR, RUB)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
