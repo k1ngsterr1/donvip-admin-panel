@@ -81,7 +81,7 @@ const formSchema = z.object({
   type: z.nativeEnum(ProductType, {
     errorMap: () => ({ message: "Type must be either 'Bigo' or 'Smile'" }),
   }),
-  currency_image: z.string().min(1, "Currency image URL is required"),
+  currency_image: z.union([fileSchema, z.instanceof(File).optional()]),
   currency_name: z.string().min(1, "Currency name is required"),
 });
 
@@ -107,6 +107,7 @@ interface ProductFormProps {
   onSuccess?: () => void;
 }
 
+// Update the ProductForm component to include state for currency image
 export function ProductForm({
   productId,
   defaultValues,
@@ -119,6 +120,17 @@ export function ProductForm({
   );
   const [fileError, setFileError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Add state for currency image
+  const [previewCurrencyImage, setPreviewCurrencyImage] = useState<
+    string | null
+  >(defaultValues?.currency_image || null);
+  const [currencyFileError, setCurrencyFileError] = useState<string | null>(
+    null
+  );
+  const [selectedCurrencyFile, setSelectedCurrencyFile] = useState<File | null>(
+    null
+  );
 
   // Fetch Smile products for dropdown
   const { data: smileProducts, isLoading: loadingSmileProducts } = useQuery({
@@ -150,8 +162,8 @@ export function ProductForm({
       ],
       smile_api_game: defaultValues?.smile_api_game || "",
       type: defaultValues?.type || undefined,
-      currency_image: defaultValues?.currency_image || "",
       currency_name: defaultValues?.currency_name || "",
+      currency_image: undefined as any, // Will be set by file input
     },
     mode: "onChange",
   });
@@ -212,9 +224,11 @@ export function ProductForm({
     },
   });
 
+  // Update the onSubmit function to handle both image uploads
   function onSubmit(values: FormValues) {
     setIsSubmitting(true);
     setFileError(null);
+    setCurrencyFileError(null);
 
     // Check if image is provided for new products
     if (!selectedFile && !productId) {
@@ -253,9 +267,19 @@ export function ProductForm({
       // Convert replenishment array to JSON string and append
       formData.append("replenishment", JSON.stringify(values.replenishment));
 
-      // Add these lines after appending type
-      formData.append("currency_image", values.currency_image);
+      // Append currency name
       formData.append("currency_name", values.currency_name);
+
+      // Append currency image if selected
+      if (selectedCurrencyFile instanceof File) {
+        formData.append("currency_image", selectedCurrencyFile);
+        console.log(
+          "Appending currency image file:",
+          selectedCurrencyFile.name,
+          selectedCurrencyFile.type,
+          selectedCurrencyFile.size
+        );
+      }
 
       // Log the FormData entries for debugging
       console.log("FormData entries:");
@@ -279,6 +303,63 @@ export function ProductForm({
       });
     }
   }
+
+  // Add a handler for currency image changes
+  const handleCurrencyImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    setCurrencyFileError(null);
+
+    if (!file) {
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setCurrencyFileError(
+        `Размер файла слишком большой. Максимальный размер: 10MB.`
+      );
+      return;
+    }
+
+    // Validate file type
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setCurrencyFileError(
+        "Принимаются только форматы .jpg, .jpeg, .png, .webp и .svg."
+      );
+      return;
+    }
+
+    // Store the file for later use
+    setSelectedCurrencyFile(file);
+
+    try {
+      // Set the value in the form
+      form.setValue("currency_image", file, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+
+      // Create preview URL for the image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewCurrencyImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error setting currency image:", error);
+      setCurrencyFileError("Ошибка при обработке изображения");
+    }
+  };
+
+  const removeCurrencyImage = () => {
+    form.setValue("currency_image", undefined as any);
+    setPreviewCurrencyImage(null);
+    setSelectedCurrencyFile(null);
+    setCurrencyFileError(null);
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -480,29 +561,6 @@ export function ProductForm({
 
                 <FormField
                   control={form.control}
-                  name="currency_image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Currency Image URL
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://cdn.example.com/icons/usd.png"
-                          {...field}
-                          className="text-primary"
-                        />
-                      </FormControl>
-                      <FormDescription className="text-gray-600">
-                        URL to the currency icon image
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="currency_name"
                   render={({ field }) => (
                     <FormItem>
@@ -520,6 +578,102 @@ export function ProductForm({
                         Name of the currency (e.g., USD, EUR, RUB)
                       </FormDescription>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="currency_image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Currency Image
+                      </FormLabel>
+                      <div className="mt-2 flex flex-col space-y-4">
+                        {!previewCurrencyImage ? (
+                          <div className="flex h-24 w-full items-center justify-center bg-muted rounded-md border border-dashed">
+                            <div className="text-center">
+                              <FileImage className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">
+                                Upload currency icon image
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Recommended: 64x64px
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative h-24 w-24 overflow-hidden rounded-md border">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 z-10 h-6 w-6"
+                              onClick={removeCurrencyImage}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                            <Image
+                              src={previewCurrencyImage || "/placeholder.svg"}
+                              alt="Currency icon preview"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                document
+                                  .getElementById("currency-file-upload")
+                                  ?.click()
+                              }
+                              className="w-full"
+                            >
+                              <FileImage className="h-4 w-4 mr-2" />
+                              Choose Currency Icon
+                            </Button>
+                            {selectedCurrencyFile && (
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                onClick={removeCurrencyImage}
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <Input
+                            id="currency-file-upload"
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp,.svg"
+                            onChange={handleCurrencyImageChange}
+                            className="hidden"
+                          />
+                          {selectedCurrencyFile && (
+                            <div className="text-xs text-muted-foreground">
+                              Selected file: {selectedCurrencyFile.name} (
+                              {Math.round(selectedCurrencyFile.size / 1024)} KB)
+                            </div>
+                          )}
+                          {currencyFileError && (
+                            <Alert variant="destructive" className="py-2">
+                              <AlertCircle className="h-4 w-4 mr-2" />
+                              <span className="text-sm">
+                                {currencyFileError}
+                              </span>
+                            </Alert>
+                          )}
+                          <FormDescription className="text-gray-600">
+                            Upload an icon for the currency. This will be
+                            displayed next to the currency name.
+                          </FormDescription>
+                        </div>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -670,6 +824,119 @@ export function ProductForm({
                       </div>
                       <FormDescription className="text-gray-600">
                         Загрузите изображение товара. Максимальный размер: 10MB.
+                      </FormDescription>
+                    </div>
+                  </div>
+                </FormItem>
+                <FormItem>
+                  <FormLabel className="text-primary">
+                    Currency Image <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <div className="mt-2 flex flex-col space-y-4">
+                    {!previewCurrencyImage ? (
+                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed border-red-300">
+                        <div className="text-center">
+                          <FileImage className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                          <p className="text-sm text-red-600 font-medium">
+                            Требуется загрузить изображение
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Поддерживаемые форматы: JPG, PNG, WebP, SVG
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative h-40 w-full overflow-hidden rounded-md border">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 z-10 h-6 w-6"
+                          onClick={removeCurrencyImage}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                        <Image
+                          src={previewCurrencyImage || "/placeholder.svg"}
+                          alt="Currency image preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            document
+                              .getElementById("currency-file-upload")
+                              ?.click()
+                          }
+                          className="w-full"
+                        >
+                          <FileImage className="h-4 w-4 mr-2" />
+                          Выбрать изображение
+                        </Button>
+                        {selectedCurrencyFile && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={removeCurrencyImage}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <Input
+                        id="currency-file-upload"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp,.svg"
+                        onChange={handleCurrencyImageChange}
+                        className="hidden"
+                      />
+                      {selectedCurrencyFile && (
+                        <div className="text-xs text-muted-foreground">
+                          Выбран файл: {selectedCurrencyFile.name} (
+                          {Math.round(selectedCurrencyFile.size / 1024)} KB)
+                        </div>
+                      )}
+                      {currencyFileError && (
+                        <Alert variant="destructive" className="py-2">
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          <span className="text-sm">{currencyFileError}</span>
+                        </Alert>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-700 border-blue-200"
+                        >
+                          JPG
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200"
+                        >
+                          PNG
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-purple-50 text-purple-700 border-purple-200"
+                        >
+                          WebP
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-50 text-amber-700 border-amber-200"
+                        >
+                          SVG
+                        </Badge>
+                      </div>
+                      <FormDescription className="text-gray-600">
+                        Загрузите изображение валюты. Максимальный размер: 10MB.
                       </FormDescription>
                     </div>
                   </div>

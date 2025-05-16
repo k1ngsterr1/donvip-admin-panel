@@ -47,13 +47,10 @@ apiClient.interceptors.response.use(
           throw new Error("No refresh token available");
         }
 
-        // Refresh the token
         await AuthService.refreshToken(refreshToken);
 
-        // Get the new token
         const newToken = AuthService.getAccessToken();
 
-        // Update the Authorization header with the new token
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
