@@ -340,12 +340,6 @@ export function ProductsTable() {
           <p className="text-center text-muted-foreground text-primary mb-6">
             Вы можете добавить новый товар, нажав на кнопку ниже.
           </p>
-          <Link href="/dashboard/products/new">
-            <Button className="bg-primary">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Добавить товар
-            </Button>
-          </Link>
         </CardContent>
       </Card>
     );

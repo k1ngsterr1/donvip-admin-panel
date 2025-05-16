@@ -1,13 +1,12 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +22,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api-client";
-import { Loader2, Plus, Trash, AlertCircle, FileImage } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash,
+  AlertCircle,
+  FileImage,
+  RefreshCw,
+} from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -34,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { ProductService } from "@/services";
 
 // ProductType enum matching the backend
 enum ProductType {
@@ -107,6 +114,14 @@ interface ProductFormProps {
   onSuccess?: () => void;
 }
 
+// Interface for Smile SKU items
+interface SmileSKUItem {
+  id: string;
+  name: string;
+  price: number;
+  amount: number;
+}
+
 // Update the ProductForm component to include state for currency image
 export function ProductForm({
   productId,
@@ -132,25 +147,6 @@ export function ProductForm({
     null
   );
 
-  // Fetch Smile products for dropdown
-  const { data: smileProducts, isLoading: loadingSmileProducts } = useQuery({
-    queryKey: ["smileProducts"],
-    queryFn: async () => {
-      // In a real app, this would fetch from your API
-      // const response = await api.products.getSmileProducts()
-      // return response.data
-
-      // For now, return mock data
-      return [
-        { id: "mobilelegendsru", name: "Mobile Legends" },
-        { id: "bigolive", name: "Bigo LIVE" },
-        { id: "pubgmobile", name: "PUBG Mobile" },
-        { id: "freefire", name: "Free Fire" },
-        { id: "clashofclans", name: "Clash of Clans" },
-      ];
-    },
-  });
-
   // Create form without the image field initially
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -167,6 +163,171 @@ export function ProductForm({
     },
     mode: "onChange",
   });
+
+  // Watch for product type changes to conditionally show Smile API fields
+  const productType = useWatch({
+    control: form.control,
+    name: "type",
+  });
+
+  // Debug when component mounts and when productType changes
+  useEffect(() => {
+    console.log("ProductForm mounted or productType changed:", { productType });
+    if (productType === "Smile") {
+      console.log("Product type is Smile, API requests should be enabled");
+    }
+  }, [productType]);
+
+  const selectedSmileGame = useWatch({
+    control: form.control,
+    name: "smile_api_game",
+  });
+
+  // Fetch Smile products for dropdown - only when product type is Smile
+  const {
+    data: smileProducts,
+    isLoading: loadingSmileProducts,
+    refetch: refetchSmileProducts,
+  } = useQuery({
+    queryKey: ["smileProducts"],
+    queryFn: async () => {
+      console.log(
+        "Fetching Smile products... enabled:",
+        productType === "Smile"
+      );
+      try {
+        const data = await ProductService.getSmileProducts();
+        console.log("Smile products API response:", data);
+
+        // Check if data exists and has the expected structure
+        if (data && data.data) {
+          return Array.isArray(data.data) ? data.data : [];
+        }
+
+        // If data is directly an array
+        if (Array.isArray(data)) {
+          return data;
+        }
+
+        // Fallback to empty array
+        console.warn("Smile products data is not in expected format:", data);
+        return [];
+      } catch (error) {
+        console.error("Error fetching Smile products:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить список игр Smile API",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    enabled: productType === "Smile", // Only fetch when product type is Smile
+  });
+
+  // Force fetch Smile products when type is Smile
+  useEffect(() => {
+    if (productType === "Smile") {
+      console.log("Forcing refetch of Smile products");
+      refetchSmileProducts();
+    }
+  }, [productType, refetchSmileProducts]);
+
+  // Fetch Smile SKUs for the selected game
+  const {
+    data: smileSKUs,
+    isLoading: loadingSmileSKUs,
+    refetch: refetchSmileSKUs,
+  } = useQuery({
+    queryKey: ["smileSKUs", selectedSmileGame],
+    queryFn: async () => {
+      if (!selectedSmileGame) return [];
+
+      try {
+        console.log(`Fetching Smile SKUs for game: ${selectedSmileGame}`);
+        const data = await ProductService.getSmileSKU(selectedSmileGame);
+        console.log("Smile SKUs response:", data);
+
+        // Check if data exists and has the expected structure
+        if (data && data.data) {
+          return Array.isArray(data.data) ? data.data : [];
+        }
+
+        // If data is directly an array
+        if (Array.isArray(data)) {
+          return data;
+        }
+
+        // Fallback to empty array
+        console.warn("Smile SKUs data is not in expected format:", data);
+        return [];
+      } catch (error) {
+        console.error("Error fetching Smile SKUs:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить SKU для выбранной игры",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    enabled: !!selectedSmileGame && productType === "Smile", // Only fetch when a game is selected and product type is Smile
+  });
+
+  // Effect to update replenishment items when SKUs are loaded
+  useEffect(() => {
+    if (smileSKUs && smileSKUs.length > 0 && productType === "Smile") {
+      // Map SKUs to replenishment items
+      const replenishmentItems = smileSKUs.map((sku: SmileSKUItem) => ({
+        price: sku.price,
+        amount: sku.amount,
+        type: "diamonds", // Default type, can be adjusted based on game
+        sku: sku.id,
+      }));
+
+      // Update form with new replenishment items
+      form.setValue("replenishment", replenishmentItems);
+    }
+  }, [smileSKUs, form, productType]);
+
+  // Effect to clear smile_api_game when product type changes
+  useEffect(() => {
+    if (productType !== "Smile") {
+      form.setValue("smile_api_game", "");
+    }
+  }, [productType, form]);
+
+  // Effect to update replenishment item fields when a SKU is selected
+  useEffect(() => {
+    if (productType === "Smile" && smileSKUs?.length > 0) {
+      const replenishmentItems = form.getValues("replenishment");
+
+      // For each replenishment item, if it has a SKU, update its other fields
+      const updatedItems = replenishmentItems.map((item) => {
+        if (item.sku) {
+          const matchingSku = smileSKUs.find((sku: any) => sku.id === item.sku);
+          if (matchingSku) {
+            return {
+              ...item,
+              amount: matchingSku.amount,
+              price: matchingSku.price,
+              type: matchingSku.name || "diamonds",
+            };
+          }
+        }
+        return item;
+      });
+
+      form.setValue("replenishment", updatedItems);
+    }
+  }, [
+    form
+      .watch("replenishment")
+      .map((item) => item.sku)
+      .join(","),
+    smileSKUs,
+    productType,
+  ]);
 
   const createProductMutation = useMutation({
     mutationFn: (data: FormData) => api.products.create(data),
@@ -258,7 +419,7 @@ export function ProductForm({
         return;
       }
 
-      if (values.smile_api_game) {
+      if (values.smile_api_game && values.type === "Smile") {
         formData.append("smile_api_game", values.smile_api_game);
       }
 
@@ -491,7 +652,13 @@ export function ProductForm({
                     <FormItem>
                       <FormLabel className="text-primary">Тип</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          // Clear smile_api_game when changing type
+                          if (value !== "Smile") {
+                            form.setValue("smile_api_game", "");
+                          }
+                        }}
                         defaultValue={field.value}
                         value={field.value}
                       >
@@ -520,44 +687,101 @@ export function ProductForm({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="smile_api_game"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Smile API Game
-                      </FormLabel>
-                      <FormControl>
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-primary"
-                          {...field}
-                        >
-                          <option value="" className="text-primary">
-                            Выберите игру
-                          </option>
-                          {loadingSmileProducts ? (
-                            <option disabled>Загрузка...</option>
-                          ) : (
-                            smileProducts?.map((game) => (
-                              <option
-                                key={game.id}
-                                value={game.id}
-                                className="text-primary"
-                              >
-                                {game.name}
-                              </option>
-                            ))
-                          )}
-                        </select>
-                      </FormControl>
-                      <FormDescription className="text-gray-600">
-                        Выберите игру из Smile API для интеграции.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Only show Smile API Game field when product type is Smile */}
+                {productType === "Smile" && (
+                  <FormField
+                    control={form.control}
+                    name="smile_api_game"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">
+                          Smile API Game
+                        </FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl className="flex-1">
+                            <Select
+                              onValueChange={(value) => {
+                                if (
+                                  value !== "_placeholder" &&
+                                  value !== "_loading"
+                                ) {
+                                  field.onChange(value);
+                                  // Clear replenishment items when changing game
+                                  if (!value) {
+                                    form.setValue("replenishment", [
+                                      {
+                                        price: 0,
+                                        amount: 0,
+                                        type: "",
+                                        sku: "",
+                                      },
+                                    ]);
+                                  }
+                                } else {
+                                  field.onChange("");
+                                }
+                              }}
+                              value={field.value || "_placeholder"}
+                            >
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder="Выберите игру"
+                                  className="text-primary"
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem
+                                  value="_placeholder"
+                                  className="text-primary"
+                                >
+                                  Выберите игру
+                                </SelectItem>
+                                {loadingSmileProducts ? (
+                                  <SelectItem value="_loading" disabled>
+                                    Загрузка...
+                                  </SelectItem>
+                                ) : Array.isArray(smileProducts) ? (
+                                  smileProducts.map((game: any) => (
+                                    <SelectItem
+                                      key={game.id}
+                                      value={game.id}
+                                      className="text-primary"
+                                    >
+                                      {game.name}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem value="_no_games" disabled>
+                                    Нет доступных игр
+                                  </SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => refetchSmileProducts()}
+                            disabled={loadingSmileProducts}
+                            title="Обновить список игр"
+                          >
+                            <RefreshCw
+                              className={`h-4 w-4 ${
+                                loadingSmileProducts ? "animate-spin" : ""
+                              }`}
+                            />
+                          </Button>
+                        </div>
+                        <FormDescription className="text-gray-600">
+                          Выберите игру из Smile API для интеграции. SKU будут
+                          загружены автоматически.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -828,20 +1052,18 @@ export function ProductForm({
                     </div>
                   </div>
                 </FormItem>
-                <FormItem>
-                  <FormLabel className="text-primary">
-                    Currency Image <span className="text-red-500">*</span>
-                  </FormLabel>
+                <FormItem className="mt-6">
+                  <FormLabel className="text-primary">Currency Image</FormLabel>
                   <div className="mt-2 flex flex-col space-y-4">
                     {!previewCurrencyImage ? (
-                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed border-red-300">
+                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed">
                         <div className="text-center">
-                          <FileImage className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                          <p className="text-sm text-red-600 font-medium">
-                            Требуется загрузить изображение
+                          <FileImage className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">
+                            Загрузите изображение валюты
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Поддерживаемые форматы: JPG, PNG, WebP, SVG
+                            Рекомендуемый размер: 64x64px
                           </p>
                         </div>
                       </div>
@@ -871,13 +1093,13 @@ export function ProductForm({
                           variant="outline"
                           onClick={() =>
                             document
-                              .getElementById("currency-file-upload")
+                              .getElementById("currency-file-upload-2")
                               ?.click()
                           }
                           className="w-full"
                         >
                           <FileImage className="h-4 w-4 mr-2" />
-                          Выбрать изображение
+                          Выбрать изображение валюты
                         </Button>
                         {selectedCurrencyFile && (
                           <Button
@@ -891,7 +1113,7 @@ export function ProductForm({
                         )}
                       </div>
                       <Input
-                        id="currency-file-upload"
+                        id="currency-file-upload-2"
                         type="file"
                         accept=".jpg,.jpeg,.png,.webp,.svg"
                         onChange={handleCurrencyImageChange}
@@ -949,17 +1171,75 @@ export function ProductForm({
                 <FormLabel className="text-primary">
                   Варианты пополнения
                 </FormLabel>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="bg-primary text-white"
-                  onClick={addReplenishmentItem}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Добавить вариант
-                </Button>
+                <div className="flex gap-2">
+                  {productType === "Smile" && selectedSmileGame && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refetchSmileSKUs()}
+                      disabled={loadingSmileSKUs}
+                      className="text-primary"
+                    >
+                      <RefreshCw
+                        className={`h-4 w-4 mr-2 ${
+                          loadingSmileSKUs ? "animate-spin" : ""
+                        }`}
+                      />
+                      Обновить SKU
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-primary text-white"
+                    onClick={addReplenishmentItem}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Добавить вариант
+                  </Button>
+                </div>
               </div>
+
+              {/* Show loading state when fetching SKUs */}
+              {productType === "Smile" &&
+                selectedSmileGame &&
+                loadingSmileSKUs && (
+                  <div className="flex items-center justify-center p-8 border rounded-md bg-muted/5">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2 text-primary" />
+                    <p className="text-primary">
+                      Загрузка SKU для {selectedSmileGame}...
+                    </p>
+                  </div>
+                )}
+
+              {/* Show message when no SKUs are available */}
+              {productType === "Smile" &&
+                selectedSmileGame &&
+                !loadingSmileSKUs &&
+                smileSKUs?.length === 0 && (
+                  <div className="flex flex-col items-center justify-center p-8 border rounded-md bg-muted/5">
+                    <AlertCircle className="h-8 w-8 text-amber-500 mb-2" />
+                    <p className="text-primary font-medium">
+                      Нет доступных SKU для выбранной игры
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Попробуйте обновить список SKU или добавьте варианты
+                      пополнения вручную
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refetchSmileSKUs()}
+                      className="mt-4"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Обновить SKU
+                    </Button>
+                  </div>
+                )}
 
               {form.watch("replenishment").map((_, index) => (
                 <div
@@ -1032,13 +1312,48 @@ export function ProductForm({
                       <FormItem>
                         <FormLabel className="text-primary">SKU</FormLabel>
                         <div className="flex items-center space-x-2">
-                          <FormControl>
-                            <Input
-                              placeholder="ML001"
-                              {...field}
-                              value={field.value || ""}
-                              className="text-primary"
-                            />
+                          <FormControl className="flex-1">
+                            {productType === "Smile" ? (
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                                disabled={loadingSmileSKUs}
+                              >
+                                <SelectTrigger className="text-primary">
+                                  <SelectValue placeholder="Выберите SKU" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {loadingSmileSKUs ? (
+                                    <SelectItem value="_loading" disabled>
+                                      Загрузка SKU...
+                                    </SelectItem>
+                                  ) : Array.isArray(smileSKUs) &&
+                                    smileSKUs.length > 0 ? (
+                                    smileSKUs.map((sku: any) => (
+                                      <SelectItem
+                                        key={sku.id}
+                                        value={sku.id}
+                                        className="text-primary"
+                                      >
+                                        {sku.id} - {sku.amount}{" "}
+                                        {sku.name || "единиц"} (₽{sku.price})
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="_empty" disabled>
+                                      Нет доступных SKU
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                placeholder="ML001"
+                                {...field}
+                                value={field.value || ""}
+                                className="text-primary"
+                              />
+                            )}
                           </FormControl>
                           <Button
                             type="button"
@@ -1051,7 +1366,9 @@ export function ProductForm({
                           </Button>
                         </div>
                         <FormDescription className="text-gray-600">
-                          Обязательный идентификатор для Smile API
+                          {productType === "Smile"
+                            ? "Выберите SKU из списка доступных для Smile API"
+                            : "Уникальный идентификатор товара"}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
