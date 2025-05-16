@@ -23,9 +23,11 @@ export interface UserListParams {
 
 export interface UserListResponse {
   data: User[];
+  total: number;
   meta: {
     totalItems: number;
     itemCount: number;
+    total: number;
     itemsPerPage: number;
     totalPages: number;
     currentPage: number;

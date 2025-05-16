@@ -25,24 +25,22 @@ import {
   Ban,
   Eye,
   History,
-  UserPlus,
   Users,
   Search,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { type User, UserService } from "@/services";
-import Link from "next/link";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -60,6 +58,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function UsersTable() {
   const [page, setPage] = useState(1);
@@ -68,6 +67,7 @@ export function UsersTable() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [filteredCount, setFilteredCount] = useState(0);
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -98,6 +98,11 @@ export function UsersTable() {
       if (response.meta) {
         setTotalPages(response.meta.totalPages || 1);
         setTotalUsers(response.meta.totalItems || 0);
+      } else if (response.total) {
+        // Handle pagination from the response format provided in the example
+        const calculatedTotalPages = Math.ceil(response.total / limit);
+        setTotalPages(calculatedTotalPages);
+        setTotalUsers(response.total);
       }
 
       return response.data || [];
@@ -164,13 +169,25 @@ export function UsersTable() {
     }
   };
 
-  // Mock data for demonstration
-
   // Ensure users is always an array
   const users: User[] = Array.isArray(data) ? data : [];
 
-  // Use mock data if users array is empty
-  const displayUsers = users;
+  // Filter out users with null identifier
+  const displayUsers = users.filter((user) => user.identifier !== null);
+
+  // Calculate how many users were filtered out
+  const filteredOutCount = users.length - displayUsers.length;
+
+  // Check if we need to fetch the next page because all users were filtered out
+  useEffect(() => {
+    if (users.length > 0 && displayUsers.length === 0 && page < totalPages) {
+      // All users on this page have null identifiers, move to next page
+      setPage(page + 1);
+    }
+
+    // Update filtered count for display
+    setFilteredCount(filteredOutCount);
+  }, [users, displayUsers, page, totalPages]);
 
   if (isLoading) {
     return (
@@ -215,7 +232,7 @@ export function UsersTable() {
     );
   }
 
-  // Check if there are no users
+  // Check if there are no users after filtering
   if (displayUsers.length === 0) {
     return (
       <Card className="w-full">
@@ -223,9 +240,13 @@ export function UsersTable() {
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
             <Users className="h-10 w-10 text-muted-foreground" />
           </div>
-          <CardTitle className="text-xl mt-4">Нет пользователей</CardTitle>
+          <CardTitle className="text-xl mt-4">
+            Нет пользователей с идентификаторами
+          </CardTitle>
           <CardDescription>
-            В системе пока нет зарегистрированных пользователей.
+            {filteredOutCount > 0
+              ? `${filteredOutCount} пользователей было скрыто, так как у них отсутствуют идентификаторы.`
+              : "В системе пока нет зарегистрированных пользователей с идентификаторами."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center">
@@ -233,6 +254,10 @@ export function UsersTable() {
             Вы можете добавить нового пользователя или дождаться, пока
             пользователи зарегистрируются самостоятельно.
           </p>
+          <Button onClick={() => refetch()} variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Обновить данные
+          </Button>
         </CardContent>
       </Card>
     );
@@ -269,6 +294,17 @@ export function UsersTable() {
           </Select>
           <TooltipProvider>
             <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => refetch()}
+                  className="h-9 w-9"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="sr-only">Обновить</span>
+                </Button>
+              </TooltipTrigger>
               <TooltipContent>
                 <p>Обновить данные</p>
               </TooltipContent>
@@ -277,10 +313,21 @@ export function UsersTable() {
         </div>
       </div>
 
+      {/* Filtered users notification */}
+      {filteredOutCount > 0 && (
+        <Alert className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Внимание</AlertTitle>
+          <AlertDescription>
+            {filteredOutCount} пользователей скрыто, так как у них отсутствуют
+            идентификаторы.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Users count */}
       <div className="text-sm text-muted-foreground mb-2">
-        Показано {displayUsers.length} из {totalUsers || displayUsers.length}{" "}
-        пользователей
+        Показано {displayUsers.length} из {totalUsers} пользователей
       </div>
 
       {/* Table */}
@@ -311,7 +358,7 @@ export function UsersTable() {
                         alt={user.identifier}
                       />
                       <AvatarFallback className="bg-primary/10 text-primary">
-                        {user.identifier}
+                        {user.identifier?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-primary">
