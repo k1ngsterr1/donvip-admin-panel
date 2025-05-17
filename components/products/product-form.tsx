@@ -164,10 +164,24 @@ export function ProductForm({
     mode: "onChange",
   });
 
+  // Add debugging for form values
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log("Form values changed:", value);
+      console.log("Current smile_api_game:", value.smile_api_game);
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   // Watch for product type changes to conditionally show Smile API fields
   const productType = useWatch({
     control: form.control,
     name: "type",
+  });
+
+  const selectedSmileGame = useWatch({
+    control: form.control,
+    name: "smile_api_game",
   });
 
   // Debug when component mounts and when productType changes
@@ -177,11 +191,6 @@ export function ProductForm({
       console.log("Product type is Smile, API requests should be enabled");
     }
   }, [productType]);
-
-  const selectedSmileGame = useWatch({
-    control: form.control,
-    name: "smile_api_game",
-  });
 
   // Fetch Smile products for dropdown - only when product type is Smile
   const {
@@ -199,14 +208,16 @@ export function ProductForm({
         const data = await ProductService.getSmileProducts();
         console.log("Smile products API response:", data);
 
-        // Check if data exists and has the expected structure
-        if (data && data.data) {
-          return Array.isArray(data.data) ? data.data : [];
+        // If the data is already in the expected format (array of objects with name and apiGame)
+        if (Array.isArray(data) && data.length > 0 && data[0].apiGame) {
+          console.log("Data is already in the correct format");
+          return data;
         }
 
-        // If data is directly an array
-        if (Array.isArray(data)) {
-          return data;
+        // Check if data exists and has the expected structure
+        if (data && data.data) {
+          console.log("Data has a 'data' property");
+          return Array.isArray(data.data) ? data.data : [];
         }
 
         // Fallback to empty array
@@ -223,6 +234,8 @@ export function ProductForm({
       }
     },
     enabled: productType === "Smile", // Only fetch when product type is Smile
+    staleTime: 0, // Don't cache the results
+    refetchOnMount: true, // Always refetch when component mounts
   });
 
   // Force fetch Smile products when type is Smile
@@ -232,6 +245,25 @@ export function ProductForm({
       refetchSmileProducts();
     }
   }, [productType, refetchSmileProducts]);
+
+  // Add a debugging effect to track smileProducts
+  useEffect(() => {
+    console.log("smileProducts updated:", smileProducts);
+  }, [smileProducts]);
+
+  // Add this debugging effect after the other useEffect hooks to help diagnose the issue:
+  useEffect(() => {
+    if (productType === "Smile") {
+      console.log(
+        "Smile products data structure:",
+        smileProducts && smileProducts.length > 0
+          ? smileProducts[0]
+          : "No products"
+      );
+      console.log("All Smile products:", smileProducts);
+      console.log("Current selected game:", selectedSmileGame);
+    }
+  }, [productType, smileProducts, selectedSmileGame]);
 
   // Fetch Smile SKUs for the selected game
   const {
@@ -328,6 +360,11 @@ export function ProductForm({
     smileSKUs,
     productType,
   ]);
+
+  // Add tracking effect for selectedSmileGame changes
+  useEffect(() => {
+    console.log("Selected Smile game changed:", selectedSmileGame);
+  }, [selectedSmileGame]);
 
   const createProductMutation = useMutation({
     mutationFn: (data: FormData) => api.products.create(data),
@@ -701,57 +738,71 @@ export function ProductForm({
                           <FormControl className="flex-1">
                             <Select
                               onValueChange={(value) => {
-                                if (
-                                  value !== "_placeholder" &&
-                                  value !== "_loading"
-                                ) {
-                                  field.onChange(value);
-                                  // Clear replenishment items when changing game
-                                  if (!value) {
-                                    form.setValue("replenishment", [
-                                      {
-                                        price: 0,
-                                        amount: 0,
-                                        type: "",
-                                        sku: "",
-                                      },
-                                    ]);
-                                  }
-                                } else {
-                                  field.onChange("");
+                                console.log("Selected game value:", value);
+                                console.log(
+                                  "Current smileProducts:",
+                                  smileProducts
+                                );
+                                // Set the value directly without any conditions
+                                field.onChange(value);
+                                form.setValue("smile_api_game", value, {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                });
+
+                                // Only reset replenishment items for valid game IDs (not placeholders)
+                                if (value && !value.startsWith("_")) {
+                                  console.log(
+                                    "Resetting replenishment items for new game"
+                                  );
+                                  form.setValue("replenishment", [
+                                    { price: 0, amount: 0, type: "", sku: "" },
+                                  ]);
+
+                                  // Force refetch SKUs for the new game
+                                  setTimeout(() => {
+                                    refetchSmileSKUs();
+                                  }, 100);
                                 }
                               }}
                               value={field.value || "_placeholder"}
                             >
-                              <SelectTrigger>
-                                <SelectValue
-                                  placeholder="Выберите игру"
-                                  className="text-primary"
-                                />
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Выберите игру" />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem
+                                  key="_placeholder"
                                   value="_placeholder"
-                                  className="text-primary"
+                                  disabled
                                 >
                                   Выберите игру
                                 </SelectItem>
                                 {loadingSmileProducts ? (
-                                  <SelectItem value="_loading" disabled>
+                                  <SelectItem
+                                    key="_loading"
+                                    value="_loading"
+                                    disabled
+                                  >
                                     Загрузка...
                                   </SelectItem>
-                                ) : Array.isArray(smileProducts) ? (
+                                ) : Array.isArray(smileProducts) &&
+                                  smileProducts.length > 0 ? (
                                   smileProducts.map((game: any) => (
                                     <SelectItem
-                                      key={game.id}
-                                      value={game.id}
-                                      className="text-primary"
+                                      key={game.apiGame}
+                                      value={game.apiGame}
                                     >
                                       {game.name}
                                     </SelectItem>
                                   ))
                                 ) : (
-                                  <SelectItem value="_no_games" disabled>
+                                  <SelectItem
+                                    key="_no_games"
+                                    value="_no_games"
+                                    disabled
+                                  >
                                     Нет доступных игр
                                   </SelectItem>
                                 )}
@@ -762,7 +813,10 @@ export function ProductForm({
                             type="button"
                             variant="outline"
                             size="icon"
-                            onClick={() => refetchSmileProducts()}
+                            onClick={() => {
+                              console.log("Refreshing Smile products");
+                              refetchSmileProducts();
+                            }}
                             disabled={loadingSmileProducts}
                             title="Обновить список игр"
                           >
@@ -1201,8 +1255,6 @@ export function ProductForm({
                   </Button>
                 </div>
               </div>
-
-              {/* Show loading state when fetching SKUs */}
               {productType === "Smile" &&
                 selectedSmileGame &&
                 loadingSmileSKUs && (
@@ -1213,8 +1265,6 @@ export function ProductForm({
                     </p>
                   </div>
                 )}
-
-              {/* Show message when no SKUs are available */}
               {productType === "Smile" &&
                 selectedSmileGame &&
                 !loadingSmileSKUs &&

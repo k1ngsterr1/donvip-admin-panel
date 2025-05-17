@@ -1,50 +1,57 @@
-import { api } from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
+import { extractErrorMessage } from "@/lib/utils";
 
-export interface Feedback {
-  id: number;
-  user: string;
-  userInitials: string;
-  product: string;
-  reaction: boolean;
-  text: string;
-  date: string;
-}
-
-export interface FeedbackListParams {
-  limit?: number;
-  page?: number;
-}
-
-export const FeedbackService = {
-  /**
-   * Get all feedback with pagination
-   */
-  getFeedback: async (params?: FeedbackListParams) => {
-    const response = await api.feedback.getAll(params);
-    return response.data;
+export const feedbackService = {
+  // Get all feedbacks
+  getAll: async (page = 1, limit = 10): Promise<any> => {
+    try {
+      const response = await apiClient.get(
+        `/feedback?page=${page}&limit=${limit}`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
   },
 
-  /**
-   * Get feedback by ID
-   */
-  getFeedbackById: async (id: number) => {
-    const response = await api.feedback.getById(id);
-    return response.data;
+  // Get feedback by id
+  getById: async (id: number): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/feedback/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
   },
 
-  /**
-   * Update feedback
-   */
-  updateFeedback: async (id: number, data: any) => {
-    const response = await api.feedback.update(id, data);
-    return response.data;
+  // Accept feedback
+  accept: async (id: number): Promise<any> => {
+    try {
+      const response = await apiClient.patch(`/feedback/${id}/accept`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
   },
 
-  /**
-   * Delete feedback
-   */
-  deleteFeedback: async (id: number) => {
-    const response = await api.feedback.delete(id);
-    return response.data;
+  // Decline feedback
+  decline: async (id: number): Promise<any> => {
+    try {
+      const response = await apiClient.patch(`/feedback/${id}/decline`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
+  },
+
+  getAccepted: async (page = 1, limit = 10): Promise<any> => {
+    try {
+      const response = await apiClient.get("/feedback/list/accepted", {
+        params: { page, limit },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
   },
 };

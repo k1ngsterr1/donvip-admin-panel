@@ -10,6 +10,7 @@ import {
   Tag,
   Package,
   LogOut,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -40,6 +41,11 @@ const navItems = [
     title: "Купоны",
     href: "/dashboard/coupons",
     icon: Tag,
+  },
+  {
+    title: "Отзывы",
+    href: "/dashboard/feedback",
+    icon: Star,
   },
 ];
 
