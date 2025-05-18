@@ -181,7 +181,7 @@ function FeedbackItem({ feedback }: any) {
           className="text-destructive hover:text-destructive-foreground hover:bg-destructive/90"
         >
           <XCircle className="mr-2 h-4 w-4" />
-          Decline
+          Отклонить
         </Button>
         <Button
           variant="default"
@@ -191,7 +191,7 @@ function FeedbackItem({ feedback }: any) {
           className="bg-success hover:bg-success/90 text-success-foreground"
         >
           <CheckCircle className="mr-2 h-4 w-4" />
-          Accept
+          Принять
         </Button>
       </CardFooter>
     </Card>

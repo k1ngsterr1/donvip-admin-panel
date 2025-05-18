@@ -12,7 +12,7 @@ export default function FeedbackPage() {
 
   return (
     <div className="container py-10">
-      <h1 className="text-3xl font-bold mb-6">Feedback Management</h1>
+      <h1 className="text-3xl font-bold mb-6">Управление отзывами</h1>
 
       <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
