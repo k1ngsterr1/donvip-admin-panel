@@ -95,7 +95,7 @@ export const api = {
 
   products: {
     getAll: (params?: { limit?: number; page?: number; search?: string }) =>
-      apiClient.get("/product", { params }),
+      apiClient.get("/product/all", { params }),
 
     getById: (id: number) => apiClient.get(`/product/${id}`),
 

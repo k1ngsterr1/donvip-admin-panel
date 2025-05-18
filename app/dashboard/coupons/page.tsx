@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CouponForm } from "@/components/coupons/coupon-form";
+import { CouponFormWithGameSelector } from "@/components/coupons/coupon-form";
 
 export default function CouponsPage() {
   const [open, setOpen] = useState(false);
@@ -44,7 +44,7 @@ export default function CouponsPage() {
                 Заполните форму для создания нового промокода.
               </DialogDescription>
             </DialogHeader>
-            <CouponForm onSuccess={() => setOpen(false)} />
+            <CouponFormWithGameSelector onSuccess={() => setOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>

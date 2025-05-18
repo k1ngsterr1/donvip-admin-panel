@@ -41,7 +41,7 @@ export const ProductService = {
   getProducts: async (
     params?: ProductListParams
   ): Promise<ProductListResponse> => {
-    const response = await api.products.getAll(params);
+    const response = await api.products.getAll(params); // ✅ Just pass directly
     return response.data;
   },
 
