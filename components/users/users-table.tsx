@@ -59,6 +59,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { StatusBadge } from "../status-badge/status-badge";
 
 export function UsersTable() {
   const [page, setPage] = useState(1);
@@ -340,7 +341,6 @@ export function UsersTable() {
               <TableHead className="font-medium">Статус</TableHead>
               <TableHead className="font-medium ">Заказы</TableHead>
               <TableHead className="font-medium">Сумма расходов</TableHead>
-              <TableHead className="font-medium">Средний чек</TableHead>
               <TableHead className="text-right font-medium">Действия</TableHead>
             </TableRow>
           </TableHeader>
@@ -375,16 +375,9 @@ export function UsersTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      user.is_banned === true ? "destructive" : "secondary"
-                    }
-                    className={
-                      user.is_banned === true ? "destructive" : "secondary"
-                    }
-                  >
-                    {user.is_banned === true ? "Заблокирован" : "Разблокирован"}
-                  </Badge>
+                  <StatusBadge
+                    status={user.is_banned ? "Заблокирован" : "Разблокирован"}
+                  />
                 </TableCell>
                 <TableCell className="text-primary">
                   {user.orderCount || "0"}
@@ -394,9 +387,7 @@ export function UsersTable() {
                     {user.totalSpent?.toLocaleString() || "0"}₽
                   </span>
                 </TableCell>
-                <TableCell className="text-primary">
-                  {user.averageCheck?.toLocaleString() || "0"}₽
-                </TableCell>
+
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -117,7 +117,6 @@ export function AnalyticsOverview({
             </Card>
           </div>
         )}
-
         <Card className="dashboard-card">
           <CardHeader>
             <CardTitle>Обзор продаж</CardTitle>

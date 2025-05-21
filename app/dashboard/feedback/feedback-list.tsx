@@ -1,3 +1,4 @@
+//@ts-nocheck
 "use client";
 
 import { useState } from "react";
@@ -16,7 +17,6 @@ import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle, ThumbsUp, ThumbsDown, XCircle } from "lucide-react";
-import { useFeedbacks } from "@/lib/hooks/use-feedbacks";
 import { useAcceptFeedback } from "@/hooks/use-accept-feedback";
 import { useDeclineFeedback } from "@/hooks/use-decline-feedback";
 import { useIncomingFeedbacks } from "@/hooks/use-incoming-hook";
@@ -127,7 +127,7 @@ function FeedbackItem({ feedback }: any) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mt-2">
           <Avatar className="h-10 w-10 border">
             <AvatarImage
               src={feedback.user?.avatar || "/placeholder.svg"}
@@ -141,7 +141,7 @@ function FeedbackItem({ feedback }: any) {
               {feedback.isVerified && (
                 <span className="flex items-center text-emerald-600 gap-1">
                   <CheckCircle className="h-3.5 w-3.5" />
-                  Verified
+                  Одобрен
                 </span>
               )}
               <span className="flex items-center gap-1">

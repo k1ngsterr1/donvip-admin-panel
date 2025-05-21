@@ -230,12 +230,10 @@ export function OrdersTable() {
                                   </span>
                                 </div>
                               )}
-                              {(order.serverId !== null || order.server_id) && (
+                              {order.serverId && order.serverId !== "N/A" && (
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                   <Server className="h-3 w-3" />
-                                  <span>
-                                    {order.serverId || order.server_id}
-                                  </span>
+                                  <span>{order.serverId}</span>
                                 </div>
                               )}
                             </div>

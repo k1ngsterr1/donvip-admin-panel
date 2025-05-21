@@ -40,6 +40,15 @@ export const feedbackService = {
     }
   },
 
+  delete: async (id: number): Promise<any> => {
+    try {
+      const response = await apiClient.delete(`/feedback/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
+  },
+
   getAccepted: async (page = 1, limit = 10): Promise<any> => {
     try {
       const response = await apiClient.get("/feedback/list/accepted", {
