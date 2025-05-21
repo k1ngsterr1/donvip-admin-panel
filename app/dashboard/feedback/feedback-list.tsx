@@ -19,11 +19,12 @@ import { CheckCircle, ThumbsUp, ThumbsDown, XCircle } from "lucide-react";
 import { useFeedbacks } from "@/lib/hooks/use-feedbacks";
 import { useAcceptFeedback } from "@/hooks/use-accept-feedback";
 import { useDeclineFeedback } from "@/hooks/use-decline-feedback";
+import { useIncomingFeedbacks } from "@/hooks/use-incoming-hook";
 
 export function FeedbackList() {
   const [page, setPage] = useState(1);
   const limit = 10;
-  const { data, isLoading, isError, error } = useFeedbacks(page, limit);
+  const { data, isLoading, isError, error } = useIncomingFeedbacks(page, limit);
   const { toast } = useToast();
 
   const handlePageChange = (newPage: number) => {
@@ -53,7 +54,7 @@ export function FeedbackList() {
   }
 
   // Check if data exists and has the expected structure
-  if (!data?.data?.length) {
+  if (data?.items.length) {
     return (
       <Card>
         <CardContent className="pt-6 text-center">
@@ -66,16 +67,16 @@ export function FeedbackList() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {data.data.map((feedback: any) => (
+        {data?.items.map((feedback: any) => (
           <FeedbackItem key={feedback.id} feedback={feedback} />
         ))}
       </div>
 
-      {data.lastPage > 1 && (
+      {data?.items.lastPage > 1 && (
         <Pagination
           //@ts-ignore
           currentPage={page}
-          totalPages={data.lastPage}
+          totalPages={data?.items.lastPage}
           onPageChange={handlePageChange}
         />
       )}

@@ -282,7 +282,7 @@ export function UsersTable() {
             value={limit.toString()}
             onValueChange={(value) => setLimit(Number(value))}
           >
-            <SelectTrigger className="w-[120px] bg-primary">
+            <SelectTrigger className="w-[120px] text-white bg-primary">
               <SelectValue placeholder="10 на стр." />
             </SelectTrigger>
             <SelectContent>
@@ -406,15 +406,12 @@ export function UsersTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuLabel className="text-primary">
+                      <DropdownMenuLabel className="text-primary cursor-pointer">
                         Действия
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleViewUser(user.id)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Просмотр
-                      </DropdownMenuItem>
                       <DropdownMenuItem
+                        className="cursor-pointer"
                         onClick={() => handleViewPaymentHistory(user.id)}
                       >
                         <History className="mr-2 h-4 w-4" />

@@ -2,7 +2,6 @@ import { apiClient } from "@/lib/api-client";
 import { extractErrorMessage } from "@/lib/utils";
 
 export const feedbackService = {
-  // Get all feedbacks
   getAll: async (page = 1, limit = 10): Promise<any> => {
     try {
       const response = await apiClient.get(
@@ -14,7 +13,6 @@ export const feedbackService = {
     }
   },
 
-  // Get feedback by id
   getById: async (id: number): Promise<any> => {
     try {
       const response = await apiClient.get(`/feedback/${id}`);
@@ -24,7 +22,6 @@ export const feedbackService = {
     }
   },
 
-  // Accept feedback
   accept: async (id: number): Promise<any> => {
     try {
       const response = await apiClient.patch(`/feedback/${id}/accept`);
@@ -34,7 +31,6 @@ export const feedbackService = {
     }
   },
 
-  // Decline feedback
   decline: async (id: number): Promise<any> => {
     try {
       const response = await apiClient.patch(`/feedback/${id}/decline`);
@@ -47,6 +43,17 @@ export const feedbackService = {
   getAccepted: async (page = 1, limit = 10): Promise<any> => {
     try {
       const response = await apiClient.get("/feedback/list/accepted", {
+        params: { page, limit },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
+  },
+
+  getIncoming: async (page = 1, limit = 10): Promise<any> => {
+    try {
+      const response = await apiClient.get("/feedback/list/incoming", {
         params: { page, limit },
       });
       return response.data;

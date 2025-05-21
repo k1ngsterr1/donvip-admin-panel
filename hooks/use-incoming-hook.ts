@@ -32,12 +32,11 @@ type FormattedData = {
   currentPage: number;
 };
 
-export function useAcceptedFeedbacks(page = 1, limit = 10) {
+export function useIncomingFeedbacks(page = 1, limit = 10) {
   return useQuery({
-    queryKey: [...feedbackKeys.lists(), "accepted", { page, limit }],
-    queryFn: () => feedbackService.getAccepted(page, limit),
+    queryKey: [...feedbackKeys.lists(), "incoming", { page, limit }],
+    queryFn: () => feedbackService.getIncoming(page, limit),
     select: (data: ApiResponse): FormattedData => {
-      // Transform the API response to match the expected format
       return {
         items: data.data,
         totalPages: data.lastPage,

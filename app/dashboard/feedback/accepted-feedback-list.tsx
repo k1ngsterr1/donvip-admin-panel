@@ -1,5 +1,4 @@
 //@ts-nocheck
-
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,9 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ThumbsUp } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 import { useAcceptedFeedbacks } from "@/hooks/use-accepted-hooks";
 
 export function AcceptedFeedbackList() {
@@ -40,8 +41,7 @@ export function AcceptedFeedbackList() {
       <Card className="bg-destructive/10">
         <CardContent className="pt-6">
           <p className="text-destructive">
-            Error loading accepted feedbacks:{" "}
-            {error?.message || "Unknown error"}
+            Error loading feedbacks: {error?.message || "Unknown error"}
           </p>
         </CardContent>
       </Card>
@@ -52,7 +52,7 @@ export function AcceptedFeedbackList() {
     return (
       <Card>
         <CardContent className="pt-6 text-center">
-          <p className="text-muted-foreground">No accepted feedbacks found</p>
+          <p className="text-muted-foreground">No feedbacks found</p>
         </CardContent>
       </Card>
     );
@@ -82,33 +82,55 @@ function AcceptedFeedbackItem({ feedback }: any) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>{feedback.title}</CardTitle>
-          <Badge
-            variant="outline"
-            className="bg-success/10 text-success border-success"
-          >
-            <CheckCircle className="mr-1 h-3 w-3" /> Accepted
-          </Badge>
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 overflow-hidden rounded-md">
+              {feedback.product.image ? (
+                <Image
+                  src={feedback.product.image || "/placeholder.svg"}
+                  alt={feedback.product.name}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-secondary flex items-center justify-center">
+                  <span className="text-xs text-muted-foreground">No img</span>
+                </div>
+              )}
+            </div>
+            <CardTitle className="text-base">{feedback.product.name}</CardTitle>
+          </div>
+          {feedback.isVerified && (
+            <Badge
+              variant="outline"
+              className="bg-success/10 text-success border-success"
+            >
+              <CheckCircle className="mr-1 h-3 w-3" /> Verified
+            </Badge>
+          )}
         </div>
-        <CardDescription>
-          From: {feedback.author} •{" "}
-          {new Date(feedback.createdAt).toLocaleDateString()}
+        <CardDescription className="flex items-center mt-2">
+          <Avatar className="h-6 w-6 mr-2">
+            <AvatarImage src={feedback.user.avatar || ""} />
+            <AvatarFallback className="text-xs">
+              {feedback.user.first_name ? feedback.user.first_name[0] : "U"}
+            </AvatarFallback>
+          </Avatar>
+          User #{feedback.user_id}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p>{feedback.content}</p>
-        {feedback.category && (
-          <div className="mt-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-              {feedback.category}
-            </span>
-          </div>
-        )}
-        {feedback.acceptedAt && (
-          <p className="text-sm text-muted-foreground mt-4">
-            Accepted on: {new Date(feedback.acceptedAt).toLocaleDateString()}
-          </p>
-        )}
+        <p className="text-sm">
+          {feedback.text || "No feedback text provided"}
+        </p>
+        <div className="flex items-center mt-4 text-sm text-muted-foreground">
+          <ThumbsUp
+            className={`h-4 w-4 mr-1 ${
+              feedback.reaction ? "fill-primary" : ""
+            }`}
+          />
+          <span>{feedback.reaction ? "Liked" : "Not liked"}</span>
+          <span>Product ID: {feedback.product_id}</span>
+        </div>
       </CardContent>
     </Card>
   );
@@ -119,10 +141,16 @@ function AcceptedFeedbackSkeleton() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <Skeleton className="h-6 w-2/3" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-5 w-40" />
+          </div>
           <Skeleton className="h-5 w-24" />
         </div>
-        <Skeleton className="h-4 w-1/3 mt-2" />
+        <div className="flex items-center mt-2">
+          <Skeleton className="h-6 w-6 rounded-full mr-2" />
+          <Skeleton className="h-4 w-20" />
+        </div>
       </CardHeader>
       <CardContent>
         <Skeleton className="h-4 w-full mb-2" />

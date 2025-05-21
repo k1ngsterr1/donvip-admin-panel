@@ -1,4 +1,5 @@
-import { api } from "@/lib/api-client";
+import { api, apiClient } from "@/lib/api-client";
+import { useQuery } from "@tanstack/react-query";
 
 export interface User {
   id: string;
@@ -59,6 +60,11 @@ export const UserService = {
     return response.data;
   },
 
+  getUserCount: async (): Promise<number> => {
+    const response = await apiClient.get("/user/count"); // or your direct backend URL
+    return response.data.total;
+  },
+
   /**
    * Update user profile
    */
@@ -90,4 +96,15 @@ export const UserService = {
     const response = await api.users.getUserPayments(id, params);
     return response.data;
   },
+};
+
+export const useUserCount = () => {
+  return useQuery({
+    queryKey: ["user-count"],
+    queryFn: async () => {
+      const count = await UserService.getUserCount();
+      return count;
+    },
+    staleTime: 1000 * 60 * 5, // optional: cache for 5 mins
+  });
 };
