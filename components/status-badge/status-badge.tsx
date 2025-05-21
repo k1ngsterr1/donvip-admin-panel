@@ -32,10 +32,12 @@ export function StatusBadge({
       case "Активен":
       case "Active":
       case "Активный":
+      case "Paid":
         return "bg-green-100 text-green-800 border-green-200";
       case "processing":
       case "Обработка":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "failed":
       case "Заблокирован":
       case "Отключен":
@@ -102,6 +104,23 @@ export function StatusBadge({
     }
   };
 
+  const getStatusLabel = (status: string): string => {
+    const translations: Record<string, string> = {
+      Paid: "Оплачено",
+      Processing: "В обработке",
+      Pending: "Ожидание",
+      Cancelled: "Отменен",
+      Failed: "Ошибка",
+      Used: "Использован",
+      Expired: "Истек",
+      Active: "Активный",
+      Disabled: "Отключен",
+      New: "Новый",
+    };
+
+    return translations[status] || status;
+  };
+
   return (
     <span
       className={cn(
@@ -111,7 +130,7 @@ export function StatusBadge({
       )}
     >
       {showIcon && getStatusIcon(status)}
-      {status}
+      {getStatusLabel(status)}
     </span>
   );
 }

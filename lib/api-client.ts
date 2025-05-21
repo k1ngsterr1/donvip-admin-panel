@@ -123,8 +123,13 @@ export const api = {
       apiClient.get("/order", { params }),
     getById: (id: number) => apiClient.get(`/order/${id}`),
     create: (data: any) => apiClient.post("/order", data),
-    delete: (id: number) => apiClient.delete(`/order/${id}`),
+    delete: (id: number) => apiClient.delete(`/order/delete/${id}`),
     getAnalytics: () => apiClient.get("/order/analytics"),
+    getAllForAdmin: (params?: {
+      limit?: number;
+      page?: number;
+      search?: string;
+    }) => apiClient.get("/order/admin/history", { params }),
   },
 
   // Coupons
