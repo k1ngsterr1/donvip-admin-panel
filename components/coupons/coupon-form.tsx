@@ -133,7 +133,10 @@ export function CouponFormWithGameSelector({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
         <FormField
           control={form.control}
           name="code"
@@ -210,33 +213,37 @@ export function CouponFormWithGameSelector({
         />
 
         {/* Game Selection using our simplified GameSelector component */}
-        <FormField
-          control={form.control}
-          name="gameIds"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-primary">Игры</FormLabel>
-              <FormDescription>
-                Выберите игры, к которым будет применяться этот промокод. Если
-                не выбрано ни одной игры, промокод будет применяться ко всем
-                играм.
-              </FormDescription>
+        <div className="col-span-1 md:col-span-2">
+          <FormField
+            control={form.control}
+            name="gameIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-primary">Игры</FormLabel>
+                <FormDescription>
+                  Выберите игры, к которым будет применяться этот промокод. Если
+                  не выбрано ни одной игры, промокод будет применяться ко всем
+                  играм.
+                </FormDescription>
 
-              <GameSelector
-                selectedGameIds={field.value || []}
-                onChange={(gameIds) => field.onChange(gameIds)}
-                disabled={isSubmitting}
-              />
+                <GameSelector
+                  selectedGameIds={field.value || []}
+                  onChange={(gameIds) => field.onChange(gameIds)}
+                  disabled={isSubmitting}
+                />
 
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        <Button type="submit" className="bg-primary" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {couponId ? "Обновить промокод" : "Создать промокод"}
-        </Button>
+        <div className="col-span-1 md:col-span-2 flex justify-end">
+          <Button type="submit" className="bg-primary" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {couponId ? "Обновить промокод" : "Создать промокод"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

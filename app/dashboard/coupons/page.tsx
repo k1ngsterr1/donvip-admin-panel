@@ -35,7 +35,7 @@ export default function CouponsPage() {
               Добавить промокод
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[825px]">
             <DialogHeader>
               <DialogTitle className="text-primary">
                 Создать промокод
