@@ -381,10 +381,9 @@ export function UsersTable() {
                 </TableCell>
                 <TableCell className="text-primary">
                   <span className="font-medium">
-                    {user.totalSpent?.toLocaleString() || "0"}₽
+                    {(user.totalSpent ? user.totalSpent / 100 : 0).toFixed(2)}₽
                   </span>
                 </TableCell>
-
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -428,8 +427,6 @@ export function UsersTable() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Pagination */}
       <div className="flex items-center justify-between py-4">
         <div className="text-sm text-muted-foreground">
           Страница {page} из {totalPages}

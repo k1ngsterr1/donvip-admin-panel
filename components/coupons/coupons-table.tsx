@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 "use client";
 
 import { useState } from "react";
@@ -31,8 +31,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CouponForm } from "@/components/coupons/coupon-form";
 import { StatusBadge } from "../status-badge/status-badge";
+import { CouponFormWithGameSelector } from "./coupon-form";
 
 // Define coupon status enum to match Prisma schema
 export enum CouponStatus {
@@ -251,13 +251,12 @@ export function CouponsTable() {
             </DialogDescription>
           </DialogHeader>
           {editingCoupon && (
-            <CouponForm
+            <CouponFormWithGameSelector
               couponId={editingCoupon.id}
               defaultValues={{
                 code: editingCoupon.code,
                 discount: editingCoupon.discount,
                 limit: editingCoupon.limit || undefined,
-                status: editingCoupon.status,
               }}
               onSuccess={handleEditSuccess}
             />
