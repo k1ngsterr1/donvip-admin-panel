@@ -1,7 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,10 +16,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal, ThumbsUp, ThumbsDown, Trash } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, ThumbsUp, ThumbsDown, Trash } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 // Mock data - in a real app, this would come from your API
 const feedbacks = [
@@ -61,14 +68,14 @@ const feedbacks = [
     text: "Very satisfied with my purchase.",
     date: "2023-06-11",
   },
-]
+];
 
 export function FeedbackTable() {
-  const [data, setData] = useState(feedbacks)
+  const [data, setData] = useState(feedbacks);
 
   const handleDelete = (id: number) => {
-    setData(data.filter((feedback) => feedback.id !== id))
-  }
+    setData(data.filter((feedback) => feedback.id !== id));
+  };
 
   return (
     <div className="rounded-md border">
@@ -129,5 +136,5 @@ export function FeedbackTable() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

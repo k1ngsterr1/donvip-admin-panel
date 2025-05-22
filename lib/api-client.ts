@@ -4,7 +4,8 @@ import axios from "axios";
 // Create axios instance with default config
 export const apiClient = axios.create({
   // baseURL: "http://localhost:3000",
-  baseURL: "https://don-vip.online/api/api",
+  // baseURL: "https://don-vip.online/api/api",
+  baseURL: "https://don-vip-backend-production.up.railway.app/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -124,7 +125,9 @@ export const api = {
     getById: (id: number) => apiClient.get(`/order/${id}`),
     create: (data: any) => apiClient.post("/order", data),
     delete: (id: number) => apiClient.delete(`/order/delete/${id}`),
-    getAnalytics: () => apiClient.get("/order/analytics"),
+    getAnalytics: () => apiClient.get("/order/admin/analytics"),
+    getMonthlyPayments: () => apiClient.get("/order/admin/monthly-sales"),
+
     getAllForAdmin: (params?: {
       limit?: number;
       page?: number;

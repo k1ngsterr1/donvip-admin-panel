@@ -103,6 +103,7 @@ export default function DashboardPage() {
     totalOrders: analyticsData?.totalOrders || 0,
     totalRevenue: analyticsData?.totalRevenue || 0,
     productCount: productsData || 0,
+    packages: analyticsData?.packages,
   };
 
   // Prepare recent activity data by combining orders and user registrations
@@ -135,7 +136,7 @@ export default function DashboardPage() {
         title: "Новый пользователь",
         description: `${user.name || user.identifier} создал аккаунт`,
         time: user.createdAt,
-        initials: "test",
+        initials: user.identifier?.charAt(0).toUpperCase() || "",
       });
     });
   }

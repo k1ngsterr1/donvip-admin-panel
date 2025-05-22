@@ -67,6 +67,11 @@ export const OrderService = {
     return response.data;
   },
 
+  getMonthlyPayments: async (): Promise<any> => {
+    const response = await api.orders.getMonthlyPayments();
+    return response.data;
+  },
+
   getAllForAdmin: async ({ page, limit }: { page: number; limit: number }) => {
     const res = await api.orders.getAllForAdmin();
     return res.data;

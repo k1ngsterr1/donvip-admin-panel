@@ -56,10 +56,8 @@ export function Sidebar() {
 
   const handleLogout = () => {
     try {
-      // Call the logout function from the auth store
       logout();
 
-      // Show success toast
       toast({
         title: "Выход выполнен",
         description: "Вы успешно вышли из системы",

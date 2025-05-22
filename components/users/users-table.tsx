@@ -326,11 +326,6 @@ export function UsersTable() {
         </Alert>
       )}
 
-      {/* Users count */}
-      <div className="text-sm text-muted-foreground mb-2">
-        Показано {displayUsers.length} из {totalUsers} пользователей
-      </div>
-
       {/* Table */}
       <div className="rounded-md border shadow-sm overflow-hidden">
         <Table>
@@ -339,13 +334,14 @@ export function UsersTable() {
               <TableHead className="font-medium">Пользователь</TableHead>
               <TableHead className="font-medium">Контакт</TableHead>
               <TableHead className="font-medium">Статус</TableHead>
+              <TableHead className="font-medium">Роль</TableHead>
               <TableHead className="font-medium ">Заказы</TableHead>
               <TableHead className="font-medium">Сумма расходов</TableHead>
               <TableHead className="text-right font-medium">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayUsers.map((user) => (
+            {displayUsers.map((user: any) => (
               <TableRow
                 key={user.id}
                 className="hover:bg-muted/30 transition-colors"
@@ -379,6 +375,7 @@ export function UsersTable() {
                     status={user.is_banned ? "Заблокирован" : "Разблокирован"}
                   />
                 </TableCell>
+                <TableCell>{user.role}</TableCell>
                 <TableCell className="text-primary">
                   {user.orderCount || "0"}
                 </TableCell>
