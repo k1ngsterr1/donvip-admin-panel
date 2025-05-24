@@ -3,9 +3,7 @@ import axios from "axios";
 
 // Create axios instance with default config
 export const apiClient = axios.create({
-  // baseURL: "http://localhost:3000",
-  // baseURL: "https://don-vip.online/api/api",
-  baseURL: "https://don-vip-backend-production.up.railway.app/api",
+  baseURL: "https://api.don-vip.online/api",
   headers: {
     "Content-Type": "application/json",
   },
