@@ -41,7 +41,7 @@ export function FeedbackList() {
     );
   }
 
-  if (isError) {
+  if (isError || !data) {
     return (
       <Card className="bg-destructive/10">
         <CardContent className="pt-6">
@@ -53,8 +53,8 @@ export function FeedbackList() {
     );
   }
 
-  // Check if data exists and has the expected structure
-  if (data?.items.length) {
+  // Check if items exists and has content
+  if (!data.items || data.items.length === 0) {
     return (
       <Card>
         <CardContent className="pt-6 text-center">
@@ -67,16 +67,16 @@ export function FeedbackList() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {data?.items.map((feedback: any) => (
+        {data.items.map((feedback: any) => (
           <FeedbackItem key={feedback.id} feedback={feedback} />
         ))}
       </div>
 
-      {data?.items.lastPage > 1 && (
+      {data.totalPages > 1 && (
         <Pagination
           //@ts-ignore
-          currentPage={page}
-          totalPages={data?.items.lastPage}
+          currentPage={data.currentPage}
+          totalPages={data.totalPages}
           onPageChange={handlePageChange}
         />
       )}

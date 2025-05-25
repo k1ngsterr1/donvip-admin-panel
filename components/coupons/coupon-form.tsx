@@ -21,6 +21,21 @@ import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api-client";
 import { Loader2 } from "lucide-react";
 import { GameSelector } from "./game-selector";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Define the status enum to match backend requirements
+const CouponStatus = {
+  Active: "Active",
+  Used: "Used",
+  Expired: "Expired",
+  Disabled: "Disabled",
+} as const;
 
 const formSchema = z.object({
   code: z
@@ -40,7 +55,10 @@ const formSchema = z.object({
       message: "Discount cannot exceed 100%.",
     }),
   limit: z.coerce.number().optional(),
-  gameIds: z.array(z.number()).default([]),
+  status: z.enum(["Active", "Used", "Expired", "Disabled"], {
+    required_error: "Status is required",
+  }),
+  // We'll handle gameIds separately and not include it in the form submission
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -51,7 +69,7 @@ interface CouponFormProps {
     code: string;
     discount: number;
     limit?: number;
-    gameIds?: number[];
+    status?: "Active" | "Used" | "Expired" | "Disabled";
   };
   onSuccess?: () => void;
 }
@@ -63,14 +81,17 @@ export function CouponFormWithGameSelector({
 }: CouponFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedGameIds, setSelectedGameIds] = useState<number[]>(
+    defaultValues?.gameIds || []
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultValues || {
-      code: "",
-      discount: 10,
-      limit: undefined,
-      gameIds: [],
+    defaultValues: {
+      code: defaultValues?.code || "",
+      discount: defaultValues?.discount || 10,
+      limit: defaultValues?.limit,
+      status: defaultValues?.status || "Active",
     },
   });
 
@@ -84,11 +105,14 @@ export function CouponFormWithGameSelector({
       });
       if (onSuccess) onSuccess();
       form.reset();
+      setSelectedGameIds([]);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error creating coupon:", error);
       toast({
         title: "Error",
-        description: "Failed to create coupon. Please try again.",
+        description:
+          "Failed to create coupon. Please check the form and try again.",
         variant: "destructive",
       });
     },
@@ -110,10 +134,12 @@ export function CouponFormWithGameSelector({
       });
       if (onSuccess) onSuccess();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error updating coupon:", error);
       toast({
         title: "Error",
-        description: "Failed to update coupon. Please try again.",
+        description:
+          "Failed to update coupon. Please check the form and try again.",
         variant: "destructive",
       });
     },
@@ -124,10 +150,17 @@ export function CouponFormWithGameSelector({
 
   function onSubmit(values: FormValues) {
     setIsSubmitting(true);
+
+    // We don't include gameIds in the submission as per the validation error
+    const submissionData = {
+      ...values,
+      // Explicitly remove gameIds from the submission
+    };
+
     if (couponId) {
-      updateCouponMutation.mutate(values);
+      updateCouponMutation.mutate(submissionData);
     } else {
-      createCouponMutation.mutate(values);
+      createCouponMutation.mutate(submissionData);
     }
   }
 
@@ -212,30 +245,52 @@ export function CouponFormWithGameSelector({
           )}
         />
 
-        {/* Game Selection using our simplified GameSelector component */}
+        {/* Add the required status field */}
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-primary">Статус</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="text-gray-600">
+                    <SelectValue placeholder="Выберите статус" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Active">Активный</SelectItem>
+                  <SelectItem value="Used">Использованный</SelectItem>
+                  <SelectItem value="Expired">Истекший</SelectItem>
+                  <SelectItem value="Disabled">Отключенный</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>Текущий статус промокода.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Game Selection - we'll keep the UI but not include it in form submission */}
         <div className="col-span-1 md:col-span-2">
-          <FormField
-            control={form.control}
-            name="gameIds"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-primary">Игры</FormLabel>
-                <FormDescription>
-                  Выберите игры, к которым будет применяться этот промокод. Если
-                  не выбрано ни одной игры, промокод будет применяться ко всем
-                  играм.
-                </FormDescription>
+          <div className="space-y-2">
+            <FormLabel className="text-primary">Игры</FormLabel>
+            <FormDescription>
+              <span className="text-yellow-600 font-medium ">
+                Примечание: Игры можно выбрать только при создании промокода.
+                При редактировании промокода игры не могут быть изменены.
+              </span>
+            </FormDescription>
 
-                <GameSelector
-                  selectedGameIds={field.value || []}
-                  onChange={(gameIds) => field.onChange(gameIds)}
-                  disabled={isSubmitting}
-                />
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Keep the UI but disable it */}
+            <div className="opacity-50 pointer-events-none">
+              <GameSelector
+                selectedGameIds={selectedGameIds}
+                onChange={setSelectedGameIds}
+                disabled={true}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="col-span-1 md:col-span-2 flex justify-end">
