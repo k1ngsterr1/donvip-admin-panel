@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Create axios instance with default config
 export const apiClient = axios.create({
-  baseURL: "https://api.don-vip.online/api",
+  baseURL: "http://localhost:6001/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -151,9 +151,15 @@ export const api = {
   feedback: {
     getAll: (params?: { limit?: number; page?: number }) =>
       apiClient.get("/feedback", { params }),
+    getIncoming: (params?: { limit?: number; page?: number }) =>
+      apiClient.get("/feedback/list/incoming", { params }),
+    getAccepted: (params?: { limit?: number; page?: number }) =>
+      apiClient.get("/feedback/list/accepted", { params }),
     getById: (id: number) => apiClient.get(`/feedback/${id}`),
     update: (id: number, data: any) => apiClient.patch(`/feedback/${id}`, data),
     delete: (id: number) => apiClient.delete(`/feedback/${id}`),
+    accept: (id: number) => apiClient.patch(`/feedback/${id}/accept`),
+    decline: (id: number) => apiClient.patch(`/feedback/${id}/decline`),
   },
 
   // Payments
