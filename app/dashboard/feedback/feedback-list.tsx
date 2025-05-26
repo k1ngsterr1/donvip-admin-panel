@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Star, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Check, X, Trash2 } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Feedback {
   id: number;
@@ -135,15 +135,20 @@ export function FeedbackList({ onRefresh }: FeedbackListProps) {
     }
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-        }`}
-      />
-    ));
+  const renderReaction = (reaction: number) => {
+    if (reaction > 0) {
+      return (
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100">
+          <span className="text-green-600 text-lg">👍</span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100">
+          <span className="text-red-600 text-lg">👎</span>
+        </div>
+      );
+    }
   };
 
   if (loading) {
@@ -193,7 +198,7 @@ export function FeedbackList({ onRefresh }: FeedbackListProps) {
                 </div>
               </div>
               <div className="flex items-center space-x-1">
-                {renderStars(feedback.reaction)}
+                {renderReaction(feedback.reaction)}
               </div>
             </div>
           </CardHeader>
