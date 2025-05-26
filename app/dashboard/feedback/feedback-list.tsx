@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, Eye, EyeOff } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +34,7 @@ export function FeedbackList({ onRefresh }: FeedbackListProps) {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [expandedFeedback, setExpandedFeedback] = useState<number | null>(null);
   const { toast } = useToast();
 
   const fetchFeedbacks = async () => {
@@ -151,6 +152,15 @@ export function FeedbackList({ onRefresh }: FeedbackListProps) {
     }
   };
 
+  const toggleFeedbackExpansion = (feedbackId: number) => {
+    setExpandedFeedback(expandedFeedback === feedbackId ? null : feedbackId);
+  };
+
+  const truncateText = (text: string, maxLength = 200) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -179,77 +189,108 @@ export function FeedbackList({ onRefresh }: FeedbackListProps) {
 
   return (
     <div className="space-y-4">
-      {feedbacks.map((feedback) => (
-        <Card key={feedback.id}>
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center space-x-3">
-                <Avatar>
-                  <AvatarImage src={feedback.user.avatar || undefined} />
-                  <AvatarFallback>
-                    {feedback.user.first_name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{feedback.user.first_name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {feedback.product.name}
-                  </p>
+      {feedbacks.map((feedback) => {
+        const isExpanded = expandedFeedback === feedback.id;
+        const shouldShowToggle = feedback.text.length > 200;
+
+        return (
+          <Card key={feedback.id} className="w-full">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <Avatar className="flex-shrink-0">
+                    <AvatarImage src={feedback.user.avatar || undefined} />
+                    <AvatarFallback>
+                      {feedback.user.first_name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">
+                      {feedback.user.first_name}
+                    </p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {feedback.product.name}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1 flex-shrink-0">
+                  {renderReaction(feedback.reaction)}
                 </div>
               </div>
-              <div className="flex items-center space-x-1">
-                {renderReaction(feedback.reaction)}
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="mb-4">
+                <p className="text-sm whitespace-pre-wrap break-words overflow-hidden">
+                  {isExpanded ? feedback.text : truncateText(feedback.text)}
+                </p>
+                {shouldShowToggle && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleFeedbackExpansion(feedback.id)}
+                    className="mt-2 h-auto p-0 text-blue-600 hover:text-blue-700"
+                  >
+                    {isExpanded ? (
+                      <>
+                        <EyeOff className="w-4 h-4 mr-1" />
+                        Свернуть
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4 mr-1" />
+                        Показать полностью
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm mb-4">{feedback.text}</p>
 
-            <div className="flex items-center justify-between">
-              <Badge variant="outline">
-                {feedback.isVerified === null
-                  ? "На модерации"
-                  : feedback.isVerified
-                  ? "Принят"
-                  : "Отклонен"}
-              </Badge>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <Badge variant="outline" className="flex-shrink-0">
+                  {feedback.isVerified === null
+                    ? "На модерации"
+                    : feedback.isVerified
+                    ? "Принят"
+                    : "Отклонен"}
+                </Badge>
 
-              <div className="flex space-x-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleAccept(feedback.id)}
-                  disabled={actionLoading === feedback.id}
-                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Принять
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDecline(feedback.id)}
-                  disabled={actionLoading === feedback.id}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Отклонить
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDelete(feedback.id)}
-                  disabled={actionLoading === feedback.id}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Удалить
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleAccept(feedback.id)}
+                    disabled={actionLoading === feedback.id}
+                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Принять
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDecline(feedback.id)}
+                    disabled={actionLoading === feedback.id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Отклонить
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDelete(feedback.id)}
+                    disabled={actionLoading === feedback.id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Удалить
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
 
       {totalPages > 1 && (
         <div className="flex justify-center space-x-2 mt-6">
