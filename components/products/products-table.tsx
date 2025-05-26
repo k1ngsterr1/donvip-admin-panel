@@ -26,7 +26,6 @@ import {
   Edit,
   Trash2,
   Search,
-  PlusCircle,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
@@ -79,7 +78,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Link from "next/link";
 import { usePopupStore } from "@/lib/popup-store";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -204,6 +202,7 @@ export function ProductsTable() {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
+    // Ensure replenishment options have default values
   };
 
   const handleCreateOrder = (productId: number) => {
@@ -264,7 +263,17 @@ export function ProductsTable() {
         replenishmentStr = replenishmentStr.replace(/,\s*\}/g, "}");
         replenishmentStr = replenishmentStr.replace(/,\s*\]/g, "]");
 
-        return JSON.parse(replenishmentStr);
+        const parsed = JSON.parse(replenishmentStr);
+        // Ensure each item has proper default values
+        return Array.isArray(parsed)
+          ? parsed.map((item) => ({
+              amount: item.amount !== undefined ? Number(item.amount) : 1, // Convert to number and default to 1
+              type: item.type || "",
+              price: item.price !== undefined ? Number(item.price) : 0, // Convert to number and default to 0
+              sku: item.sku || "",
+              ...item,
+            }))
+          : [];
       } catch (e) {
         console.error(
           "Error parsing replenishment data:",
@@ -452,6 +461,8 @@ export function ProductsTable() {
                                   product.images[0] ||
                                   "/placeholder.svg?height=48&width=48&query=product" ||
                                   "/placeholder.svg" ||
+                                  "/placeholder.svg" ||
+                                  "/placeholder.svg" ||
                                   "/placeholder.svg"
                                 }
                                 alt={product.name}
@@ -469,6 +480,8 @@ export function ProductsTable() {
                               src={
                                 product.image ||
                                 "/placeholder.svg?height=48&width=48&query=product" ||
+                                "/placeholder.svg" ||
+                                "/placeholder.svg" ||
                                 "/placeholder.svg" ||
                                 "/placeholder.svg"
                               }
@@ -733,6 +746,8 @@ export function ProductsTable() {
                                           product.image ||
                                           "/placeholder.svg?height=96&width=96&query=product" ||
                                           "/placeholder.svg" ||
+                                          "/placeholder.svg" ||
+                                          "/placeholder.svg" ||
                                           "/placeholder.svg"
                                         }
                                         alt={product.name}
@@ -752,6 +767,7 @@ export function ProductsTable() {
                                         <Image
                                           src={
                                             product.currency_image ||
+                                            "/placeholder.svg" ||
                                             "/placeholder.svg"
                                           }
                                           alt={
@@ -982,11 +998,19 @@ export function ProductsTable() {
                 images:
                   editingProduct.images ||
                   (editingProduct.image ? [editingProduct.image] : []),
-                replenishment: parseReplenishment(editingProduct),
-                smile_api_game: editingProduct.smile_api_game,
-                type: editingProduct.type,
-                currency_image: editingProduct.currency_image,
-                currency_name: editingProduct.currency_name,
+                replenishment: parseReplenishment(editingProduct).map(
+                  (item) => ({
+                    amount: item.amount || 1,
+                    type: item.type || "",
+                    price: item.price || 0,
+                    sku: item.sku || "",
+                    error: item.error,
+                  })
+                ),
+                smile_api_game: editingProduct.smile_api_game || "", // Preserve original value without modification
+                type: editingProduct.type || "",
+                currency_image: editingProduct.currency_image || "",
+                currency_name: editingProduct.currency_name || "",
               }}
               onSuccess={handleEditSuccess}
             />

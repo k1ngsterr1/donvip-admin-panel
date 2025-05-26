@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Star, Trash2 } from "lucide-react";
+import { api } from "@/api/client";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/lib/api-client";
 
 interface Feedback {
   id: number;

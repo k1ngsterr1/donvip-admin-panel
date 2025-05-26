@@ -154,7 +154,7 @@ export function ProductForm({
       name: defaultValues?.name || "",
       description: defaultValues?.description || "",
       replenishment: defaultValues?.replenishment || [
-        { price: 0, amount: 0, type: "", sku: "" },
+        { price: 0, amount: 1, type: "", sku: "" }, // Changed amount from 0 to 1
       ],
       smile_api_game: defaultValues?.smile_api_game || "",
       type: defaultValues?.type || undefined,
@@ -306,60 +306,12 @@ export function ProductForm({
     enabled: !!selectedSmileGame && productType === "Smile", // Only fetch when a game is selected and product type is Smile
   });
 
-  // Effect to update replenishment items when SKUs are loaded
-  useEffect(() => {
-    if (smileSKUs && smileSKUs.length > 0 && productType === "Smile") {
-      // Map SKUs to replenishment items
-      const replenishmentItems = smileSKUs.map((sku: SmileSKUItem) => ({
-        price: sku.price,
-        amount: sku.amount,
-        type: "diamonds", // Default type, can be adjusted based on game
-        sku: sku.id,
-      }));
-
-      // Update form with new replenishment items
-      form.setValue("replenishment", replenishmentItems);
-    }
-  }, [smileSKUs, form, productType]);
-
   // Effect to clear smile_api_game when product type changes
   useEffect(() => {
     if (productType !== "Smile") {
       form.setValue("smile_api_game", "");
     }
   }, [productType, form]);
-
-  // Effect to update replenishment item fields when a SKU is selected
-  useEffect(() => {
-    if (productType === "Smile" && smileSKUs?.length > 0) {
-      const replenishmentItems = form.getValues("replenishment");
-
-      // For each replenishment item, if it has a SKU, update its other fields
-      const updatedItems = replenishmentItems.map((item) => {
-        if (item.sku) {
-          const matchingSku = smileSKUs.find((sku: any) => sku.id === item.sku);
-          if (matchingSku) {
-            return {
-              ...item,
-              amount: matchingSku.amount,
-              price: matchingSku.price,
-              type: matchingSku.name || "diamonds",
-            };
-          }
-        }
-        return item;
-      });
-
-      form.setValue("replenishment", updatedItems);
-    }
-  }, [
-    form
-      .watch("replenishment")
-      .map((item) => item.sku)
-      .join(","),
-    smileSKUs,
-    productType,
-  ]);
 
   // Add tracking effect for selectedSmileGame changes
   useEffect(() => {
@@ -615,7 +567,7 @@ export function ProductForm({
     const currentItems = form.getValues("replenishment");
     form.setValue("replenishment", [
       ...currentItems,
-      { price: 0, amount: 0, type: "", sku: "" },
+      { price: 0, amount: 1, type: "", sku: "" }, // Changed amount from 0 to 1
     ]);
   };
 
@@ -754,12 +706,9 @@ export function ProductForm({
                                 // Only reset replenishment items for valid game IDs (not placeholders)
                                 if (value && !value.startsWith("_")) {
                                   console.log(
-                                    "Resetting replenishment items for new game"
+                                    "Selected new game, fetching SKUs"
                                   );
-                                  form.setValue("replenishment", [
-                                    { price: 0, amount: 0, type: "", sku: "" },
-                                  ]);
-
+                                  // Don't reset replenishment items - let user manage them
                                   // Force refetch SKUs for the new game
                                   setTimeout(() => {
                                     refetchSmileSKUs();
@@ -1308,6 +1257,7 @@ export function ProductForm({
                           <Input
                             type="number"
                             min={1}
+                            defaultValue={1} // Add this line
                             {...field}
                             className="text-primary"
                           />
