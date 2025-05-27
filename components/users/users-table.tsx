@@ -393,9 +393,6 @@ export function UsersTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuLabel className="text-primary cursor-pointer">
-                        Действия
-                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="cursor-pointer"

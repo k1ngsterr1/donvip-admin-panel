@@ -217,7 +217,6 @@ export function CouponsTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Действия</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleEdit(coupon)}>
                         <Edit className="mr-2 h-4 w-4" />

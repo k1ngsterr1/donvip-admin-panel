@@ -11,8 +11,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl flex items-center justify-center gap-2 font-bold tracking-tight text-primary">
-            Пользователи{" "}
-            <span className="text-lg text-gray-600 mt-1"> {count}</span>
+            Пользователи - {count}
           </h1>
           <p className="text-muted-foreground">Управляйте пользователями</p>
         </div>
