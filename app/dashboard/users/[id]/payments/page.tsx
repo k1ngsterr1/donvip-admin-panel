@@ -194,7 +194,10 @@ export default function UserPaymentsPage() {
                       </TableCell>
                       <TableCell>{payment.product}</TableCell>
                       <TableCell className="font-medium">
-                        {payment.price?.toLocaleString() || 0}₽
+                        {typeof payment.price === "number"
+                          ? payment.price.toFixed(2)
+                          : "0.00"}
+                        ₽
                       </TableCell>
                       <TableCell>
                         {payment.payment_method || payment.method || "—"}
