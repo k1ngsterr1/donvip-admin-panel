@@ -361,7 +361,7 @@ export function UsersTable() {
                           ? `${user.first_name || ""} ${
                               user.last_name || ""
                             }`.trim()
-                          : user.identifier || "—"}
+                          : "АНОНИМ"}
                       </p>
                       <p className="text-sm text-muted-foreground ">
                         ID: {user.id}
