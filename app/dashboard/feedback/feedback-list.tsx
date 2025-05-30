@@ -265,16 +265,7 @@ export function FeedbackList({ onRefresh }: FeedbackListProps) {
                     <Check className="w-4 h-4 mr-1" />
                     Принять
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDecline(feedback.id)}
-                    disabled={actionLoading === feedback.id}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Отклонить
-                  </Button>
+
                   <Button
                     size="sm"
                     variant="outline"
