@@ -59,7 +59,7 @@ export default function UserPaymentsPage() {
 
   const payments = paymentsData?.data || [];
   const totalPages = paymentsData?.meta?.totalPages || 1;
-  const totalItems = paymentsData?.meta?.totalItems || 0;
+  const totalItems = paymentsData?.meta?.total || 0;
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -116,10 +116,6 @@ export default function UserPaymentsPage() {
             История платежей пользователя
           </h1>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Обновить
-        </Button>
       </div>
 
       <Card>
