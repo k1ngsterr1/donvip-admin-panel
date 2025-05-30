@@ -39,12 +39,6 @@ export default function UserPaymentsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  // Fetch user details
-  const { data: user, isLoading: isLoadingUser } = useQuery({
-    queryKey: ["user", userId],
-    queryFn: () => UserService.getUserById(userId),
-  });
-
   // Fetch user payments
   const {
     data: paymentsData,
@@ -111,18 +105,6 @@ export default function UserPaymentsPage() {
     router.back();
   };
 
-  if (isLoadingUser) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-4 mb-6">
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-8 w-64" />
-        </div>
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -142,9 +124,7 @@ export default function UserPaymentsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">
-            {user?.identifier || `Пользователь #${userId}`}
-          </CardTitle>
+          <CardTitle className="text-xl">{`Пользователь #${userId}`}</CardTitle>
           <CardDescription>
             ID: {userId} • Всего платежей: {totalItems}
           </CardDescription>
