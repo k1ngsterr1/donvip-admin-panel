@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Download, RefreshCw, AlertCircle } from "lucide-react";
+import { ChevronLeft, AlertCircle } from "lucide-react";
 import { UserService } from "@/services";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,8 +58,8 @@ export default function UserPaymentsPage() {
   });
 
   const payments = paymentsData?.data || [];
-  const totalPages = paymentsData?.meta?.totalPages || 1;
-  const totalItems = paymentsData?.meta?.total || 0;
+  const totalItems = paymentsData?.total || 0;
+  const totalPages = totalItems > 0 ? Math.ceil(totalItems / limit) : 1;
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
