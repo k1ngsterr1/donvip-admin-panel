@@ -233,7 +233,6 @@ export function UsersTable() {
     );
   }
 
-  // Check if there are no users after filtering
   if (displayUsers.length === 0) {
     return (
       <Card className="w-full">
@@ -266,7 +265,6 @@ export function UsersTable() {
 
   return (
     <div className="space-y-4">
-      {/* Search and filters */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
         <div className="relative w-full sm:w-auto flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -358,7 +356,13 @@ export function UsersTable() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-primary">
-                      <p className="font-medium">{user.identifier || "—"}</p>
+                      <p className="font-medium">
+                        {user.first_name || user.last_name
+                          ? `${user.first_name || ""} ${
+                              user.last_name || ""
+                            }`.trim()
+                          : user.identifier || "—"}
+                      </p>
                       <p className="text-sm text-muted-foreground ">
                         ID: {user.id}
                       </p>
