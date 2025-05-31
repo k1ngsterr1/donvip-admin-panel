@@ -195,11 +195,7 @@ export function ProductRow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel className="text-primary">
-                  Действия
-                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-
                 <DropdownMenuItem
                   onClick={() => onEdit(product)}
                   className="text-primary"

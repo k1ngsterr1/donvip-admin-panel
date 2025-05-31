@@ -195,22 +195,8 @@ export default function DashboardPage() {
           Обзор статистики и недавней активности.
         </p>
       </div>
-
       <DashboardStats isLoading={isLoading} data={statsData} />
-
       <AnalyticsOverview isLoading={isLoadingAnalytics} data={analyticsData} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Недавняя активность</CardTitle>
-          <CardDescription>
-            Последние заказы и регистрации пользователей.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RecentActivity isLoading={isLoading} activities={limitedActivity} />
-        </CardContent>
-      </Card>
     </div>
   );
 }

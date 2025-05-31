@@ -129,8 +129,6 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Действия</DropdownMenuLabel>
-              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => handleDelete(order.orderId || order.id)}
                 className="text-destructive focus:text-destructive"
