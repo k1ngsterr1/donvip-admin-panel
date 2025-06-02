@@ -440,19 +440,37 @@ export function UsersTable() {
             onClick={() => handlePageChange(page - 1)}
             disabled={page <= 1}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 text-white" />
             <span className="sr-only">Предыдущая страница</span>
           </Button>
           <div className="flex items-center gap-1">
+            {/* Show first page if not in visible range */}
+            {totalPages > 5 && page > 3 && (
+              <>
+                <Button
+                  variant={page === 1 ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => handlePageChange(1)}
+                >
+                  1
+                </Button>
+                {page > 4 && <span className="mx-1">...</span>}
+              </>
+            )}
+            {/* Show up to 5 pages around current */}
             {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-              // Show pages around current page
               let pageNum = page - 2 + i;
-              if (pageNum <= 0) pageNum = i + 1;
-              if (pageNum > totalPages) return null;
-
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else {
+                if (page <= 3) pageNum = i + 1;
+                else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
+              }
+              if (pageNum < 1 || pageNum > totalPages) return null;
               return (
                 <Button
-                  key={i}
+                  key={pageNum}
                   variant={pageNum === page ? "default" : "outline"}
                   size="sm"
                   className="h-8 w-8 p-0"
@@ -462,11 +480,12 @@ export function UsersTable() {
                 </Button>
               );
             })}
+            {/* Show last page if not in visible range */}
             {totalPages > 5 && page < totalPages - 2 && (
               <>
-                <span className="mx-1">...</span>
+                {page < totalPages - 3 && <span className="mx-1">...</span>}
                 <Button
-                  variant="outline"
+                  variant={page === totalPages ? "default" : "outline"}
                   size="sm"
                   className="h-8 w-8 p-0"
                   onClick={() => handlePageChange(totalPages)}
@@ -483,7 +502,7 @@ export function UsersTable() {
             onClick={() => handlePageChange(page + 1)}
             disabled={page >= totalPages}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 text-white" />
             <span className="sr-only">Следующая страница</span>
           </Button>
         </div>
