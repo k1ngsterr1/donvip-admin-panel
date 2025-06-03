@@ -106,6 +106,7 @@ export function OrdersTable() {
                       <TableHead>Cтоимость</TableHead>
                       <TableHead>Детали</TableHead>
                       <TableHead>Метод</TableHead>
+                      <TableHead>Продукт</TableHead>
                       <TableHead>Статус</TableHead>
                       <TableHead>Статус провайдера</TableHead>
                       <TableHead>Дата</TableHead>
@@ -131,7 +132,6 @@ export function OrdersTable() {
                   </TableBody>
                 </Table>
               </div>
-
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                   Страница {page} из {totalPages}

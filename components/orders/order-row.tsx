@@ -98,6 +98,21 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
         {order.method?.toUpperCase() ?? "—"}
       </TableCell>
       <TableCell>
+        <div className="flex items-center gap-2">
+          {order.product?.image && (
+            <img
+              src={order.product.image}
+              alt={order.product.name}
+              className="w-8 h-8 rounded-md object-cover"
+            />
+          )}
+          <span className="text-sm font-medium text-primary">
+            {order.product?.name ?? "—"}
+          </span>
+        </div>
+      </TableCell>
+
+      <TableCell>
         <StatusBadge status={order.status} />
       </TableCell>
       <TableCell>
