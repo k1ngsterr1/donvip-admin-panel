@@ -24,6 +24,7 @@ import { api } from "@/lib/api-client";
 import { toast } from "@/hooks/use-toast";
 import { Order } from "./order";
 import { format } from "date-fns";
+import { Badge } from "../ui/badge";
 
 interface OrderRowProps {
   order: Order;
@@ -98,6 +99,25 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
       </TableCell>
       <TableCell>
         <StatusBadge status={order.status} />
+      </TableCell>
+      <TableCell>
+        {order.response ? (
+          (() => {
+            try {
+              const parsed = JSON.parse(order.response);
+              return (
+                <div className="space-y-1 flex flex-col items-center justify-center">
+                  <Badge variant="outline">{parsed.type}</Badge>
+                  <StatusBadge status={parsed.message} />
+                </div>
+              );
+            } catch (e) {
+              return <div className="text-red-500 text-sm">-</div>;
+            }
+          })()
+        ) : (
+          <div className="text-gray-400 text-sm">No response</div>
+        )}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5 text-muted-foreground">

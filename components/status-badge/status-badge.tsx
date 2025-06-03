@@ -31,6 +31,7 @@ export function StatusBadge({
       case "Выполнен":
       case "Активен":
       case "Active":
+      case "ok":
       case "Активный":
       case "Paid":
       case "Разблокирован":

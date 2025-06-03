@@ -93,7 +93,6 @@ export function OrdersTable() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
-
           {isLoading ? (
             <OrdersTableSkeleton />
           ) : (
@@ -108,6 +107,7 @@ export function OrdersTable() {
                       <TableHead>Детали</TableHead>
                       <TableHead>Метод</TableHead>
                       <TableHead>Статус</TableHead>
+                      <TableHead>Статус провайдера</TableHead>
                       <TableHead>Дата</TableHead>
                       <TableHead className="text-right">Действия</TableHead>
                     </TableRow>

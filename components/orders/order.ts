@@ -14,6 +14,7 @@ export interface Order {
   method: string;
   date: string;
   customer: string;
+  response?: any;
   user?: {
     id: string;
   };
