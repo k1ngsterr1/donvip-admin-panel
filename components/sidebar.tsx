@@ -1,3 +1,8 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   BarChart3,
   Users,
@@ -7,76 +12,82 @@ import {
   LogOut,
   Star,
   Settings,
+  University,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/lib/auth-store";
 
-interface NavItem {
-  title: string;
-  href: string;
-  icon: any;
-}
-
-const navItems: NavItem[] = [
-  {
-    title: "Обзор",
-    href: "/dashboard",
-    icon: BarChart3,
-  },
-  {
-    title: "Пользователи",
-    href: "/dashboard/users",
-    icon: Users,
-  },
-  {
-    title: "Заказы",
-    href: "/dashboard/orders",
-    icon: ShoppingCart,
-  },
-  {
-    title: "Продукты",
-    href: "/dashboard/products",
-    icon: Package,
-  },
-  {
-    title: "Категории",
-    href: "/dashboard/categories",
-    icon: Tag,
-  },
-  {
-    title: "Отзывы",
-    href: "/dashboard/feedback",
-    icon: Star,
-  },
-  {
-    title: "Тех. работы",
-    href: "/dashboard/tech-work",
-    icon: Settings,
-  },
-  {
-    title: "Выйти",
-    href: "/logout",
-    icon: LogOut,
-  },
+const navItems = [
+  { title: "Обзор", href: "/dashboard", icon: BarChart3 },
+  { title: "Пользователи", href: "/dashboard/users", icon: Users },
+  { title: "Продукты", href: "/dashboard/products", icon: Package },
+  { title: "Заказы", href: "/dashboard/orders", icon: ShoppingCart },
+  { title: "Купоны", href: "/dashboard/coupons", icon: Tag },
+  { title: "Отзывы", href: "/dashboard/feedback", icon: Star },
+  { title: "Банки", href: "/dashboard/banks", icon: University },
+  { title: "Тех. работы", href: "/dashboard/tech-work", icon: Settings },
 ];
 
-export const Sidebar = () => {
+export function Sidebar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    try {
+      logout();
+      toast({
+        title: "Выход выполнен",
+        description: "Вы успешно вышли из системы.",
+      });
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast({
+        title: "Ошибка выхода",
+        description: "Не удалось выйти из системы.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="w-64 bg-gray-100 h-screen p-4">
-      <h1 className="text-2xl font-bold mb-4">Панель управления</h1>
-      <nav>
-        <ul>
-          {navItems.map((item) => (
-            <li key={item.title} className="mb-2">
-              <a
+    <div className="hidden border-r bg-background lg:block w-64">
+      <div className="flex h-full max-h-screen flex-col gap-2">
+        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 font-semibold text-primary"
+          >
+            <Package className="h-6 w-6" />
+            <span>Admin Panel</span>
+          </Link>
+        </div>
+        <div className="flex-1">
+          <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.title}
                 href={item.href}
-                className="flex items-center p-2 rounded hover:bg-gray-200"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                  pathname === item.href && "bg-muted text-primary"
+                )}
               >
-                <item.icon className="mr-2 h-4 w-4" />
+                <item.icon className="h-4 w-4" />
                 {item.title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-auto p-4">
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Выйти
+          </Button>
+        </div>
+      </div>
     </div>
   );
-};
+}

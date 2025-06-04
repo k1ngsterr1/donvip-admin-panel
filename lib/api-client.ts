@@ -1,16 +1,42 @@
 import { AuthService } from "@/services"; // Assuming AuthService is correctly defined elsewhere
 import axios, { type AxiosResponse } from "axios";
 
+// --- START: Bank-specific Interfaces ---
+export interface Bank {
+  id: number;
+  name: string;
+  isActive: boolean;
+  createdAt: string; // ISO Date string
+  updatedAt: string; // ISO Date string
+}
+
+export interface PaginatedBanksResponse {
+  data: Bank[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CreateBankPayload {
+  name: string;
+  isActive?: boolean;
+}
+
+export interface UpdateBankPayload {
+  name?: string;
+  isActive?: boolean;
+}
+// --- END: Bank-specific Interfaces ---
+
+// Existing interfaces (WebsiteTechWorkInfoFromApi, UpdateTechWorksDto)
 export interface WebsiteTechWorkInfoFromApi {
   id: number;
   isTechWorks: boolean;
-  techWorksEndsAt?: string | null; // ISO string
-  // name?: string; // Optional: if your getById endpoint returns it
+  techWorksEndsAt?: string | null;
 }
-
 export interface UpdateTechWorksDto {
   isTechWorks?: boolean;
-  techWorksEndsAt?: string | null; // ISO string or null
+  techWorksEndsAt?: string | null;
 }
 
 export const apiClient = axios.create({
@@ -62,9 +88,8 @@ apiClient.interceptors.response.use(
 );
 
 export const api = {
-  apiClient, // Export the client for direct use if needed
+  apiClient,
 
-  // Auth
   auth: {
     login: (data: { identifier: string; password: string }) =>
       apiClient.post("/auth/login", data),
@@ -73,7 +98,6 @@ export const api = {
     refresh: (token: string) => apiClient.post("/auth/refresh", { token }),
   },
 
-  // Users
   users: {
     getAll: (params?: { limit?: number; page?: number }) =>
       apiClient.get("/user", { params }),
@@ -86,24 +110,19 @@ export const api = {
       apiClient.get(`/user/${id}/payments`, { params }),
   },
 
-  // Products
   products: {
     getAll: (params?: { limit?: number; page?: number; search?: string }) =>
       apiClient.get("/product/all", { params }),
     getById: (id: number) => apiClient.get(`/product/${id}`),
-    create: (data: FormData) => {
-      return apiClient.post("/product", data);
-    },
-    update: (id: number, data: FormData) => {
-      return apiClient.patch(`/product/${id}`, data);
-    },
+    create: (data: FormData) => apiClient.post("/product", data),
+    update: (id: number, data: FormData) =>
+      apiClient.patch(`/product/${id}`, data),
     delete: (id: number) => apiClient.delete(`/product/${id}`),
     getSmileProducts: () => apiClient.get("/product/smile"),
     getSmileSKU: (apiGame: string) =>
       apiClient.get(`/product/smile/${apiGame}`),
   },
 
-  // Orders
   orders: {
     getAll: (params?: { limit?: number; page?: number }) =>
       apiClient.get("/order", { params }),
@@ -119,7 +138,6 @@ export const api = {
     }) => apiClient.get("/order/admin/history", { params }),
   },
 
-  // Coupons
   coupons: {
     getAll: () => apiClient.get("/coupon/all"),
     create: (data: { code: string; discount: number; limit?: number }) =>
@@ -133,7 +151,6 @@ export const api = {
       apiClient.get("/coupon/check", { params: { code } }),
   },
 
-  // Feedback
   feedback: {
     getAll: (params?: { limit?: number; page?: number }) =>
       apiClient.get("/feedback", { params }),
@@ -148,7 +165,6 @@ export const api = {
     decline: (id: number) => apiClient.patch(`/feedback/${id}/decline`),
   },
 
-  // Payments
   payments: {
     createPagsmilePayin: (data: { amount: string; order_id: string }) =>
       apiClient.post("/payment/pagsmile/payin", data),
@@ -156,7 +172,6 @@ export const api = {
       apiClient.get(`/payment/tbank/url/${orderId}`),
   },
 
-  // TechWorks
   techworks: {
     getById: (id: number): Promise<AxiosResponse<WebsiteTechWorkInfoFromApi>> =>
       apiClient.get(`/techworks/${id}`),
@@ -169,5 +184,24 @@ export const api = {
       id: number
     ): Promise<AxiosResponse<WebsiteTechWorkInfoFromApi>> =>
       apiClient.patch(`/techworks/${id}/tech-works/toggle`),
+  },
+
+  banks: {
+    getAll: (params?: {
+      page?: number;
+      limit?: number;
+      isActive?: boolean;
+    }): Promise<AxiosResponse<PaginatedBanksResponse>> =>
+      apiClient.get("/banks", { params }),
+    getById: (id: number): Promise<AxiosResponse<Bank>> =>
+      apiClient.get(`/banks/${id}`),
+    create: (data: CreateBankPayload): Promise<AxiosResponse<Bank>> =>
+      apiClient.post("/banks", data),
+    update: (
+      id: number,
+      data: UpdateBankPayload
+    ): Promise<AxiosResponse<Bank>> => apiClient.patch(`/banks/${id}`, data),
+    delete: (id: number): Promise<AxiosResponse<Bank>> =>
+      apiClient.delete(`/banks/${id}`), // Kept for API completeness
   },
 };
