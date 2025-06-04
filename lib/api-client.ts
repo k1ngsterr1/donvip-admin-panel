@@ -1,59 +1,55 @@
-import { AuthService } from "@/services";
-import axios from "axios";
+import { AuthService } from "@/services"; // Assuming AuthService is correctly defined elsewhere
+import axios, { type AxiosResponse } from "axios";
 
-// Create axios instance with default config
+export interface WebsiteTechWorkInfoFromApi {
+  id: number;
+  isTechWorks: boolean;
+  techWorksEndsAt?: string | null; // ISO string
+  // name?: string; // Optional: if your getById endpoint returns it
+}
+
+export interface UpdateTechWorksDto {
+  isTechWorks?: boolean;
+  techWorksEndsAt?: string | null; // ISO string or null
+}
+
 export const apiClient = axios.create({
-  baseURL: "https://api.don-vip.online/api",
+  baseURL: "http://localhost:6001/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add request interceptor for authentication
 apiClient.interceptors.request.use(
   (config) => {
-    // Get token from AuthService
     const token = AuthService.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // If the request contains FormData, remove the Content-Type header
-    // to let the browser set it automatically with the correct boundary
     if (config.data instanceof FormData) {
       config.headers["Content-Type"] = "multipart/form-data";
     }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor for token refresh
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    // If error is 401 and we haven't tried to refresh token yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
-        // Try to refresh token
         const refreshToken = AuthService.getRefreshToken();
         if (!refreshToken) {
           throw new Error("No refresh token available");
         }
-
         await AuthService.refreshToken(refreshToken);
-
         const newToken = AuthService.getAccessToken();
-
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, logout and redirect
         AuthService.clearTokens();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
@@ -61,12 +57,10 @@ apiClient.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );
 
-// API endpoints
 export const api = {
   apiClient, // Export the client for direct use if needed
 
@@ -92,26 +86,19 @@ export const api = {
       apiClient.get(`/user/${id}/payments`, { params }),
   },
 
+  // Products
   products: {
     getAll: (params?: { limit?: number; page?: number; search?: string }) =>
       apiClient.get("/product/all", { params }),
-
     getById: (id: number) => apiClient.get(`/product/${id}`),
-
     create: (data: FormData) => {
-      // Directly send the FormData object
       return apiClient.post("/product", data);
     },
-
     update: (id: number, data: FormData) => {
-      // Directly send the FormData object
       return apiClient.patch(`/product/${id}`, data);
     },
-
     delete: (id: number) => apiClient.delete(`/product/${id}`),
-
     getSmileProducts: () => apiClient.get("/product/smile"),
-
     getSmileSKU: (apiGame: string) =>
       apiClient.get(`/product/smile/${apiGame}`),
   },
@@ -125,7 +112,6 @@ export const api = {
     delete: (id: number) => apiClient.delete(`/order/delete/${id}`),
     getAnalytics: () => apiClient.get("/order/admin/analytics"),
     getMonthlyPayments: () => apiClient.get("/order/admin/monthly-sales"),
-
     getAllForAdmin: (params?: {
       limit?: number;
       page?: number;
@@ -168,5 +154,20 @@ export const api = {
       apiClient.post("/payment/pagsmile/payin", data),
     getTbankPaymentUrl: (orderId: string) =>
       apiClient.get(`/payment/tbank/url/${orderId}`),
+  },
+
+  // TechWorks
+  techworks: {
+    getById: (id: number): Promise<AxiosResponse<WebsiteTechWorkInfoFromApi>> =>
+      apiClient.get(`/techworks/${id}`),
+    updateTechWorks: (
+      id: number,
+      data: UpdateTechWorksDto
+    ): Promise<AxiosResponse<WebsiteTechWorkInfoFromApi>> =>
+      apiClient.patch(`/techworks/${id}/tech-works`, data),
+    toggleTechWorks: (
+      id: number
+    ): Promise<AxiosResponse<WebsiteTechWorkInfoFromApi>> =>
+      apiClient.patch(`/techworks/${id}/tech-works/toggle`),
   },
 };
