@@ -67,11 +67,23 @@ export default function TechWorkPage() {
 
   useEffect(() => {
     if (websiteStatus) {
+      let localDateTimeStringForInput = "";
+      if (websiteStatus.techWorksEndsAt) {
+        const dateObj = new Date(websiteStatus.techWorksEndsAt);
+        // Check if dateObj is valid
+        if (!isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear();
+          const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+          const day = dateObj.getDate().toString().padStart(2, "0");
+          const hours = dateObj.getHours().toString().padStart(2, "0"); // Gets local hours from the Date object
+          const minutes = dateObj.getMinutes().toString().padStart(2, "0"); // Gets local minutes
+
+          localDateTimeStringForInput = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+      }
       setUpdateData({
         isTechWorks: websiteStatus.isTechWorks,
-        techWorksEndsAt: websiteStatus.techWorksEndsAt
-          ? websiteStatus.techWorksEndsAt.substring(0, 16) // Format for datetime-local
-          : "", // Use empty string for null/undefined to clear input
+        techWorksEndsAt: localDateTimeStringForInput,
       });
     }
   }, [websiteStatus]);
