@@ -13,6 +13,7 @@ import {
   Star,
   Settings,
   University,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -20,6 +21,11 @@ import { useAuthStore } from "@/lib/auth-store";
 
 const navItems = [
   { title: "Обзор", href: "/dashboard", icon: BarChart3 },
+  {
+    title: "Баннеры",
+    href: "/dashboard/banner",
+    icon: Image,
+  },
   { title: "Пользователи", href: "/dashboard/users", icon: Users },
   { title: "Продукты", href: "/dashboard/products", icon: Package },
   { title: "Заказы", href: "/dashboard/orders", icon: ShoppingCart },

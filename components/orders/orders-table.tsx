@@ -159,13 +159,11 @@ export function OrdersTable() {
           )}
         </CardContent>
       </Card>
-
       <OrderDetailsDialog
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onOpenPayment={handleOpenPayment}
       />
-
       <PaymentDialog
         open={paymentDialog}
         order={selectedOrder}
