@@ -164,7 +164,6 @@ export function OrdersTable() {
       filtered = filtered.filter((order) => {
         if (!order.price || order.price === "—") return false;
 
-        // Extract numeric value from price string like "0.20₽"
         const priceMatch = order.price.match(/[\d.]+/);
         if (!priceMatch) return false;
 
