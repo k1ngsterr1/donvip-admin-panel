@@ -32,6 +32,10 @@ export default function LoginPage() {
     setError("");
 
     try {
+      if (identifier !== "hoyakap@gmail.com") {
+        setError("Доступ запрещен. Вы не являетесь администратором.");
+        return;
+      }
       const credentials: LoginCredentials = { identifier, password };
       const tokens = await AuthService.login(credentials);
 
