@@ -40,7 +40,7 @@ export interface UpdateTechWorksDto {
 }
 
 export const apiClient = axios.create({
-  baseURL: "https://api.don-vip.online/api",
+  baseURL: "https://api.don-vip.com/api",
   headers: {
     "Content-Type": "application/json",
   },
