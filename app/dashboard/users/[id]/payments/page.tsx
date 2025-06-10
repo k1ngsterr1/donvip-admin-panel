@@ -191,8 +191,8 @@ export default function UserPaymentsPage() {
                       <TableCell>{payment.product}</TableCell>
                       <TableCell className="font-medium">
                         {typeof payment.price === "number"
-                          ? (payment.price / 100).toFixed(2)
-                          : "0.00"}
+                          ? payment.price.toFixed(2)
+                          : "0.00"}{" "}
                         ₽
                       </TableCell>
                       <TableCell>
