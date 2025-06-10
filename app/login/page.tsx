@@ -32,7 +32,10 @@ export default function LoginPage() {
     setError("");
 
     try {
-      if (identifier !== "hoyakap@gmail.com") {
+      if (
+        identifier !== "hoyakap@gmail.com" &&
+        identifier !== "erlanzh.gg@gmail.com"
+      ) {
         setError("Доступ запрещен. Вы не являетесь администратором.");
         return;
       }
