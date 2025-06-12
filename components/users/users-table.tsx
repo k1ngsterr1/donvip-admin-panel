@@ -385,7 +385,7 @@ export function UsersTable() {
                 </TableCell>
                 <TableCell className="text-primary">
                   <span className="font-medium">
-                    {(user.totalSpent ? user.totalSpent / 100 : 0).toFixed(2)}₽
+                    {user.totalSpent.toFixed(2)}₽
                   </span>
                 </TableCell>
                 <TableCell className="text-right">

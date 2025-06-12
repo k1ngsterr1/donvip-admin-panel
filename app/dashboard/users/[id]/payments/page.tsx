@@ -190,10 +190,7 @@ export default function UserPaymentsPage() {
                       </TableCell>
                       <TableCell>{payment.product}</TableCell>
                       <TableCell className="font-medium">
-                        {typeof payment.price === "number"
-                          ? payment.price.toFixed(2)
-                          : "0.00"}{" "}
-                        ₽
+                        {payment.price} ₽
                       </TableCell>
                       <TableCell>
                         {payment.payment_method || payment.method || "—"}

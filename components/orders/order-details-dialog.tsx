@@ -54,13 +54,11 @@ export function OrderDetailsDialog({
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Товар</p>
-              <p className="font-medium text-primary">
-                {order.amount} {order.type}
-              </p>
+              <p className="font-medium text-primary">{order.product.name}</p>
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Цена</p>
-              <p className="font-medium text-primary">{order.price} ₽</p>
+              <p className="font-medium text-primary">{order.price}</p>
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">
@@ -68,7 +66,7 @@ export function OrderDetailsDialog({
               </p>
               <div className="flex items-center gap-1.5">
                 <CreditCard className="h-4 w-4 text-primary" />
-                <p className="font-medium">{order.payment}</p>
+                <p className="font-medium">{order.method}</p>
               </div>
             </div>
             <div className="space-y-1.5">
