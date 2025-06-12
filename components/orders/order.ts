@@ -1,6 +1,7 @@
 export interface Order {
   product: any;
   id: string;
+  itemId: number;
   orderId?: string;
   price: number;
   amount: number;

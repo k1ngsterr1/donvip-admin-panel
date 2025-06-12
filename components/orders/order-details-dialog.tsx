@@ -25,6 +25,21 @@ export function OrderDetailsDialog({
   onOpenPayment,
 }: OrderDetailsDialogProps) {
   if (!order) return null;
+  let replenishment = { amount: 0, price: 0 };
+
+  try {
+    const parsed = Array.isArray(order.product.replenishment)
+      ? order.product.replenishment
+      : JSON.parse(order.product.replenishment as any);
+
+    if (parsed && parsed[order.itemId]) {
+      replenishment = parsed[order.itemId];
+    }
+  } catch (err) {
+    console.log("Error when parsing replenishment in getAllForAdmin", err);
+  }
+  console.log("ORDER", order.product.replenishment);
+  console.log("REPLENISMENT", replenishment);
 
   return (
     <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
@@ -53,8 +68,10 @@ export function OrderDetailsDialog({
               <StatusBadge status={order.status} />
             </div>
             <div className="space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">Товар</p>
-              <p className="font-medium text-primary">{order.product.name}</p>
+              <p className="text-sm font-medium text-muted-foreground">Пакет</p>
+              <p className="font-medium text-primary">
+                {order.product.name} {replenishment.amount}
+              </p>
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Цена</p>
