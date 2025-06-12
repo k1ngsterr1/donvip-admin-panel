@@ -1335,7 +1335,7 @@ export function ProductForm({
                                         value={sku.id}
                                         className="text-primary"
                                       >
-                                        {sku.id} - {sku.amount}{" "}
+                                        {sku.code} - {sku.amount}{" "}
                                         {sku.name || "единиц"} (₽{sku.price})
                                       </SelectItem>
                                     ))
