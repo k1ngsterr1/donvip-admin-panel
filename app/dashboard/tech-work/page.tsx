@@ -266,7 +266,9 @@ export default function TechWorkPage() {
                             Автоматическое отключение:{" "}
                             {new Date(
                               websiteStatus.techWorksEndsAt
-                            ).toLocaleString()}
+                            ).toLocaleDateString("ru-RU", {
+                              timeZone: "Europe/Moscow",
+                            })}
                           </span>
                         )}
                     </p>
@@ -308,7 +310,11 @@ export default function TechWorkPage() {
                     {updateData.techWorksEndsAt && (
                       <p className="text-xs text-muted-foreground">
                         Выбранное время:{" "}
-                        {new Date(updateData.techWorksEndsAt).toLocaleString()}
+                        {new Date(
+                          updateData.techWorksEndsAt
+                        ).toLocaleDateString("ru-RU", {
+                          timeZone: "Europe/Moscow",
+                        })}
                       </p>
                     )}
                     <Button
@@ -361,7 +367,11 @@ export default function TechWorkPage() {
                   {websiteStatus.techWorksEndsAt && (
                     <p className="text-sm text-muted-foreground">
                       До:{" "}
-                      {new Date(websiteStatus.techWorksEndsAt).toLocaleString()}
+                      {new Date(
+                        websiteStatus.techWorksEndsAt
+                      ).toLocaleDateString("ru-RU", {
+                        timeZone: "Europe/Moscow",
+                      })}
                     </p>
                   )}
                 </>
