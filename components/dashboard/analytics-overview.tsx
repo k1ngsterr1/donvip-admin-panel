@@ -167,7 +167,7 @@ export function AnalyticsOverview() {
                     />
                     <Tooltip
                       formatter={(value: number) => [
-                        `₽${(value / 100).toLocaleString("ru-RU", {
+                        `₽${value.toLocaleString("ru-RU", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}`,

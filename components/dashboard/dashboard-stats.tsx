@@ -88,14 +88,12 @@ export function DashboardStats({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₽{(Number(statsData.totalRevenue) / 100).toFixed(2)}
+              ₽{Number(statsData.totalRevenue).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {statsData.totalOrders > 0
                 ? `В среднем ₽${(
-                    Number(statsData.totalRevenue) /
-                    100 /
-                    statsData.totalOrders
+                    Number(statsData.totalRevenue) / statsData.totalOrders
                   ).toFixed(2)} за заказ`
                 : "Нет данных о выручке"}
             </p>
