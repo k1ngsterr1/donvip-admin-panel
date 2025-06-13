@@ -80,6 +80,9 @@ const formSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
+  description_en: z.string().min(10, {
+    message: "Description must be at least 10 characters.",
+  }),
   image: z.union([fileSchema, z.instanceof(File).optional()]),
   replenishment: z
     .array(replenishmentItemSchema)
@@ -99,6 +102,7 @@ interface ProductFormProps {
   defaultValues?: {
     name: string;
     description: string;
+    description_en: string;
     image?: string;
     replenishment: Array<{
       price: number;
@@ -152,7 +156,9 @@ export function ProductForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: defaultValues?.name || "",
+      image: undefined as any,
       description: defaultValues?.description || "",
+      description_en: defaultValues?.description_en || "",
       replenishment: defaultValues?.replenishment || [
         { price: 0, amount: 1, type: "", sku: "" }, // Changed amount from 0 to 1
       ],
@@ -392,6 +398,7 @@ export function ProductForm({
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("description", values.description);
+      formData.append("description_en", values.description_en);
 
       // Only append image if a file is selected
       if (selectedFile instanceof File) {
@@ -436,6 +443,8 @@ export function ProductForm({
       for (const pair of formData.entries()) {
         console.log(pair[0], typeof pair[1], pair[1]);
       }
+
+      return;
 
       if (productId) {
         updateProductMutation.mutate(formData);
@@ -625,6 +634,26 @@ export function ProductForm({
                       <FormControl>
                         <Textarea
                           placeholder="Подробное описание товара..."
+                          className="min-h-[120px] text-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description_en"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Описание (EN)
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Подробное описание товара на анг..."
                           className="min-h-[120px] text-primary"
                           {...field}
                         />
