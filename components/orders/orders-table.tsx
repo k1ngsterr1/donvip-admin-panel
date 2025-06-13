@@ -143,6 +143,7 @@ export function OrdersTable() {
 
         // Parse the date from your API format "6/9/2025"
         const orderDate = new Date(order.date);
+        if (isNaN(orderDate.getTime())) return false; // <== Add this line
 
         if (filters.dateFrom) {
           const fromDate = new Date(filters.dateFrom);
