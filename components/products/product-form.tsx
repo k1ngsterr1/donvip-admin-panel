@@ -444,8 +444,6 @@ export function ProductForm({
         console.log(pair[0], typeof pair[1], pair[1]);
       }
 
-      return;
-
       if (productId) {
         updateProductMutation.mutate(formData);
       } else {
