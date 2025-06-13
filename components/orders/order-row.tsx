@@ -140,10 +140,13 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
           <span>
-            {format(
-              new Date(`${order.date} ${order.time}`),
-              "dd.MM.yyyy HH:mm"
-            )}
+            {(() => {
+              const dateTimeString = `${order.date} ${order.time}`;
+              const parsedDate = new Date(dateTimeString);
+              return isNaN(parsedDate.getTime())
+                ? "Неверная дата"
+                : format(parsedDate, "dd.MM.yyyy HH:mm");
+            })()}
           </span>
         </div>
       </TableCell>
