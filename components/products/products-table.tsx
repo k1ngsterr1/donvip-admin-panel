@@ -94,6 +94,7 @@ interface Product {
   id: number;
   name: string;
   description: string;
+  description_en: string;
   image?: string;
   images?: string[];
   replenishment: ReplenishmentOption[] | string;
@@ -995,6 +996,7 @@ export function ProductsTable() {
               defaultValues={{
                 name: editingProduct.name,
                 description: editingProduct.description,
+                description_en: editingProduct.description_en,
                 images:
                   editingProduct.images ||
                   (editingProduct.image ? [editingProduct.image] : []),
