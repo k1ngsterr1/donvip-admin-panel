@@ -651,7 +651,7 @@ export function ProductForm({
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Подробное описание товара на анг..."
+                          placeholder="Подробное описание товара на английском..."
                           className="min-h-[120px] text-primary"
                           {...field}
                         />
