@@ -77,6 +77,9 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Product name must be at least 2 characters.",
   }),
+  order_number: z.coerce.number().int().min(1, {
+    message: "Order number must be at least 1",
+  }),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
@@ -101,6 +104,7 @@ interface ProductFormProps {
   productId?: number;
   defaultValues?: {
     name: string;
+    order_number?: number;
     description: string;
     description_en: string;
     image?: string;
@@ -156,6 +160,7 @@ export function ProductForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: defaultValues?.name || "",
+      order_number: defaultValues?.order_number ?? 1,
       image: undefined as any,
       description: defaultValues?.description || "",
       description_en: defaultValues?.description_en || "",
@@ -396,7 +401,9 @@ export function ProductForm({
     try {
       // Convert form values to FormData
       const formData = new FormData();
+
       formData.append("name", values.name);
+      formData.append("order_number", values.order_number.toString());
       formData.append("description", values.description);
       formData.append("description_en", values.description_en);
 
@@ -617,6 +624,22 @@ export function ProductForm({
                           {...field}
                           className="text-primary"
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="order_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary">
+                        Порядковый номер
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -107,6 +107,7 @@ interface ReplenishmentOption {
 interface Product {
   id: number;
   name: string;
+  order_number: number;
   description: string;
   description_en: string;
   image?: string;
@@ -1009,6 +1010,7 @@ export function ProductsTable() {
                                       {
                                         id: product.id,
                                         name: product.name,
+                                        order_number: product.order_number,
                                         description: product.description,
                                         image: product.image,
                                         replenishment: product.replenishment, // Show the original replenishment data
@@ -1116,6 +1118,7 @@ export function ProductsTable() {
               productId={editingProduct.id}
               defaultValues={{
                 name: editingProduct.name,
+                order_number: editingProduct.order_number,
                 description: editingProduct.description,
                 description_en: editingProduct.description_en,
                 images:
