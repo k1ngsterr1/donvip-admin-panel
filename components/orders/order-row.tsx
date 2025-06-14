@@ -142,10 +142,7 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
           <span>
             {(() => {
               const dateTimeString = `${order.date} ${order.time}`;
-              const parsedDate = new Date(dateTimeString);
-              return isNaN(parsedDate.getTime())
-                ? "Неверная дата"
-                : format(parsedDate, "dd.MM.yyyy HH:mm");
+              return dateTimeString;
             })()}
           </span>
         </div>
