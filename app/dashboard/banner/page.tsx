@@ -1,18 +1,28 @@
-//@ts-nocheck
 "use client";
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BannerForm } from "@/components/banners/banner-form";
-import { Banner } from "@/services/banner-service";
+import { Banner } from "@/components/banners/banner.types";
 import { BannerList } from "@/components/banners/banner-list";
 
-const queryClient = new QueryClient();
+// Create a query client instance with default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
-export default function BannersPage() {
+function BannersPageContent() {
   const [showForm, setShowForm] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
 
@@ -29,6 +39,13 @@ export default function BannersPage() {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingBanner(null);
+  };
+
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingBanner(null);
+    // Invalidate queries to refresh the banner list
+    queryClient.invalidateQueries({ queryKey: ["banners"] });
   };
 
   return (
@@ -51,14 +68,22 @@ export default function BannersPage() {
 
         {showForm ? (
           <BannerForm
-            banner={editingBanner as any}
+            banner={editingBanner}
             onClose={handleCloseForm}
-            onSuccess={handleCloseForm}
+            onSuccess={handleFormSuccess}
           />
         ) : (
           <BannerList onEdit={handleEditBanner} />
         )}
       </div>
     </div>
+  );
+}
+
+export default function BannersPage() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BannersPageContent />
+    </QueryClientProvider>
   );
 }

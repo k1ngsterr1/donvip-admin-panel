@@ -1,24 +1,10 @@
 import { apiClient } from "@/lib/api-client";
 import { extractErrorMessage } from "@/lib/utils";
-
-export interface Banner {
-  id: number;
-  image: string;
-  mobileImage: string;
-  buttonLink: string;
-}
-
-export interface CreateBannerDto {
-  image?: string;
-  mobileImage?: string;
-  buttonLink: string;
-}
-
-export interface UpdateBannerDto extends Partial<CreateBannerDto> {
-  image?: string;
-  mobileImage?: string;
-  buttonLink?: string;
-}
+import {
+  Banner,
+  CreateBannerDto,
+  UpdateBannerDto,
+} from "@/components/banners/banner.types";
 
 export const bannerService = {
   getAll: async (): Promise<Banner[]> => {
