@@ -1,5 +1,3 @@
-//@ts-nocheck
-
 "use client";
 
 import type React from "react";
@@ -138,19 +136,12 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
     mutationFn: async (data: { buttonLink: string }) => {
       setIsUploading(true);
       try {
-        // First create the banner with the button link
-        const newBanner = await bannerService.create({
+        // Use the FormData approach for better integration with your backend
+        const newBanner = await bannerService.createWithFormData({
           buttonLink: data.buttonLink,
+          pcImageFile: pcImage || undefined,
+          mobileImageFile: mobileImage || undefined,
         });
-
-        // Then upload the images if they exist
-        if (pcImage) {
-          await bannerService.uploadPcImage(newBanner.id, pcImage);
-        }
-
-        if (mobileImage) {
-          await bannerService.uploadMobileImage(newBanner.id, mobileImage);
-        }
 
         return newBanner;
       } finally {
@@ -386,7 +377,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
             />
             {errors.buttonLink && (
               <p className="text-sm text-destructive">
-                {errors.buttonLink.message}
+                {errors.buttonLink.message as string}
               </p>
             )}
           </div>

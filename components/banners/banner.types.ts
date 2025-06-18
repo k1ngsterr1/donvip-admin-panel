@@ -6,8 +6,14 @@ export interface Banner {
 }
 
 export interface CreateBannerDto {
-  image?: string;
-  mobileImage?: string;
+  image: string;
+  mobileImage: string;
+  buttonLink: string;
+}
+
+export interface CreateBannerFormData {
+  pcImageFile?: File;
+  mobileImageFile?: File;
   buttonLink: string;
 }
 
