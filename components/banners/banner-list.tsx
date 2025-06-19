@@ -98,40 +98,51 @@ export function BannerList({ onEdit }: BannerListProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {banners?.map((banner: any) => (
-          <Card key={banner.id} className="overflow-hidden">
-            <CardHeader className="pb-3">
+          <Card
+            key={banner.id}
+            className="overflow-hidden rounded-xl border border-muted bg-background"
+          >
+            <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg truncate">
-                  Баннер #{banner.id}
+                <CardTitle className="text-base font-semibold text-primary truncate">
+                  Баннер{" "}
+                  <span className="text-xs text-muted-foreground align-top">
+                    #{banner.id}
+                  </span>
                 </CardTitle>
                 {banner.buttonLink && (
-                  <Button variant="ghost" size="sm" asChild className="p-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    asChild
+                    className="p-1 h-7 w-7"
+                  >
                     <a
                       href={banner.buttonLink}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Link className="h-4 w-4" />
+                      <Link className="h-4 w-4 text-muted-foreground" />
                     </a>
                   </Button>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {/* PC Image */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Изображение для ПК
                 </label>
                 {banner.image ? (
-                  <div className="relative mt-1">
+                  <div className="relative mt-0.5">
                     <img
                       src={banner.image || "/placeholder.svg"}
                       alt={`Баннер #${banner.id}`}
-                      className="w-full h-24 object-cover rounded border"
+                      className="w-full h-24 object-cover rounded-md border border-muted"
                     />
                     <ImageUpload
                       bannerId={banner.id}
@@ -145,7 +156,7 @@ export function BannerList({ onEdit }: BannerListProps) {
                     />
                   </div>
                 ) : (
-                  <div className="mt-1 border-2 border-dashed border-muted rounded-lg p-4 text-center">
+                  <div className="mt-0.5 border border-dashed border-muted rounded-md p-3 text-center bg-muted/30">
                     <ImageUpload
                       bannerId={banner.id}
                       type="pc"
@@ -161,15 +172,15 @@ export function BannerList({ onEdit }: BannerListProps) {
 
               {/* Mobile Image */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Мобильное изображение
                 </label>
                 {banner.mobileImage ? (
-                  <div className="relative mt-1">
+                  <div className="relative mt-0.5">
                     <img
                       src={banner.mobileImage || "/placeholder.svg"}
                       alt={`Баннер #${banner.id} (Мобильный)`}
-                      className="w-full h-24 object-cover rounded border"
+                      className="w-full h-24 object-cover rounded-md border border-muted"
                     />
                     <ImageUpload
                       bannerId={banner.id}
@@ -185,7 +196,7 @@ export function BannerList({ onEdit }: BannerListProps) {
                     />
                   </div>
                 ) : (
-                  <div className="mt-1 border-2 border-dashed border-muted rounded-lg p-4 text-center">
+                  <div className="mt-0.5 border border-dashed border-muted rounded-md p-3 text-center bg-muted/30">
                     <ImageUpload
                       bannerId={banner.id}
                       type="mobile"
@@ -201,13 +212,13 @@ export function BannerList({ onEdit }: BannerListProps) {
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-1">
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(banner)}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 px-2 py-1 text-xs"
                   >
                     <Edit className="h-3 w-3" />
                     Редактировать
@@ -217,7 +228,7 @@ export function BannerList({ onEdit }: BannerListProps) {
                     size="sm"
                     onClick={() => handleDelete(banner.id)}
                     disabled={deleteMutation.isPending}
-                    className="flex items-center gap-1 text-destructive hover:text-destructive"
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-3 w-3" />
                     Удалить
@@ -234,7 +245,9 @@ export function BannerList({ onEdit }: BannerListProps) {
           <CardContent className="p-12 text-center">
             <div className="text-muted-foreground">
               <h3 className="text-lg font-medium mb-2">Баннеры не найдены</h3>
-              <p>Начните с создания вашего первого баннера.</p>
+              <p className="text-sm">
+                Начните с создания вашего первого баннера.
+              </p>
             </div>
           </CardContent>
         </Card>
