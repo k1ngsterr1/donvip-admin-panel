@@ -48,6 +48,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
     reset,
   } = useForm({
     defaultValues: {
+      title: banner?.title || "",
       buttonLink: banner?.buttonLink || "",
     },
   });
@@ -55,6 +56,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
   useEffect(() => {
     if (banner) {
       reset({
+        title: banner.title || "",
         buttonLink: banner.buttonLink || "",
       });
       setPcImagePreview(banner.image || null);
@@ -133,16 +135,15 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
   };
 
   const createMutation = useMutation({
-    mutationFn: async (data: { buttonLink: string }) => {
+    mutationFn: async (data: { title: string; buttonLink: string }) => {
       setIsUploading(true);
       try {
-        // Use the FormData approach for better integration with your backend
         const newBanner = await bannerService.createWithFormData({
+          title: data.title,
           buttonLink: data.buttonLink,
           pcImageFile: pcImage || undefined,
           mobileImageFile: mobileImage || undefined,
         });
-
         return newBanner;
       } finally {
         setIsUploading(false);
@@ -171,24 +172,20 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
       data,
     }: {
       id: number;
-      data: { buttonLink: string };
+      data: { title: string; buttonLink: string };
     }) => {
       setIsUploading(true);
       try {
-        // First update the banner with the button link
         const updatedBanner = await bannerService.update(id, {
+          title: data.title,
           buttonLink: data.buttonLink,
         });
-
-        // Then upload the images if they were changed
         if (pcImage) {
           await bannerService.uploadPcImage(id, pcImage);
         }
-
         if (mobileImage) {
           await bannerService.uploadMobileImage(id, mobileImage);
         }
-
         return updatedBanner;
       } finally {
         setIsUploading(false);
@@ -211,7 +208,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
     },
   });
 
-  const onSubmit = (data: { buttonLink: string }) => {
+  const onSubmit = (data: { title: string; buttonLink: string }) => {
     // Validate required files for new banner
     if (!isEditing) {
       if (!pcImage) {
@@ -222,7 +219,6 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
         });
         return;
       }
-
       if (!mobileImage) {
         toast({
           title: "Error",
@@ -232,7 +228,6 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
         return;
       }
     }
-
     if (isEditing && banner) {
       updateMutation.mutate({ id: banner.id, data });
     } else {
@@ -355,6 +350,34 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Title */}
+          <div className="space-y-2">
+            <Label htmlFor="title">
+              Title <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="title"
+              type="text"
+              {...register("title", {
+                required: "Title is required",
+                minLength: {
+                  value: 2,
+                  message: "Title must be at least 2 characters",
+                },
+                maxLength: {
+                  value: 100,
+                  message: "Title must be at most 100 characters",
+                },
+              })}
+              placeholder="Например: Летняя распродажа"
+            />
+            {errors.title && (
+              <p className="text-sm text-destructive">
+                {errors.title.message as string}
+              </p>
+            )}
           </div>
 
           {/* Button Link */}

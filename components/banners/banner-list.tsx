@@ -108,10 +108,21 @@ export function BannerList({ onEdit }: BannerListProps) {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold text-primary truncate">
-                  Баннер{" "}
-                  <span className="text-xs text-muted-foreground align-top">
-                    #{banner.id}
-                  </span>
+                  {banner.title ? (
+                    <>
+                      {banner.title}
+                      <span className="text-xs text-muted-foreground align-top ml-2">
+                        #{banner.id}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Баннер{" "}
+                      <span className="text-xs text-muted-foreground align-top">
+                        #{banner.id}
+                      </span>
+                    </>
+                  )}
                 </CardTitle>
                 {banner.buttonLink && (
                   <Button

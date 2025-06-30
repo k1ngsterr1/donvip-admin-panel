@@ -47,6 +47,9 @@ export const bannerService = {
       // Add button link
       formData.append("buttonLink", data.buttonLink);
 
+      // Add title
+      formData.append("title", data.title);
+
       // Add files if provided
       if (data.pcImageFile) {
         formData.append("image", data.pcImageFile);
@@ -76,6 +79,7 @@ export const bannerService = {
         image: "https://placeholder.com/pc-image.jpg", // Placeholder URL
         mobileImage: "https://placeholder.com/mobile-image.jpg", // Placeholder URL
         buttonLink: data.buttonLink,
+        title: data.title,
       };
 
       const response = await apiClient.post("/banners", createData);
