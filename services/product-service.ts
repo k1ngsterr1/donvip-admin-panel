@@ -1,4 +1,4 @@
-import { api } from "@/lib/api-client";
+import { api, apiClient } from "@/lib/api-client";
 
 export interface ReplenishmentItem {
   price: number;
@@ -102,10 +102,12 @@ export const ProductService = {
   },
 
   /**
-   * Get DonatBank packages for a specific product
+   * Get DonatBank packages for a specific product (POST /product/donatbank/product/info)
    */
   getDonatBankPackages: async (productId: string) => {
-    const response = await api.products.getDonatBankPackages(productId);
+    const response = await apiClient.post("/product/donatbank/product/info", {
+      id: productId,
+    });
     return response.data;
   },
 };

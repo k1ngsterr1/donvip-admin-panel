@@ -405,22 +405,7 @@ export function ProductForm({
         );
         console.log("DonatBank packages response:", data);
 
-        // Check if data exists and has the expected structure
-        if (data && data.data) {
-          return Array.isArray(data.data) ? data.data : [];
-        }
-
-        // If data is directly an array
-        if (Array.isArray(data)) {
-          return data;
-        }
-
-        // Fallback to empty array
-        console.warn(
-          "DonatBank packages data is not in expected format:",
-          data
-        );
-        return [];
+        return data;
       } catch (error) {
         console.error("Error fetching DonatBank packages:", error);
         toast({
@@ -904,40 +889,78 @@ export function ProductForm({
                                 <SelectValue placeholder="Выберите игру" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem
-                                  key="_placeholder"
-                                  value="_placeholder"
-                                  disabled
-                                >
-                                  Выберите игру
-                                </SelectItem>
-                                {loadingSmileProducts ? (
-                                  <SelectItem
-                                    key="_loading"
-                                    value="_loading"
-                                    disabled
-                                  >
-                                    Загрузка...
-                                  </SelectItem>
-                                ) : Array.isArray(smileProducts) &&
-                                  smileProducts.length > 0 ? (
-                                  smileProducts.map((game: any) => (
-                                    <SelectItem
-                                      key={game.apiGame}
-                                      value={game.apiGame}
-                                    >
-                                      {game.name}
-                                    </SelectItem>
-                                  ))
-                                ) : (
-                                  <SelectItem
-                                    key="_no_games"
-                                    value="_no_games"
-                                    disabled
-                                  >
-                                    Нет доступных игр
-                                  </SelectItem>
-                                )}
+                                {/* LOGS for DonatBank packages dropdown */}
+                                {String(productType) === "DonatBank"
+                                  ? [
+                                      <SelectItem
+                                        key="_placeholder"
+                                        value="_placeholder"
+                                        disabled
+                                      >
+                                        Выберите пакет
+                                      </SelectItem>,
+                                      donatBankPackages?.product_info
+                                        ?.packages_list &&
+                                      Object.keys(
+                                        donatBankPackages.product_info
+                                          .packages_list
+                                      ).length > 0
+                                        ? Object.entries(
+                                            donatBankPackages.product_info
+                                              .packages_list
+                                          ).map(([key, value]) => (
+                                            <SelectItem key={key} value={key}>
+                                              {typeof value === "object"
+                                                ? JSON.stringify(value)
+                                                : String(value)}
+                                            </SelectItem>
+                                          ))
+                                        : [
+                                            <SelectItem
+                                              key="_no_packages"
+                                              value="_no_packages"
+                                              disabled
+                                            >
+                                              Нет доступных пакетов
+                                            </SelectItem>,
+                                          ],
+                                    ]
+                                  : [
+                                      <SelectItem
+                                        key="_placeholder"
+                                        value="_placeholder"
+                                        disabled
+                                      >
+                                        Выберите игру
+                                      </SelectItem>,
+                                      loadingSmileProducts ? (
+                                        <SelectItem
+                                          key="_loading"
+                                          value="_loading"
+                                          disabled
+                                        >
+                                          Загрузка...
+                                        </SelectItem>
+                                      ) : Array.isArray(smileProducts) &&
+                                        smileProducts.length > 0 ? (
+                                        smileProducts.map((game: any) => (
+                                          <SelectItem
+                                            key={game.apiGame}
+                                            value={game.apiGame}
+                                          >
+                                            {game.name}
+                                          </SelectItem>
+                                        ))
+                                      ) : (
+                                        <SelectItem
+                                          key="_no_games"
+                                          value="_no_games"
+                                          disabled
+                                        >
+                                          Нет доступных игр
+                                        </SelectItem>
+                                      ),
+                                    ]}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -1644,6 +1667,47 @@ export function ProductForm({
                                   ) : (
                                     <SelectItem value="_empty" disabled>
                                       Нет доступных SKU
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            ) : productType === "DonatBank" ? (
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                                disabled={loadingDonatBankPackages}
+                              >
+                                <SelectTrigger className="text-primary">
+                                  <SelectValue placeholder="Выберите пакет" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {loadingDonatBankPackages ? (
+                                    <SelectItem value="_loading" disabled>
+                                      Загрузка пакетов...
+                                    </SelectItem>
+                                  ) : donatBankPackages &&
+                                    donatBankPackages.product_info &&
+                                    donatBankPackages.product_info
+                                      .packages_list &&
+                                    Object.keys(
+                                      donatBankPackages.product_info
+                                        .packages_list
+                                    ).length > 0 ? (
+                                    Object.entries(
+                                      donatBankPackages.product_info
+                                        .packages_list
+                                    ).map(([, pkg]: [string, any]) => (
+                                      <SelectItem
+                                        key={pkg.id}
+                                        value={pkg.id}
+                                        className="text-primary"
+                                      >
+                                        {pkg.name} (₽{pkg.price})
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="_empty" disabled>
+                                      Нет доступных пакетов
                                     </SelectItem>
                                   )}
                                 </SelectContent>
