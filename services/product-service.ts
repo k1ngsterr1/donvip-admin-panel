@@ -105,7 +105,7 @@ export const ProductService = {
    * Get DonatBank packages for a specific product
    */
   getDonatBankPackages: async (productId: string) => {
-    const response = await api.orders.getDonatBankPackages(productId);
+    const response = await api.products.getDonatBankPackages(productId);
     return response.data;
   },
 };

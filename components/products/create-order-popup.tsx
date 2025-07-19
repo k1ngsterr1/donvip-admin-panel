@@ -125,10 +125,15 @@ export function CreateOrderPopup() {
       );
 
       if (selectedProductData?.type === "DonatBank") {
+        // For DonatBank, we need to get the packageId from the selected replenishment item's SKU
+        const selectedReplenishmentItem =
+          selectedProductData.replenishment?.[data.item_id];
+        const packageId = selectedReplenishmentItem?.sku || ""; // SKU contains the packageId for DonatBank
+
         // Convert FormValues to DonatBankCreateOrderDto
         const donatBankData = {
           productId: selectedProductData.donatbank_product_id || "", // Use the stored DonatBank product ID
-          packageId: data.item_id?.toString() || "0", // Convert to string
+          packageId: packageId, // Use the SKU as packageId
           quantity: data.quantity || 1,
           fields: {
             account_id: data.account_id || "",

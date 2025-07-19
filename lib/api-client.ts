@@ -60,7 +60,7 @@ export interface DonatBankProduct {
 export interface DonatBankProductsResponse {
   status: string;
   message: string;
-  product_list: DonatBankProduct[];
+  product_list: { [key: string]: DonatBankProduct };
 }
 // --- END: DonatBank Order Interfaces ---
 
@@ -159,6 +159,8 @@ export const api = {
     getDonatBankProducts: () => apiClient.get("/product/donatbank/products"),
     getSmileSKU: (apiGame: string) =>
       apiClient.get(`/product/smile/${apiGame}`),
+    getDonatBankPackages: (productId: string) =>
+      apiClient.get(`/product/donatbank/${productId}/packages`),
   },
 
   orders: {
@@ -176,8 +178,6 @@ export const api = {
     }) => apiClient.get("/order/admin/history", { params }),
     createDonatBankOrder: (data: DonatBankCreateOrderDto) =>
       apiClient.post("/order/donatbank/create-order", data),
-    getDonatBankPackages: (productId: string) =>
-      apiClient.get(`/order/donatbank/${productId}/packages`),
   },
 
   coupons: {

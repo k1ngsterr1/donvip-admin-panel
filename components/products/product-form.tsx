@@ -386,6 +386,54 @@ export function ProductForm({
     enabled: !!selectedSmileGame && productType === "Smile", // Only fetch when a game is selected and product type is Smile
   });
 
+  // Fetch DonatBank packages for the selected product
+  const {
+    data: donatBankPackages,
+    isLoading: loadingDonatBankPackages,
+    refetch: refetchDonatBankPackages,
+  } = useQuery({
+    queryKey: ["donatBankPackages", selectedDonatBankProduct],
+    queryFn: async () => {
+      if (!selectedDonatBankProduct) return [];
+
+      try {
+        console.log(
+          `Fetching DonatBank packages for product: ${selectedDonatBankProduct}`
+        );
+        const data = await ProductService.getDonatBankPackages(
+          selectedDonatBankProduct
+        );
+        console.log("DonatBank packages response:", data);
+
+        // Check if data exists and has the expected structure
+        if (data && data.data) {
+          return Array.isArray(data.data) ? data.data : [];
+        }
+
+        // If data is directly an array
+        if (Array.isArray(data)) {
+          return data;
+        }
+
+        // Fallback to empty array
+        console.warn(
+          "DonatBank packages data is not in expected format:",
+          data
+        );
+        return [];
+      } catch (error) {
+        console.error("Error fetching DonatBank packages:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить пакеты для выбранного продукта",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    enabled: !!selectedDonatBankProduct && productType === "DonatBank", // Only fetch when a product is selected and product type is DonatBank
+  });
+
   // Effect to clear smile_api_game and donatbank_product_id when product type changes
   useEffect(() => {
     if (productType !== "Smile") {
@@ -1600,6 +1648,40 @@ export function ProductForm({
                                   )}
                                 </SelectContent>
                               </Select>
+                            ) : productType === "DonatBank" ? (
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                                disabled={loadingDonatBankPackages}
+                              >
+                                <SelectTrigger className="text-primary">
+                                  <SelectValue placeholder="Выберите пакет" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {loadingDonatBankPackages ? (
+                                    <SelectItem value="_loading" disabled>
+                                      Загрузка пакетов...
+                                    </SelectItem>
+                                  ) : Array.isArray(donatBankPackages) &&
+                                    donatBankPackages.length > 0 ? (
+                                    donatBankPackages.map((pkg: any) => (
+                                      <SelectItem
+                                        key={pkg.id}
+                                        value={pkg.id}
+                                        className="text-primary"
+                                      >
+                                        {pkg.name} - {pkg.amount}{" "}
+                                        {pkg.currency || "единиц"} (₽{pkg.price}
+                                        )
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="_empty" disabled>
+                                      Нет доступных пакетов
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
                             ) : (
                               <Input
                                 placeholder="ML001"
@@ -1622,6 +1704,8 @@ export function ProductForm({
                         <FormDescription className="text-gray-600">
                           {productType === "Smile"
                             ? "Выберите SKU из списка доступных для Smile API"
+                            : productType === "DonatBank"
+                            ? "Выберите пакет из списка доступных для DonatBank"
                             : "Уникальный идентификатор товара"}
                         </FormDescription>
                         <FormMessage />
