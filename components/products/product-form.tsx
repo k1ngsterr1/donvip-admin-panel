@@ -1648,40 +1648,6 @@ export function ProductForm({
                                   )}
                                 </SelectContent>
                               </Select>
-                            ) : productType === "DonatBank" ? (
-                              <Select
-                                value={field.value || ""}
-                                onValueChange={field.onChange}
-                                disabled={loadingDonatBankPackages}
-                              >
-                                <SelectTrigger className="text-primary">
-                                  <SelectValue placeholder="Выберите пакет" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {loadingDonatBankPackages ? (
-                                    <SelectItem value="_loading" disabled>
-                                      Загрузка пакетов...
-                                    </SelectItem>
-                                  ) : Array.isArray(donatBankPackages) &&
-                                    donatBankPackages.length > 0 ? (
-                                    donatBankPackages.map((pkg: any) => (
-                                      <SelectItem
-                                        key={pkg.id}
-                                        value={pkg.id}
-                                        className="text-primary"
-                                      >
-                                        {pkg.name} - {pkg.amount}{" "}
-                                        {pkg.currency || "единиц"} (₽{pkg.price}
-                                        )
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem value="_empty" disabled>
-                                      Нет доступных пакетов
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
                             ) : (
                               <Input
                                 placeholder="ML001"
