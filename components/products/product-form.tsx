@@ -46,6 +46,7 @@ import { ProductService } from "@/services";
 enum ProductType {
   Bigo = "Bigo",
   Smile = "Smile",
+  DonatBank = "DonatBank",
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -91,8 +92,11 @@ const formSchema = z.object({
     .array(replenishmentItemSchema)
     .min(1, "At least one replenishment option is required"),
   smile_api_game: z.string().optional(),
+  donatbank_product_id: z.string().optional(),
   type: z.nativeEnum(ProductType, {
-    errorMap: () => ({ message: "Type must be either 'Bigo' or 'Smile'" }),
+    errorMap: () => ({
+      message: "Type must be 'Bigo', 'Smile', or 'DonatBank'",
+    }),
   }),
   currency_image: z.union([fileSchema, z.instanceof(File).optional()]),
   currency_name: z.string().min(1, "Currency name is required"),
@@ -115,6 +119,7 @@ interface ProductFormProps {
       sku: string;
     }>;
     smile_api_game?: string;
+    donatbank_product_id?: string;
     type?: ProductType;
     currency_image?: string;
     currency_name?: string;
@@ -168,6 +173,7 @@ export function ProductForm({
         { price: 0, amount: 1, type: "", sku: "" }, // Changed amount from 0 to 1
       ],
       smile_api_game: defaultValues?.smile_api_game || "",
+      donatbank_product_id: defaultValues?.donatbank_product_id || "",
       type: defaultValues?.type || undefined,
       currency_name: defaultValues?.currency_name || "",
       currency_image: undefined as any, // Will be set by file input
@@ -193,6 +199,11 @@ export function ProductForm({
   const selectedSmileGame = useWatch({
     control: form.control,
     name: "smile_api_game",
+  });
+
+  const selectedDonatBankProduct = useWatch({
+    control: form.control,
+    name: "donatbank_product_id",
   });
 
   // Debug when component mounts and when productType changes
@@ -249,6 +260,54 @@ export function ProductForm({
     refetchOnMount: true, // Always refetch when component mounts
   });
 
+  // DonatBank products query
+  const {
+    data: donatBankProducts,
+    isLoading: loadingDonatBankProducts,
+    refetch: refetchDonatBankProducts,
+  } = useQuery({
+    queryKey: ["donatBankProducts"],
+    queryFn: async () => {
+      console.log(
+        "Fetching DonatBank products... enabled:",
+        productType === "DonatBank"
+      );
+      try {
+        const data = await ProductService.getDonatBankProducts();
+        console.log("DonatBank products API response:", data);
+
+        if (data && data.product_list) {
+          console.log("Data has a 'product_list' property");
+          // Convert the product_list object to an array
+          const productsArray = Object.values(data.product_list);
+          console.log("Converted products array:", productsArray);
+          return productsArray;
+        }
+
+        return [];
+      } catch (error) {
+        console.error("Error fetching DonatBank products:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить список продуктов DonatBank",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    enabled: productType === "DonatBank", // Only fetch when product type is DonatBank
+    staleTime: 0, // Don't cache the results
+    refetchOnMount: true, // Always refetch when component mounts
+  });
+
+  // Force fetch DonatBank products when type is DonatBank
+  useEffect(() => {
+    if (productType === "DonatBank") {
+      console.log("Forcing refetch of DonatBank products");
+      refetchDonatBankProducts();
+    }
+  }, [productType, refetchDonatBankProducts]);
+
   // Force fetch Smile products when type is Smile
   useEffect(() => {
     if (productType === "Smile") {
@@ -261,6 +320,16 @@ export function ProductForm({
   useEffect(() => {
     console.log("smileProducts updated:", smileProducts);
   }, [smileProducts]);
+
+  // Add a debugging effect to track donatBankProducts
+  useEffect(() => {
+    console.log("donatBankProducts updated:", donatBankProducts);
+    console.log("donatBankProducts array length:", donatBankProducts?.length);
+    console.log("Is array?", Array.isArray(donatBankProducts));
+    if (donatBankProducts && donatBankProducts.length > 0) {
+      console.log("First product:", donatBankProducts[0]);
+    }
+  }, [donatBankProducts]);
 
   // Add this debugging effect after the other useEffect hooks to help diagnose the issue:
   useEffect(() => {
@@ -317,10 +386,13 @@ export function ProductForm({
     enabled: !!selectedSmileGame && productType === "Smile", // Only fetch when a game is selected and product type is Smile
   });
 
-  // Effect to clear smile_api_game when product type changes
+  // Effect to clear smile_api_game and donatbank_product_id when product type changes
   useEffect(() => {
     if (productType !== "Smile") {
       form.setValue("smile_api_game", "");
+    }
+    if (productType !== "DonatBank") {
+      form.setValue("donatbank_product_id", "");
     }
   }, [productType, form]);
 
@@ -424,6 +496,10 @@ export function ProductForm({
 
       if (values.smile_api_game && values.type === "Smile") {
         formData.append("smile_api_game", values.smile_api_game);
+      }
+
+      if (values.donatbank_product_id && values.type === "DonatBank") {
+        formData.append("donatbank_product_id", values.donatbank_product_id);
       }
 
       formData.append("type", values.type);
@@ -697,8 +773,11 @@ export function ProductForm({
                           if (value !== "Smile") {
                             form.setValue("smile_api_game", "");
                           }
+                          // Clear donatbank_product_id when changing type
+                          if (value !== "DonatBank") {
+                            form.setValue("donatbank_product_id", "");
+                          }
                         }}
-                        defaultValue={field.value}
                         value={field.value}
                       >
                         <FormControl>
@@ -716,10 +795,16 @@ export function ProductForm({
                           <SelectItem value="Smile" className="text-primary">
                             Smile
                           </SelectItem>
+                          <SelectItem
+                            value="DonatBank"
+                            className="text-primary"
+                          >
+                            DonatBank
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription className="text-gray-600">
-                        Выберите тип товара (Bigo или Smile)
+                        Выберите тип товара (Bigo, Smile или DonatBank)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -829,6 +914,126 @@ export function ProductForm({
                         <FormDescription className="text-gray-600">
                           Выберите игру из Smile API для интеграции. SKU будут
                           загружены автоматически.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {/* Only show DonatBank Product field when product type is DonatBank */}
+                {productType === "DonatBank" && (
+                  <FormField
+                    control={form.control}
+                    name="donatbank_product_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">
+                          DonatBank Product
+                        </FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl className="flex-1">
+                            <Select
+                              onValueChange={(value) => {
+                                console.log(
+                                  "Selected DonatBank product ID:",
+                                  value
+                                );
+                                console.log(
+                                  "Current donatBankProducts:",
+                                  donatBankProducts
+                                );
+                                // Set the value directly
+                                field.onChange(value);
+                                form.setValue("donatbank_product_id", value, {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                });
+                              }}
+                              value={field.value || "_placeholder"}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Выберите продукт" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem
+                                  key="_placeholder"
+                                  value="_placeholder"
+                                  disabled
+                                >
+                                  Выберите продукт
+                                </SelectItem>
+                                {loadingDonatBankProducts ? (
+                                  <SelectItem
+                                    key="_loading"
+                                    value="_loading"
+                                    disabled
+                                  >
+                                    Загрузка...
+                                  </SelectItem>
+                                ) : Array.isArray(donatBankProducts) &&
+                                  donatBankProducts.length > 0 ? (
+                                  <>
+                                    {console.log(
+                                      "RENDERING DONATBANK PRODUCTS:",
+                                      donatBankProducts
+                                    )}
+                                    {donatBankProducts.map((product: any) => {
+                                      console.log(
+                                        "Rendering product:",
+                                        product
+                                      );
+                                      return (
+                                        <SelectItem
+                                          key={product.id}
+                                          value={product.id}
+                                        >
+                                          {product.name}
+                                        </SelectItem>
+                                      );
+                                    })}
+                                  </>
+                                ) : (
+                                  <>
+                                    {console.log("NO PRODUCTS - Debug info:", {
+                                      donatBankProducts,
+                                      isArray: Array.isArray(donatBankProducts),
+                                      length: donatBankProducts?.length,
+                                      loadingDonatBankProducts,
+                                    })}
+                                    <SelectItem
+                                      key="_no_products"
+                                      value="_no_products"
+                                      disabled
+                                    >
+                                      Нет доступных продуктов
+                                    </SelectItem>
+                                  </>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              console.log("Refreshing DonatBank products");
+                              refetchDonatBankProducts();
+                            }}
+                            disabled={loadingDonatBankProducts}
+                            title="Обновить список продуктов"
+                          >
+                            <RefreshCw
+                              className={`h-4 w-4 ${
+                                loadingDonatBankProducts ? "animate-spin" : ""
+                              }`}
+                            />
+                          </Button>
+                        </div>
+                        <FormDescription className="text-gray-600">
+                          Выберите продукт из DonatBank API для интеграции.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -1307,7 +1512,6 @@ export function ProductForm({
                           <Input
                             type="number"
                             min={1}
-                            defaultValue={1} // Add this line
                             {...field}
                             className="text-primary"
                           />

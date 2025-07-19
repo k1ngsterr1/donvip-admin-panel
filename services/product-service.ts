@@ -86,10 +86,26 @@ export const ProductService = {
   },
 
   /**
+   * Get DonatBank products
+   */
+  getDonatBankProducts: async () => {
+    const response = await api.products.getDonatBankProducts();
+    return response.data;
+  },
+
+  /**
    * Get Smile SKU for a specific game
    */
   getSmileSKU: async (apiGame: string) => {
     const response = await api.products.getSmileSKU(apiGame);
+    return response.data;
+  },
+
+  /**
+   * Get DonatBank packages for a specific product
+   */
+  getDonatBankPackages: async (productId: string) => {
+    const response = await api.orders.getDonatBankPackages(productId);
     return response.data;
   },
 };

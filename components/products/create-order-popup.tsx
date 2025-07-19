@@ -35,7 +35,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { api } from "@/lib/api-client";
+import { api, type DonatBankCreateOrderDto } from "@/lib/api-client";
 import { usePopupStore } from "@/lib/popup-store";
 
 // Define the form schema based on the OpenAPI spec
@@ -51,6 +51,7 @@ const formSchema = z.object({
   }),
   account_id: z.string().optional(),
   server_id: z.string().optional(),
+  quantity: z.number().min(1).optional(), // For DonatBank orders
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -95,6 +96,7 @@ export function CreateOrderPopup() {
       payment: "Tinkoff",
       account_id: "",
       server_id: "",
+      quantity: 1,
     },
   });
 
@@ -116,7 +118,29 @@ export function CreateOrderPopup() {
   }, [isOpen, form, orderData]);
 
   const createOrderMutation = useMutation({
-    mutationFn: (data: FormValues) => api.orders.create(data),
+    mutationFn: (data: FormValues) => {
+      // Check if the selected product is DonatBank type
+      const selectedProductData = products?.find(
+        (p: any) => p.id === data.product_id
+      );
+
+      if (selectedProductData?.type === "DonatBank") {
+        // Convert FormValues to DonatBankCreateOrderDto
+        const donatBankData = {
+          productId: selectedProductData.donatbank_product_id || "", // Use the stored DonatBank product ID
+          packageId: data.item_id?.toString() || "0", // Convert to string
+          quantity: data.quantity || 1,
+          fields: {
+            account_id: data.account_id || "",
+            server_id: data.server_id || "",
+          },
+        };
+        return api.orders.createDonatBankOrder(donatBankData);
+      } else {
+        // Regular order creation for other product types
+        return api.orders.create(data);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast({

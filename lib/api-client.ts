@@ -28,6 +28,42 @@ export interface UpdateBankPayload {
 }
 // --- END: Bank-specific Interfaces ---
 
+// --- START: DonatBank Order Interfaces ---
+export interface DonatBankOrderField {
+  [key: string]: string | number | boolean;
+}
+
+export interface DonatBankCreateOrderDto {
+  productId: string; // DonatBank API expects string ID
+  packageId: string; // This is also likely a string ID
+  quantity: number;
+  fields: DonatBankOrderField;
+}
+
+export interface DonatBankOrderResponse {
+  id: string;
+  status: string;
+  paymentUrl?: string;
+  orderId: string;
+  amount: number;
+  currency: string;
+  createdAt: string;
+}
+
+export interface DonatBankProduct {
+  id: string; // DonatBank IDs are likely UUIDs (strings)
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface DonatBankProductsResponse {
+  status: string;
+  message: string;
+  product_list: DonatBankProduct[];
+}
+// --- END: DonatBank Order Interfaces ---
+
 // Existing interfaces (WebsiteTechWorkInfoFromApi, UpdateTechWorksDto)
 export interface WebsiteTechWorkInfoFromApi {
   id: number;
@@ -120,6 +156,7 @@ export const api = {
       apiClient.patch(`/product/${id}`, data),
     delete: (id: number) => apiClient.delete(`/product/${id}`),
     getSmileProducts: () => apiClient.get("/product/smile"),
+    getDonatBankProducts: () => apiClient.get("/product/donatbank/products"),
     getSmileSKU: (apiGame: string) =>
       apiClient.get(`/product/smile/${apiGame}`),
   },
@@ -137,6 +174,10 @@ export const api = {
       page?: number;
       search?: string;
     }) => apiClient.get("/order/admin/history", { params }),
+    createDonatBankOrder: (data: DonatBankCreateOrderDto) =>
+      apiClient.post("/order/donatbank/create-order", data),
+    getDonatBankPackages: (productId: string) =>
+      apiClient.get(`/order/donatbank/${productId}/packages`),
   },
 
   coupons: {

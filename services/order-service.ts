@@ -1,4 +1,8 @@
 import { api } from "@/lib/api-client";
+import type {
+  DonatBankCreateOrderDto,
+  DonatBankOrderResponse,
+} from "@/lib/api-client";
 
 export interface Order {
   id: string;
@@ -75,5 +79,15 @@ export const OrderService = {
   getAllForAdmin: async ({ page, limit }: { page: number; limit: number }) => {
     const res = await api.orders.getAllForAdmin();
     return res.data;
+  },
+
+  /**
+   * Create DonatBank order
+   */
+  createDonatBankOrder: async (
+    data: DonatBankCreateOrderDto
+  ): Promise<DonatBankOrderResponse> => {
+    const response = await api.orders.createDonatBankOrder(data);
+    return response.data;
   },
 };
