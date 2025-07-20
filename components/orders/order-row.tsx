@@ -77,7 +77,9 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
       </TableCell>
       <TableCell>
         <div>
-          <p className="mt-1 text-sm font-medium text-primary">{order.price}</p>
+          <p className="mt-1 text-sm font-medium text-primary">
+            {String(order.price).replace(/\s*\?/g, "")} ₽
+          </p>
         </div>
       </TableCell>
       <TableCell>

@@ -57,7 +57,9 @@ export function PaymentDialog({
                     Оплата через Т-Банк
                   </p>
                   <div className="mb-6 rounded-lg bg-muted p-4">
-                    <p className="text-2xl font-bold">{order.price} ₽</p>
+                    <p className="text-2xl font-bold">
+                      {String(order.price).replace(/\s*\?/g, "")} ₽
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Итоговая сумма
                     </p>
@@ -80,7 +82,9 @@ export function PaymentDialog({
                     Оплата через Pagsmile
                   </p>
                   <div className="mb-6 rounded-lg bg-muted p-4">
-                    <p className="text-2xl font-bold">{order.price} ₽</p>
+                    <p className="text-2xl font-bold">
+                      {String(order.price).replace(/\s*\?/g, "")} ₽
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Итоговая сумма
                     </p>

@@ -75,7 +75,9 @@ export function OrderDetailsDialog({
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Цена</p>
-              <p className="font-medium text-primary">{order.price}</p>
+              <p className="font-medium text-primary">
+                {String(order.price).replace(/\s*\?/g, "")}
+              </p>
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">
