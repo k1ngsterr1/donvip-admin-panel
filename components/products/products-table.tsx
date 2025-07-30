@@ -614,13 +614,13 @@ export function ProductsTable() {
                           </div>
                         </TableCell>
                         <TableCell className="text-primary">
-                          {product.smile_api_game ? (
+                          {product.smile_api_game || product.type ? (
                             <Badge
                               variant="outline"
                               className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
                             >
                               <Info className="h-3 w-3 mr-1" />
-                              {product.smile_api_game}
+                              {product.smile_api_game || product.type}
                             </Badge>
                           ) : (
                             <span className="text-muted-foreground">—</span>
