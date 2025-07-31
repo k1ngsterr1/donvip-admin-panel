@@ -123,22 +123,61 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
         {order.response ? (
           (() => {
             try {
-              const responseStr =
-                typeof order.response === "string"
-                  ? order.response
-                  : JSON.stringify(order.response);
-              const parsed = JSON.parse(responseStr);
+              // Check if response is already an object
+              if (
+                typeof order.response === "object" &&
+                order.response !== null
+              ) {
+                return (
+                  <div className="space-y-1 flex flex-col items-center justify-center">
+                    {order.response.type && (
+                      <Badge variant="outline">{order.response.type}</Badge>
+                    )}
+                    {order.response.message && (
+                      <StatusBadge status={order.response.message} />
+                    )}
+                  </div>
+                );
+              }
+
+              // If it's a string, try to clean and parse it
+              if (typeof order.response === "string") {
+                // Look for JSON pattern and extract it
+                const jsonMatch = order.response.match(/\{[^}]*\}/);
+                if (jsonMatch) {
+                  const jsonStr = jsonMatch[0];
+                  const parsed = JSON.parse(jsonStr);
+                  return (
+                    <div className="space-y-1 flex flex-col items-center justify-center">
+                      {parsed.type && (
+                        <Badge variant="outline">{parsed.type}</Badge>
+                      )}
+                      {parsed.message && (
+                        <StatusBadge status={parsed.message} />
+                      )}
+                    </div>
+                  );
+                }
+              }
+
               return (
-                <div className="space-y-1 flex flex-col items-center justify-center">
-                  {parsed.type && (
-                    <Badge variant="outline">{parsed.type}</Badge>
-                  )}
-                  {parsed.message && <StatusBadge status={parsed.message} />}
+                <div className="text-gray-400 text-sm">
+                  Invalid response format
                 </div>
               );
             } catch (e) {
-              console.error("Error parsing order response:", e);
-              return <div className="text-red-500 text-sm">-</div>;
+              console.error(
+                "Error parsing order response:",
+                e,
+                "Raw response:",
+                order.response
+              );
+              // Show a safe fallback
+              return (
+                <div className="text-red-500 text-xs" title="Parse error">
+                  Parse error
+                </div>
+              );
             }
           })()
         ) : (

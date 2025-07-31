@@ -28,12 +28,37 @@ export function OrderDetailsDialog({
   let replenishment = { amount: 0, price: 0 };
 
   try {
-    const parsed = Array.isArray(order.product.replenishment)
-      ? order.product.replenishment
-      : JSON.parse(order.product.replenishment as any);
+    if (order.product?.replenishment) {
+      const parsed = Array.isArray(order.product.replenishment)
+        ? order.product.replenishment
+        : (() => {
+            try {
+              // Clean the replenishment string from invalid characters
+              let replenishmentStr =
+                typeof order.product.replenishment === "string"
+                  ? order.product.replenishment
+                  : JSON.stringify(order.product.replenishment);
 
-    if (parsed && parsed[order.itemId as any]) {
-      replenishment = parsed[order.itemId as any];
+              // Remove invalid Unicode characters
+              replenishmentStr = replenishmentStr.replace(
+                /[\u0000-\u001F\u007F-\u009F]/g,
+                ""
+              );
+              replenishmentStr = replenishmentStr.replace(
+                /[^\x20-\x7E\u00A0-\uFFFF]/g,
+                ""
+              );
+
+              return JSON.parse(replenishmentStr);
+            } catch (parseError) {
+              console.error("Error parsing replenishment data:", parseError);
+              return null;
+            }
+          })();
+
+      if (parsed && parsed[order.itemId as any]) {
+        replenishment = parsed[order.itemId as any];
+      }
     }
   } catch (err) {
     console.log("Error when parsing replenishment in getAllForAdmin", err);
@@ -76,7 +101,8 @@ export function OrderDetailsDialog({
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Цена</p>
               <p className="font-medium text-primary">
-                {String(order.price).replace(/\s*\?/g, "")}
+                {order.price ? String(order.price).replace(/\s*\?/g, "") : "—"}{" "}
+                ₽
               </p>
             </div>
             <div className="space-y-1.5">
