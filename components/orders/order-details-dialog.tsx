@@ -65,7 +65,7 @@ export function OrderDetailsDialog({
               <p className="text-sm font-medium text-muted-foreground">
                 Статус
               </p>
-              <StatusBadge status={order.status} />
+              <StatusBadge status={order.status as any} />
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Пакет</p>
