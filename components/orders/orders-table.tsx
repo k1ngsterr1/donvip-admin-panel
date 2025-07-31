@@ -90,7 +90,9 @@ export function OrdersTable() {
   });
 
   // All orders from API
-  const allOrders: Order[] = Array.isArray(data?.data) ? data.data : [];
+  const allOrders: Order[] = Array.isArray(data?.data)
+    ? data.data.filter((order) => order && (order.orderId || order.id))
+    : [];
 
   // Frontend filtering logic
   const filteredOrders = useMemo(() => {
@@ -456,13 +458,15 @@ export function OrdersTable() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      paginatedOrders.map((order: Order) => (
-                        <OrderRow
-                          key={order.orderId || order.id}
-                          order={order}
-                          onViewDetails={handleViewDetails}
-                        />
-                      ))
+                      paginatedOrders
+                        .filter((order) => order && (order.orderId || order.id))
+                        .map((order: Order) => (
+                          <OrderRow
+                            key={order.orderId || order.id}
+                            order={order}
+                            onViewDetails={handleViewDetails}
+                          />
+                        ))
                     )}
                   </TableBody>
                 </Table>

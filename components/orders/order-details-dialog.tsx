@@ -32,8 +32,8 @@ export function OrderDetailsDialog({
       ? order.product.replenishment
       : JSON.parse(order.product.replenishment as any);
 
-    if (parsed && parsed[order.itemId]) {
-      replenishment = parsed[order.itemId];
+    if (parsed && parsed[order.itemId as any]) {
+      replenishment = parsed[order.itemId as any];
     }
   } catch (err) {
     console.log("Error when parsing replenishment in getAllForAdmin", err);

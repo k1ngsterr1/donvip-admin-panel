@@ -55,13 +55,13 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
   });
 
   const handleDelete = (id: string) => {
-    if (confirm("Вы уверены, что хотите удалить этот заказ?")) {
+    if (id && confirm("Вы уверены, что хотите удалить этот заказ?")) {
       deleteOrderMutation.mutate(id);
     }
   };
 
   return (
-    <TableRow key={order.orderId || order.id} className="hover:bg-muted/30">
+    <TableRow className="hover:bg-muted/30">
       <TableCell className="font-medium">
         <div className="font-mono text-primary">
           #{order.orderId || order.id}
@@ -71,14 +71,14 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
         <div className="flex items-center gap-1.5">
           <User className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-primary">
-            {order.user?.id || order.customer}
+            {order.user?.id || order.customer || "—"}
           </span>
         </div>
       </TableCell>
       <TableCell>
         <div>
           <p className="mt-1 text-sm font-medium text-primary">
-            {String(order.price).replace(/\s*\?/g, "")} ₽
+            {order.price ? String(order.price).replace(/\s*\?/g, "") : "—"} ₽
           </p>
         </div>
       </TableCell>
@@ -117,20 +117,27 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
       </TableCell>
 
       <TableCell>
-        <StatusBadge status={order.status} />
+        <StatusBadge status={order.status || "unknown"} />
       </TableCell>
       <TableCell>
         {order.response ? (
           (() => {
             try {
-              const parsed = JSON.parse(order.response);
+              const responseStr =
+                typeof order.response === "string"
+                  ? order.response
+                  : JSON.stringify(order.response);
+              const parsed = JSON.parse(responseStr);
               return (
                 <div className="space-y-1 flex flex-col items-center justify-center">
-                  <Badge variant="outline">{parsed.type}</Badge>
-                  <StatusBadge status={parsed.message} />
+                  {parsed.type && (
+                    <Badge variant="outline">{parsed.type}</Badge>
+                  )}
+                  {parsed.message && <StatusBadge status={parsed.message} />}
                 </div>
               );
             } catch (e) {
+              console.error("Error parsing order response:", e);
               return <div className="text-red-500 text-sm">-</div>;
             }
           })()
@@ -143,8 +150,10 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
           <Calendar className="h-3.5 w-3.5" />
           <span>
             {(() => {
-              const dateTimeString = `${order.date} ${order.time}`;
-              return dateTimeString;
+              const date = order.date || "";
+              const time = order.time || "";
+              const dateTimeString = `${date} ${time}`.trim();
+              return dateTimeString || "—";
             })()}
           </span>
         </div>
@@ -169,7 +178,10 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => handleDelete(order.orderId || order.id)}
+                onClick={() => {
+                  const id = order.orderId || order.id;
+                  if (id) handleDelete(id);
+                }}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />

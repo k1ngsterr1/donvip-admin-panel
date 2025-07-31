@@ -1,23 +1,26 @@
 export interface Order {
-  product: any;
+  product?: any;
   id: string;
-  itemId: number;
+  itemId?: number;
   orderId?: string;
-  price: number;
-  amount: number;
-  type: string;
-  payment: string;
+  price?: number | string;
+  amount?: number;
+  type?: string;
+  payment?: string;
   account_id?: string;
   playerId?: string;
   server_id?: string;
   serverId?: string | null;
-  time: any;
-  status: string;
-  method: string;
-  date: string;
-  customer: string;
+  time?: any;
+  status?: string;
+  method?: string;
+  date?: string;
+  customer?: string;
   response?: any;
   user?: {
-    id: string;
+    id?: string;
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
   };
 }
