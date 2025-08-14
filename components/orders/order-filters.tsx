@@ -170,7 +170,7 @@ export function OrderFilters({
             <div className="flex-1 max-w-md ml-4">
               <div className="relative">
                 <Input
-                  placeholder="Поиск по ID заказа, клиенту, email..."
+                  placeholder="Поиск по ID заказа, клиенту, email, ID игрока..."
                   value={filters.search}
                   onChange={(e) => updateFilter("search", e.target.value)}
                   className="pr-8"

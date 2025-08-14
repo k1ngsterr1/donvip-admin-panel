@@ -102,12 +102,65 @@ export function OrdersTable() {
     if (filters.search.trim()) {
       const searchTerm = filters.search.toLowerCase().trim();
       filtered = filtered.filter((order) => {
+        // Exact match for order ID
+        if (order.orderId?.toString().toLowerCase() === searchTerm) {
+          return true;
+        }
+
+        // Exact match for user ID
+        if (order.user?.id?.toLowerCase() === searchTerm) {
+          return true;
+        }
+
+        // Exact match for customer field
+        if (order.customer?.toLowerCase() === searchTerm) {
+          return true;
+        }
+
+        // Exact match for player ID
+        if (order.playerId?.toLowerCase() === searchTerm) {
+          return true;
+        }
+
+        // Exact match for account ID
+        if (order.account_id?.toLowerCase() === searchTerm) {
+          return true;
+        }
+
+        // Check if search term looks like an email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(searchTerm)) {
+          // If it's an email, search in user email fields
+          return (
+            order.user?.email?.toLowerCase() === searchTerm ||
+            order.user?.username?.toLowerCase() === searchTerm ||
+            order.customer?.toLowerCase() === searchTerm
+          );
+        }
+
+        // Check if search term is numeric (likely an ID)
+        const isNumeric = /^\d+$/.test(searchTerm);
+        if (isNumeric) {
+          // For numeric searches, also check exact matches
+          return (
+            order.orderId?.toString() === searchTerm ||
+            order.user?.id?.toString() === searchTerm ||
+            order.playerId === searchTerm ||
+            order.account_id === searchTerm
+          );
+        }
+
+        // Fallback to partial text search for names and other fields
         const searchableText = [
           order.orderId?.toString(),
           order.user?.first_name,
           order.user?.last_name,
           order.user?.phone,
+          order.user?.email,
+          order.user?.username,
           order.playerId,
+          order.account_id,
+          order.customer,
           order.product?.name,
         ]
           .filter(Boolean)

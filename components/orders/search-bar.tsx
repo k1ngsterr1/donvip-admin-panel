@@ -14,7 +14,7 @@ export function SearchBar({ searchQuery, setSearchQuery }: SearchBarProps) {
       <div className="relative flex-1">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Поиск по ID заказа или клиенту..."
+          placeholder="Поиск по ID заказа, клиенту, email, ID игрока..."
           className="pl-9"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
