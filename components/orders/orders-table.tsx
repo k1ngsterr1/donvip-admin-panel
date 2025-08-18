@@ -108,35 +108,16 @@ export function OrdersTable() {
           return String(value).toLowerCase();
         };
 
-        // Exact match for order ID
-        if (safeToLowerCase(order.orderId) === searchTerm) {
-          return true;
-        }
-
-        // Exact match for user ID
-        if (safeToLowerCase(order.user?.id) === searchTerm) {
-          return true;
-        }
-
-        // Exact match for customer field
-        if (safeToLowerCase(order.customer) === searchTerm) {
-          return true;
-        }
-
-        // Exact match for player ID
-        if (safeToLowerCase(order.playerId) === searchTerm) {
-          return true;
-        }
-
-        // Exact match for account ID
-        if (safeToLowerCase(order.account_id) === searchTerm) {
-          return true;
-        }
+        // Helper function to safely convert to string for partial matching
+        const safeToString = (value: any): string => {
+          if (value === null || value === undefined) return "";
+          return String(value);
+        };
 
         // Check if search term looks like an email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (emailRegex.test(searchTerm)) {
-          // If it's an email, search in user email fields
+          // If it's an email, search for exact matches in user email fields
           return (
             safeToLowerCase(order.user?.email) === searchTerm ||
             safeToLowerCase(order.user?.username) === searchTerm ||
@@ -144,37 +125,26 @@ export function OrdersTable() {
           );
         }
 
-        // Check if search term is numeric (likely an ID)
-        const isNumeric = /^\d+$/.test(searchTerm);
-        if (isNumeric) {
-          // For numeric searches, also check exact matches
-          return (
-            String(order.orderId || "") === searchTerm ||
-            String(order.user?.id || "") === searchTerm ||
-            String(order.playerId || "") === searchTerm ||
-            String(order.account_id || "") === searchTerm
-          );
-        }
+        // For all searches (including numeric), use partial matching
+        const searchableFields = [
+          safeToString(order.orderId),
+          safeToString(order.user?.id),
+          safeToString(order.playerId),
+          safeToString(order.account_id),
+          safeToLowerCase(order.customer),
+          safeToLowerCase(order.user?.first_name),
+          safeToLowerCase(order.user?.last_name),
+          safeToLowerCase(order.user?.phone),
+          safeToLowerCase(order.user?.email),
+          safeToLowerCase(order.user?.username),
+          safeToLowerCase(order.product?.name),
+        ];
 
-        // Fallback to partial text search for names and other fields
-        const searchableText = [
-          order.orderId,
-          order.user?.first_name,
-          order.user?.last_name,
-          order.user?.phone,
-          order.user?.email,
-          order.user?.username,
-          order.playerId,
-          order.account_id,
-          order.customer,
-          order.product?.name,
-        ]
-          .filter(Boolean)
-          .map((value) => String(value))
-          .join(" ")
-          .toLowerCase();
-
-        return searchableText.includes(searchTerm);
+        // Check if any field contains the search term
+        return searchableFields.some((field) => {
+          if (!field) return false;
+          return field.toLowerCase().includes(searchTerm);
+        });
       });
     }
 
