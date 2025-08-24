@@ -35,7 +35,12 @@ export const OrderService = {
    * Get all orders with pagination
    */
   getOrders: async (params?: OrderListParams) => {
-    const response = await api.orders.getAll(params);
+    // Set default limit to one million if not specified
+    const defaultParams = {
+      limit: 1000000,
+      ...params,
+    };
+    const response = await api.orders.getAll(defaultParams);
     return response.data;
   },
 
