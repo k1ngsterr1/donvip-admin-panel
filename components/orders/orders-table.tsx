@@ -79,10 +79,10 @@ export function OrdersTable() {
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ["orders", "all"],
     queryFn: async () => {
-      // Remove the hardcoded limit entirely - let the API return all orders
+      // Explicitly set limit to one million to get all orders
       const response = await api.orders.getAllForAdmin({
         page: 1,
-        // Don't specify limit to get all orders, or use a very large number
+        limit: 1000000, // One million limit
       });
       return response.data;
     },
