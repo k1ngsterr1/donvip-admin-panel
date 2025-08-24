@@ -78,7 +78,7 @@ export const OrderService = {
 
   getAllForAdmin: async ({
     page,
-    limit,
+    limit = 1000000, // Set default limit to one million
   }: { page?: number; limit?: number } = {}) => {
     const res = await api.orders.getAllForAdmin({ page, limit });
     return res.data;
