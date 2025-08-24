@@ -75,13 +75,14 @@ export function OrdersTable() {
     setPage(1);
   }, [filters]);
 
-  // Fetch all orders without filters (we'll filter on frontend)
+  // Fetch all orders for filtering - no hardcoded limit
   const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ["orders", "all"], // Remove filter-based cache key
+    queryKey: ["orders", "all"],
     queryFn: async () => {
+      // Remove the hardcoded limit entirely - let the API return all orders
       const response = await api.orders.getAllForAdmin({
         page: 1,
-        limit: 1000, // Get a large number of orders to filter locally
+        // Don't specify limit to get all orders, or use a very large number
       });
       return response.data;
     },
@@ -89,10 +90,13 @@ export function OrdersTable() {
     cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
-  // All orders from API
+  // Orders from API with server-side pagination
   const allOrders: Order[] = Array.isArray(data?.data)
     ? data.data.filter((order) => order && (order.orderId || order.id))
     : [];
+
+  // Get total count from API response (assuming the API returns total count)
+  const totalFromApi = data?.total || data?.count || allOrders.length;
 
   // Frontend filtering logic
   const filteredOrders = useMemo(() => {

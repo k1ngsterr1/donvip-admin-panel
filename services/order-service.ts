@@ -76,8 +76,11 @@ export const OrderService = {
     return response.data;
   },
 
-  getAllForAdmin: async ({ page, limit }: { page: number; limit: number }) => {
-    const res = await api.orders.getAllForAdmin();
+  getAllForAdmin: async ({
+    page,
+    limit,
+  }: { page?: number; limit?: number } = {}) => {
+    const res = await api.orders.getAllForAdmin({ page, limit });
     return res.data;
   },
 
