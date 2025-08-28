@@ -1,6 +1,28 @@
 import { AuthService } from "@/services"; // Assuming AuthService is correctly defined elsewhere
 import axios, { type AxiosResponse } from "axios";
 
+// Define types to avoid implicit any errors
+interface RequestConfig {
+  headers: any;
+  data?: any;
+  _retry?: boolean;
+}
+
+interface ErrorResponse {
+  config: RequestConfig;
+  response?: {
+    status: number;
+    data?: any;
+  };
+}
+
+// Declare global process object for Next.js environment
+declare const process: {
+  env: {
+    NEXT_PUBLIC_API_BASE_URL?: string;
+  };
+};
+
 // --- START: Bank-specific Interfaces ---
 export interface Bank {
   id: number;
@@ -84,7 +106,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: RequestConfig) => {
     const token = AuthService.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -94,12 +116,12 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error: ErrorResponse) => Promise.reject(error)
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: AxiosResponse) => response,
+  async (error: ErrorResponse) => {
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -148,13 +170,23 @@ export const api = {
   },
 
   products: {
-    getAll: (params?: { limit?: number; page?: number; search?: string }) =>
-      apiClient.get("/product/all", { params }),
+    getAll: (params?: {
+      limit?: number;
+      page?: number;
+      search?: string;
+      activeOnly?: boolean;
+    }) => apiClient.get("/product/all", { params }),
+    getActive: (params?: { limit?: number; page?: number; search?: string }) =>
+      apiClient.get("/product/active", { params }),
     getById: (id: number) => apiClient.get(`/product/${id}`),
     create: (data: FormData) => apiClient.post("/product", data),
     update: (id: number, data: FormData) =>
       apiClient.patch(`/product/${id}`, data),
     delete: (id: number) => apiClient.delete(`/product/${id}`),
+    toggleActive: (id: number) =>
+      apiClient.patch(`/product/${id}/toggle-active`),
+    activate: (id: number) => apiClient.patch(`/product/${id}/activate`),
+    deactivate: (id: number) => apiClient.patch(`/product/${id}/deactivate`),
     getSmileProducts: () => apiClient.get("/product/smile"),
     getDonatBankProducts: () => apiClient.get("/product/donatbank/products"),
     getSmileSKU: (apiGame: string) =>

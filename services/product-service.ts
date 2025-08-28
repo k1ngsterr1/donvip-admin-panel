@@ -15,12 +15,14 @@ export interface Product {
   replenishment: ReplenishmentItem[];
   smile_api_game?: string;
   type?: string;
+  isActive?: boolean; // Add active status field
 }
 
 export interface ProductListParams {
   limit?: number;
   page?: number;
   search?: string;
+  activeOnly?: boolean;
 }
 
 export interface ProductListResponse {
@@ -108,6 +110,40 @@ export const ProductService = {
     const response = await apiClient.post("/product/donatbank/product/info", {
       id: productId,
     });
+    return response.data;
+  },
+
+  /**
+   * Toggle product active status
+   */
+  toggleProductActive: async (id: number) => {
+    const response = await api.products.toggleActive(id);
+    return response.data;
+  },
+
+  /**
+   * Activate a product
+   */
+  activateProduct: async (id: number) => {
+    const response = await api.products.activate(id);
+    return response.data;
+  },
+
+  /**
+   * Deactivate a product
+   */
+  deactivateProduct: async (id: number) => {
+    const response = await api.products.deactivate(id);
+    return response.data;
+  },
+
+  /**
+   * Get only active products
+   */
+  getActiveProducts: async (
+    params?: ProductListParams
+  ): Promise<ProductListResponse> => {
+    const response = await api.products.getActive(params);
     return response.data;
   },
 };

@@ -55,6 +55,8 @@ import {
   CheckCircle2,
   XCircle,
   Code,
+  Power,
+  PowerOff,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
@@ -156,6 +158,7 @@ export function ProductsTable() {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [activeOnly, setActiveOnly] = useState<string>("all");
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -184,13 +187,19 @@ export function ProductsTable() {
   }, [debouncedSearch]);
 
   const { data, isLoading, error, refetch } = useQuery<ProductsResponse>({
-    queryKey: ["products", page, limit, debouncedSearch],
+    queryKey: ["products", page, limit, debouncedSearch, activeOnly],
     queryFn: async () => {
       try {
         const response = await api.products.getAll({
           page: page,
           limit: limit,
           search: debouncedSearch || undefined,
+          activeOnly:
+            activeOnly === "active"
+              ? true
+              : activeOnly === "inactive"
+              ? false
+              : undefined,
         });
 
         // Set total pages based on response metadata
@@ -255,8 +264,39 @@ export function ProductsTable() {
     },
   });
 
+  const toggleProductActiveMutation = useMutation({
+    mutationFn: (id: number) => api.products.toggleActive(id),
+    onSuccess: (response, productId) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      const isNowActive = response?.data?.isActive || response?.isActive;
+      toast({
+        title: isNowActive ? "Игра активирована" : "Игра деактивирована",
+        description: isNowActive
+          ? "Игра теперь доступна для пользователей."
+          : "Игра скрыта от пользователей.",
+        icon: isNowActive ? (
+          <Power className="h-4 w-4 text-green-500" />
+        ) : (
+          <PowerOff className="h-4 w-4 text-orange-500" />
+        ),
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось изменить статус игры. Попробуйте снова.",
+        variant: "destructive",
+        icon: <XCircle className="h-4 w-4" />,
+      });
+    },
+  });
+
   const handleDelete = (product: Product) => {
     setDeleteConfirmProduct(product);
+  };
+
+  const handleToggleActive = (product: Product) => {
+    toggleProductActiveMutation.mutate(product.id);
   };
 
   const confirmDelete = () => {
@@ -455,15 +495,33 @@ export function ProductsTable() {
       <Card className="border-muted/40">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-            <div className="relative w-full sm:w-auto flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Поиск товаров..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 w-full"
-              />
+            <div className="flex gap-2 w-full sm:w-auto flex-1 max-w-md">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Поиск товаров..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </div>
+              <Select
+                value={activeOnly}
+                onValueChange={(value) => {
+                  setActiveOnly(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все игры</SelectItem>
+                  <SelectItem value="active">Активные</SelectItem>
+                  <SelectItem value="inactive">Неактивные</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Select
@@ -522,6 +580,9 @@ export function ProductsTable() {
                   </TableHead>
                   <TableHead className="font-medium text-primary">
                     API Game
+                  </TableHead>
+                  <TableHead className="font-medium text-primary">
+                    Статус
                   </TableHead>
                   <TableHead className="font-medium text-primary">
                     Варианты пополнения
@@ -627,6 +688,28 @@ export function ProductsTable() {
                           )}
                         </TableCell>
                         <TableCell className="text-primary">
+                          <Badge
+                            variant={product.isActive ? "default" : "secondary"}
+                            className={
+                              product.isActive
+                                ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                                : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                            }
+                          >
+                            {product.isActive ? (
+                              <>
+                                <Power className="h-3 w-3 mr-1" />
+                                Активна
+                              </>
+                            ) : (
+                              <>
+                                <PowerOff className="h-3 w-3 mr-1" />
+                                Неактивна
+                              </>
+                            )}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-primary">
                           <div className="space-y-1">
                             {Array.isArray(replenishmentOptions) &&
                               replenishmentOptions
@@ -720,6 +803,27 @@ export function ProductsTable() {
                                 >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Редактировать
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleToggleActive(product)}
+                                  className={
+                                    product.isActive
+                                      ? "text-orange-600 focus:text-orange-600 hover:bg-orange-50"
+                                      : "text-green-600 focus:text-green-600 hover:bg-green-50"
+                                  }
+                                >
+                                  {product.isActive ? (
+                                    <>
+                                      <PowerOff className="mr-2 h-4 w-4" />
+                                      Деактивировать
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Power className="mr-2 h-4 w-4" />
+                                      Активировать
+                                    </>
+                                  )}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
