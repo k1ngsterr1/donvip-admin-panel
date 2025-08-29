@@ -119,6 +119,7 @@ interface Product {
   type?: string;
   currency_image?: string;
   currency_name?: string;
+  isActive?: boolean; // Add isActive field
 }
 
 interface ProductsResponse {
@@ -688,15 +689,39 @@ export function ProductsTable() {
                           )}
                         </TableCell>
                         <TableCell className="text-primary">
+                          {/* Debug: Check multiple possible active status fields */}
+                          {console.log("Product active fields:", {
+                            isActive: product.isActive,
+                            active: (product as any).active,
+                            status: (product as any).status,
+                            is_active: (product as any).is_active,
+                            productName: product.name,
+                          })}
                           <Badge
-                            variant={product.isActive ? "default" : "secondary"}
+                            variant={
+                              product.isActive ||
+                              (product as any).active ||
+                              (product as any).is_active ||
+                              (product as any).status === "active" ||
+                              (product as any).status === true
+                                ? "default"
+                                : "secondary"
+                            }
                             className={
-                              product.isActive
+                              product.isActive ||
+                              (product as any).active ||
+                              (product as any).is_active ||
+                              (product as any).status === "active" ||
+                              (product as any).status === true
                                 ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
                                 : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
                             }
                           >
-                            {product.isActive ? (
+                            {product.isActive ||
+                            (product as any).active ||
+                            (product as any).is_active ||
+                            (product as any).status === "active" ||
+                            (product as any).status === true ? (
                               <>
                                 <Power className="h-3 w-3 mr-1" />
                                 Активна
@@ -808,12 +833,27 @@ export function ProductsTable() {
                                 <DropdownMenuItem
                                   onClick={() => handleToggleActive(product)}
                                   className={
-                                    product.isActive
+                                    product.isActive ||
+                                    (product as any).active ||
+                                    (product as any).is_active ||
+                                    (product as any).status === "active" ||
+                                    (product as any).status === true
                                       ? "text-orange-600 focus:text-orange-600 hover:bg-orange-50"
                                       : "text-green-600 focus:text-green-600 hover:bg-green-50"
                                   }
                                 >
-                                  {product.isActive ? (
+                                  {/* Debug: log the product.isActive value */}
+                                  {console.log(
+                                    "Product isActive:",
+                                    product.isActive,
+                                    "for product:",
+                                    product.name
+                                  )}
+                                  {product.isActive ||
+                                  (product as any).active ||
+                                  (product as any).is_active ||
+                                  (product as any).status === "active" ||
+                                  (product as any).status === true ? (
                                     <>
                                       <PowerOff className="mr-2 h-4 w-4" />
                                       Деактивировать
