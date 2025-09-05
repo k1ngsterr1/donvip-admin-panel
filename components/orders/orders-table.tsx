@@ -82,7 +82,7 @@ export function OrdersTable() {
       // Explicitly set limit to one million to get all orders
       const response = await api.orders.getAllForAdmin({
         page: 1,
-        limit: 1000000, // One million limit
+        limit: 1000, // One million limit
       });
       return response.data;
     },
@@ -296,11 +296,7 @@ export function OrdersTable() {
         ...filteredOrders.map((order) =>
           [
             order.orderId,
-            order.user
-              ? `${order.user.first_name || ""} ${
-                  order.user.last_name || ""
-                }`.trim()
-              : "Гость",
+            order.playerId || order.account_id,
             order.price || "—",
             order.method || "—",
             order.product?.name || "—",
