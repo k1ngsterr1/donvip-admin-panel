@@ -246,6 +246,44 @@ export const api = {
       apiClient.get(`/payment/tbank/url/${orderId}`),
   },
 
+  paymentMethods: {
+    create: (data: {
+      name: string;
+      code: string;
+      country: string;
+      currency: string;
+      minAmount?: number;
+      maxAmount?: number;
+      fee?: number;
+      isActive?: boolean;
+      description?: string;
+    }) => apiClient.post("/payment/payment-methods", data),
+    getAll: (params?: {
+      country?: string;
+      currency?: string;
+      isActive?: boolean;
+    }) => apiClient.get("/payment/admin/payment-methods", { params }),
+    getById: (id: number) => apiClient.get(`/payment/payment-methods/${id}`),
+    update: (
+      id: number,
+      data: {
+        name?: string;
+        code?: string;
+        country?: string;
+        currency?: string;
+        minAmount?: number;
+        maxAmount?: number;
+        fee?: number;
+        isActive?: boolean;
+        description?: string;
+      }
+    ) => apiClient.post(`/payment/payment-methods/${id}`, data),
+    delete: (id: number) =>
+      apiClient.post(`/payment/payment-methods/${id}/delete`),
+    getCountries: () => apiClient.get("/payment/countries"),
+    getSupportedCountries: () => apiClient.get("/payment/supported-countries"),
+  },
+
   techworks: {
     getById: (id: number): Promise<AxiosResponse<WebsiteTechWorkInfoFromApi>> =>
       apiClient.get(`/techworks/${id}`),
