@@ -144,232 +144,236 @@ export function PaymentMethodForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <CreditCard className="h-5 w-5" />
-            Основная информация
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Название *</Label>
-            <Input
-              id="name"
-              {...register("name", { required: "Название обязательно" })}
-              placeholder="Например: Банковская карта"
-            />
-            {errors.name && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.name.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="code">Код *</Label>
-            <Input
-              id="code"
-              {...register("code", { required: "Код обязателен" })}
-              placeholder="Например: CARD_RUB"
-              className="font-mono"
-            />
-            {errors.code && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.code.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="country">Страна *</Label>
-            <Select
-              value={watchedCountry}
-              onValueChange={(value) => setValue("country", value)}
-            >
-              <SelectTrigger>
-                <Globe className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Выберите страну" />
-              </SelectTrigger>
-              <SelectContent>
-                {countriesLoading ? (
-                  <div className="p-2 text-center">
-                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                  </div>
-                ) : (
-                  countries?.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name} ({country.code})
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            {errors.country && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.country.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="currency">Валюта *</Label>
-            <Select
-              value={watchedCurrency}
-              onValueChange={(value) => setValue("currency", value)}
-            >
-              <SelectTrigger>
-                <DollarSign className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Выберите валюту" />
-              </SelectTrigger>
-              <SelectContent>
-                {commonCurrencies.map((currency) => (
-                  <SelectItem key={currency.code} value={currency.code}>
-                    {currency.code} - {currency.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.currency && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.currency.message}
-              </p>
-            )}
-          </div>
-
-          <div className="md:col-span-2 space-y-2">
-            <Label htmlFor="description">Описание</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="Краткое описание платежного метода"
-              rows={2}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Limits and Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Лимиты и настройки</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="minAmount">Минимальная сумма</Label>
-            <div className="relative">
+    <div className="max-h-[80vh] overflow-y-auto pr-2">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CreditCard className="h-5 w-5" />
+              Основная информация
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Название *</Label>
               <Input
-                id="minAmount"
-                type="number"
-                step="0.01"
-                min="0"
-                {...register("minAmount")}
-                placeholder="0.00"
-                className="pr-12"
+                id="name"
+                {...register("name", { required: "Название обязательно" })}
+                placeholder="Например: Банковская карта"
               />
-              {watchedCurrency && (
-                <Badge
-                  variant="outline"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
-                >
-                  {watchedCurrency}
-                </Badge>
+              {errors.name && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.name.message}
+                </p>
               )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="maxAmount">Максимальная сумма</Label>
-            <div className="relative">
+            <div className="space-y-2">
+              <Label htmlFor="code">Код *</Label>
               <Input
-                id="maxAmount"
-                type="number"
-                step="0.01"
-                min="0"
-                {...register("maxAmount")}
-                placeholder="0.00"
-                className="pr-12"
+                id="code"
+                {...register("code", { required: "Код обязателен" })}
+                placeholder="Например: CARD_RUB"
+                className="font-mono"
               />
-              {watchedCurrency && (
-                <Badge
-                  variant="outline"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
-                >
-                  {watchedCurrency}
-                </Badge>
+              {errors.code && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.code.message}
+                </p>
               )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fee">Комиссия (%)</Label>
-            <div className="relative">
-              <Input
-                id="fee"
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                {...register("fee")}
-                placeholder="0.00"
-                className="pr-8"
-              />
-              <Badge
-                variant="outline"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
+            <div className="space-y-2">
+              <Label htmlFor="country">Страна *</Label>
+              <Select
+                value={watchedCountry}
+                onValueChange={(value) => setValue("country", value)}
               >
-                %
+                <SelectTrigger>
+                  <Globe className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Выберите страну" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countriesLoading ? (
+                    <div className="p-2 text-center">
+                      <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                    </div>
+                  ) : (
+                    countries?.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.name} ({country.code})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {errors.country && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.country.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Валюта *</Label>
+              <Select
+                value={watchedCurrency}
+                onValueChange={(value) => setValue("currency", value)}
+              >
+                <SelectTrigger>
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Выберите валюту" />
+                </SelectTrigger>
+                <SelectContent>
+                  {commonCurrencies.map((currency) => (
+                    <SelectItem key={currency.code} value={currency.code}>
+                      {currency.code} - {currency.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.currency && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.currency.message}
+                </p>
+              )}
+            </div>
+
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="description">Описание</Label>
+              <Textarea
+                id="description"
+                {...register("description")}
+                placeholder="Краткое описание платежного метода"
+                rows={2}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Limits and Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Лимиты и настройки</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="minAmount">Минимальная сумма</Label>
+              <div className="relative">
+                <Input
+                  id="minAmount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register("minAmount")}
+                  placeholder="0.00"
+                  className="pr-12"
+                />
+                {watchedCurrency && (
+                  <Badge
+                    variant="outline"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
+                  >
+                    {watchedCurrency}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maxAmount">Максимальная сумма</Label>
+              <div className="relative">
+                <Input
+                  id="maxAmount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register("maxAmount")}
+                  placeholder="0.00"
+                  className="pr-12"
+                />
+                {watchedCurrency && (
+                  <Badge
+                    variant="outline"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
+                  >
+                    {watchedCurrency}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="fee">Комиссия (%)</Label>
+              <div className="relative">
+                <Input
+                  id="fee"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  {...register("fee")}
+                  placeholder="0.00"
+                  className="pr-8"
+                />
+                <Badge
+                  variant="outline"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
+                >
+                  %
+                </Badge>
+              </div>
+            </div>
+
+            <div className="md:col-span-3 flex items-center space-x-3 p-4 border rounded-md">
+              <Switch
+                id="isActive"
+                checked={watchedIsActive}
+                onCheckedChange={(checked) => setValue("isActive", checked)}
+              />
+              <div className="flex-1">
+                <Label htmlFor="isActive" className="text-base font-medium">
+                  Активен
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Активные платежные методы доступны пользователям для выбора
+                </p>
+              </div>
+              <Badge variant={watchedIsActive ? "default" : "secondary"}>
+                {watchedIsActive ? "Активен" : "Неактивен"}
               </Badge>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="md:col-span-3 flex items-center space-x-3 p-4 border rounded-md">
-            <Switch
-              id="isActive"
-              checked={watchedIsActive}
-              onCheckedChange={(checked) => setValue("isActive", checked)}
-            />
-            <div className="flex-1">
-              <Label htmlFor="isActive" className="text-base font-medium">
-                Активен
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Активные платежные методы доступны пользователям для выбора
-              </p>
-            </div>
-            <Badge variant={watchedIsActive ? "default" : "secondary"}>
-              {watchedIsActive ? "Активен" : "Неактивен"}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Submit Buttons */}
-      <div className="flex justify-end gap-3">
-        <Button
-          type="submit"
-          disabled={
-            isSubmitting || createMutation.isPending || updateMutation.isPending
-          }
-          className="min-w-24"
-        >
-          {isSubmitting ||
-          createMutation.isPending ||
-          updateMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : paymentMethod ? (
-            "Обновить"
-          ) : (
-            "Создать"
-          )}
-        </Button>
-      </div>
-    </form>
+        {/* Submit Buttons */}
+        <div className="flex justify-end gap-3">
+          <Button
+            type="submit"
+            disabled={
+              isSubmitting ||
+              createMutation.isPending ||
+              updateMutation.isPending
+            }
+            className="min-w-24"
+          >
+            {isSubmitting ||
+            createMutation.isPending ||
+            updateMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : paymentMethod ? (
+              "Обновить"
+            ) : (
+              "Создать"
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
