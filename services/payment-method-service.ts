@@ -3,9 +3,11 @@ import { api } from "@/lib/api-client";
 export interface PaymentMethod {
   id: number;
   name: string;
-  code: string;
+  methodCode: string; // Changed from 'code' to match API response
   country: string;
   currency: string;
+  icon?: string | null; // Added icon field from API response
+  sortOrder?: number; // Added sortOrder field from API response
   minAmount?: number;
   maxAmount?: number;
   fee?: number;
@@ -17,7 +19,7 @@ export interface PaymentMethod {
 
 export interface CreatePaymentMethodDto {
   name: string;
-  code: string;
+  methodCode: string; // Changed from 'code' to match API
   country: string;
   currency: string;
   minAmount?: number;
@@ -29,7 +31,7 @@ export interface CreatePaymentMethodDto {
 
 export interface UpdatePaymentMethodDto {
   name?: string;
-  code?: string;
+  methodCode?: string; // Changed from 'code' to match API
   country?: string;
   currency?: string;
   minAmount?: number;
@@ -67,7 +69,15 @@ export const PaymentMethodService = {
     params?: GetPaymentMethodsDto
   ): Promise<PaymentMethodsResponse> => {
     const response = await api.paymentMethods.getAll(params);
-    return response.data;
+    // Handle if API returns array directly or wrapped in data object
+    const responseData = response.data;
+    if (Array.isArray(responseData)) {
+      return {
+        data: responseData,
+        total: responseData.length,
+      };
+    }
+    return responseData;
   },
 
   /**

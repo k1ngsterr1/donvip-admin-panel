@@ -249,7 +249,7 @@ export const api = {
   paymentMethods: {
     create: (data: {
       name: string;
-      code: string;
+      methodCode: string; // Changed from 'code' to 'methodCode'
       country: string;
       currency: string;
       minAmount?: number;
@@ -268,7 +268,7 @@ export const api = {
       id: number,
       data: {
         name?: string;
-        code?: string;
+        methodCode?: string; // Changed from 'code' to 'methodCode'
         country?: string;
         currency?: string;
         minAmount?: number;

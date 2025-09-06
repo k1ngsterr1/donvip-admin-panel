@@ -38,7 +38,7 @@ interface PaymentMethodFormProps {
 
 interface FormData {
   name: string;
-  code: string;
+  methodCode: string; // Changed from 'code' to 'methodCode'
   country: string;
   currency: string;
   minAmount: string;
@@ -73,7 +73,7 @@ export function PaymentMethodForm({
   } = useForm<FormData>({
     defaultValues: {
       name: paymentMethod?.name || "",
-      code: paymentMethod?.code || "",
+      methodCode: paymentMethod?.methodCode || "",
       country: paymentMethod?.country || "",
       currency: paymentMethod?.currency || "",
       minAmount: paymentMethod?.minAmount?.toString() || "",
@@ -123,7 +123,7 @@ export function PaymentMethodForm({
     try {
       const payload = {
         name: data.name,
-        code: data.code,
+        methodCode: data.methodCode,
         country: data.country,
         currency: data.currency,
         minAmount: data.minAmount ? parseFloat(data.minAmount) : undefined,
@@ -132,7 +132,6 @@ export function PaymentMethodForm({
         isActive: data.isActive,
         description: data.description || undefined,
       };
-
       if (paymentMethod) {
         await updateMutation.mutateAsync(payload);
       } else {
@@ -169,23 +168,20 @@ export function PaymentMethodForm({
                 </p>
               )}
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="code">Код *</Label>
+              <Label htmlFor="methodCode">Код *</Label>
               <Input
-                id="code"
-                {...register("code", { required: "Код обязателен" })}
-                placeholder="Например: CARD_RUB"
-                className="font-mono"
+                id="methodCode"
+                {...register("methodCode", { required: "Код обязателен" })}
+                placeholder="Например: CARD, QIWI"
               />
-              {errors.code && (
+              {errors.methodCode && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
-                  {errors.code.message}
+                  {errors.methodCode.message}
                 </p>
               )}
-            </div>
-
+            </div>{" "}
             <div className="space-y-2">
               <Label htmlFor="country">Страна *</Label>
               <Select
@@ -217,7 +213,6 @@ export function PaymentMethodForm({
                 </p>
               )}
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="currency">Валюта *</Label>
               <Select
@@ -243,7 +238,6 @@ export function PaymentMethodForm({
                 </p>
               )}
             </div>
-
             <div className="md:col-span-2 space-y-2">
               <Label htmlFor="description">Описание</Label>
               <Textarea
