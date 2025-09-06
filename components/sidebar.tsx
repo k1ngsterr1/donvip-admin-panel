@@ -32,6 +32,11 @@ const navItems = [
   { title: "Купоны", href: "/dashboard/coupons", icon: Tag },
   { title: "Отзывы", href: "/dashboard/feedback", icon: Star },
   { title: "Банки", href: "/dashboard/banks", icon: University },
+  {
+    title: "Платежные методы",
+    href: "/dashboard/payment-methods",
+    icon: Settings,
+  },
   { title: "Тех. работы", href: "/dashboard/tech-work", icon: Settings },
 ];
 
