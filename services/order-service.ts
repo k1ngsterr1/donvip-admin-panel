@@ -84,8 +84,13 @@ export const OrderService = {
   getAllForAdmin: async ({
     page,
     limit = 1000000, // Set default limit to one million
-  }: { page?: number; limit?: number } = {}) => {
-    const res = await api.orders.getAllForAdmin({ page, limit });
+    removeDuplicates = true, // Enable duplicate filtering by default
+  }: { page?: number; limit?: number; removeDuplicates?: boolean } = {}) => {
+    const res = await api.orders.getAllForAdmin({
+      page,
+      limit,
+      removeDuplicates,
+    });
     return res.data;
   },
 

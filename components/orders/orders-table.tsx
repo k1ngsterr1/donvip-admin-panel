@@ -226,7 +226,148 @@ export function OrdersTable() {
       // filtered = filtered.filter((order) => order.providerStatus === filters.providerStatus)
     }
 
-    return filtered;
+    // Manual duplicate filtering - remove orders with 1-10 second difference (accounts for rendering delays)
+    const deduplicated = [];
+    const processedOrderIds = new Set();
+
+    // Sort orders by time (newest first) to ensure we keep the most recent duplicate
+    const sortedFiltered = [...filtered].sort((a, b) => {
+      const getOrderTime = (order) => {
+        if (order.time) {
+          // Handle "07.09.2025 09:49:43" format
+          if (typeof order.time === "string" && order.time.includes(".")) {
+            const parts = order.time.match(
+              /(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/
+            );
+            if (parts) {
+              const [, day, month, year, hour, minute, second] = parts;
+              return new Date(
+                `${year}-${month}-${day}T${hour}:${minute}:${second}`
+              ).getTime();
+            }
+          }
+          return new Date(order.time).getTime();
+        }
+        if (order.date) return new Date(order.date).getTime();
+        return 0;
+      };
+      return getOrderTime(b) - getOrderTime(a); // Newest first
+    });
+
+    for (let i = 0; i < sortedFiltered.length; i++) {
+      const order = sortedFiltered[i];
+
+      if (processedOrderIds.has(order.id || order.orderId)) {
+        continue; // Skip if already processed as duplicate
+      }
+
+      // Parse order time
+      let orderTime;
+      if (order.time) {
+        if (typeof order.time === "string" && order.time.includes(".")) {
+          // Handle "07.09.2025 09:49:43" format
+          const parts = order.time.match(
+            /(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/
+          );
+          if (parts) {
+            const [, day, month, year, hour, minute, second] = parts;
+            orderTime = new Date(
+              `${year}-${month}-${day}T${hour}:${minute}:${second}`
+            );
+          }
+        } else {
+          orderTime = new Date(order.time);
+        }
+      } else if (order.date) {
+        orderTime = new Date(order.date);
+      }
+
+      if (!orderTime || isNaN(orderTime.getTime())) {
+        deduplicated.push(order);
+        processedOrderIds.add(order.id || order.orderId);
+        continue;
+      }
+
+      // Look for duplicates in remaining orders
+      let foundDuplicate = false;
+
+      for (let j = i + 1; j < sortedFiltered.length; j++) {
+        const otherOrder = sortedFiltered[j];
+
+        if (processedOrderIds.has(otherOrder.id || otherOrder.orderId)) {
+          continue;
+        }
+
+        // Parse other order time
+        let otherOrderTime;
+        if (otherOrder.time) {
+          if (
+            typeof otherOrder.time === "string" &&
+            otherOrder.time.includes(".")
+          ) {
+            const parts = otherOrder.time.match(
+              /(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/
+            );
+            if (parts) {
+              const [, day, month, year, hour, minute, second] = parts;
+              otherOrderTime = new Date(
+                `${year}-${month}-${day}T${hour}:${minute}:${second}`
+              );
+            }
+          } else {
+            otherOrderTime = new Date(otherOrder.time);
+          }
+        } else if (otherOrder.date) {
+          otherOrderTime = new Date(otherOrder.date);
+        }
+
+        if (!otherOrderTime || isNaN(otherOrderTime.getTime())) {
+          continue;
+        }
+
+        // Check time difference (1-10 seconds to account for rendering delays)
+        const timeDifference = Math.abs(
+          orderTime.getTime() - otherOrderTime.getTime()
+        );
+        const isWithinRange = timeDifference >= 1000 && timeDifference <= 10000;
+
+        if (isWithinRange) {
+          // Check if they are likely duplicates (same customer, product, amount)
+          const sameCustomer =
+            order.customer === otherOrder.customer ||
+            order.playerId === otherOrder.playerId ||
+            order.account_id === otherOrder.account_id;
+
+          const sameProduct =
+            order.product?.name === otherOrder.product?.name ||
+            order.type === otherOrder.type;
+
+          const sameAmount = order.price === otherOrder.price;
+
+          const sameMethod = order.method === otherOrder.method;
+
+          // Consider as duplicate if customer, product/type, amount and method match
+          if (sameCustomer && sameProduct && sameAmount && sameMethod) {
+            processedOrderIds.add(otherOrder.id || otherOrder.orderId);
+            foundDuplicate = true;
+            console.log("Filtered duplicate order:", {
+              kept: { id: order.orderId || order.id, time: order.time },
+              removed: {
+                id: otherOrder.orderId || otherOrder.id,
+                time: otherOrder.time,
+              },
+              timeDiff: timeDifference + "ms",
+            });
+          }
+        }
+      }
+
+      // Add the order to deduplicated list
+      deduplicated.push(order);
+      processedOrderIds.add(order.id || order.orderId);
+    }
+
+    return deduplicated;
   }, [allOrders, filters]);
 
   // Pagination logic for filtered results

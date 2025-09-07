@@ -207,6 +207,7 @@ export const api = {
       limit?: number;
       page?: number;
       search?: string;
+      removeDuplicates?: boolean;
     }) => apiClient.get("/order/admin/history", { params }),
     createDonatBankOrder: (data: DonatBankCreateOrderDto) =>
       apiClient.post("/order/donatbank/create-order", data),
