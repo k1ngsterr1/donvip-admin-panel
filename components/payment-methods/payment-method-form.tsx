@@ -14,6 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +38,8 @@ import {
   Upload,
   X,
   Image,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
 import {
   PaymentMethodService,
@@ -73,6 +87,7 @@ export function PaymentMethodForm({
   );
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [iconError, setIconError] = useState<string | null>(null);
+  const [countryOpen, setCountryOpen] = useState(false);
 
   const {
     register,
@@ -270,28 +285,59 @@ export function PaymentMethodForm({
             </div>{" "}
             <div className="space-y-2">
               <Label htmlFor="country">Страна *</Label>
-              <Select
-                value={watchedCountry}
-                onValueChange={(value) => setValue("country", value)}
-              >
-                <SelectTrigger>
-                  <Globe className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Выберите страну" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countriesLoading ? (
-                    <div className="p-2 text-center">
-                      <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+              <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-full justify-between"
+                  >
+                    <div className="flex items-center">
+                      <Globe className="h-4 w-4 mr-2" />
+                      {watchedCountry
+                        ? countries?.find(
+                            (country) => country.code === watchedCountry
+                          )?.name + ` (${watchedCountry})`
+                        : "Выберите страну"}
                     </div>
-                  ) : (
-                    countries?.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        {country.name} ({country.code})
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Поиск страны..." />
+                    <CommandEmpty>Страна не найдена.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      {countriesLoading ? (
+                        <div className="p-2 text-center">
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        </div>
+                      ) : (
+                        countries?.map((country) => (
+                          <CommandItem
+                            key={country.code}
+                            value={`${country.name} ${country.code}`}
+                            onSelect={() => {
+                              setValue("country", country.code);
+                              setCountryOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                watchedCountry === country.code
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                            />
+                            {country.name} ({country.code})
+                          </CommandItem>
+                        ))
+                      )}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               {errors.country && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
