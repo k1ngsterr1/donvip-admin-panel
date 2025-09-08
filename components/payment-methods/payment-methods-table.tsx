@@ -273,6 +273,7 @@ export function PaymentMethodsTable() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
+              <TableHead className="font-medium">Иконка</TableHead>
               <TableHead className="font-medium">Название</TableHead>
               <TableHead className="font-medium">Код</TableHead>
               <TableHead className="font-medium">Страна</TableHead>
@@ -286,7 +287,7 @@ export function PaymentMethodsTable() {
           <TableBody>
             {filteredMethods.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   <div className="flex flex-col items-center gap-3">
                     <CreditCard className="h-12 w-12 text-muted-foreground" />
                     <div>
@@ -304,10 +305,22 @@ export function PaymentMethodsTable() {
               filteredMethods.map((method) => (
                 <TableRow key={method.id} className="hover:bg-muted/30">
                   <TableCell>
+                    <div className="flex items-center justify-center">
+                      {method.icon ? (
+                        <img
+                          src={method.icon}
+                          alt={method.name}
+                          className="h-8 w-8 object-contain rounded"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
+                          <CreditCard className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <CreditCard className="h-4 w-4 text-primary" />
-                      </div>
                       <div>
                         <p className="font-medium">{method.name}</p>
                         {method.description && (

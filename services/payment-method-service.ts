@@ -27,6 +27,7 @@ export interface CreatePaymentMethodDto {
   fee?: number;
   isActive?: boolean;
   description?: string;
+  icon?: string;
 }
 
 export interface UpdatePaymentMethodDto {
@@ -39,6 +40,7 @@ export interface UpdatePaymentMethodDto {
   fee?: number;
   isActive?: boolean;
   description?: string;
+  icon?: string;
 }
 
 export interface GetPaymentMethodsDto {
@@ -130,6 +132,32 @@ export const PaymentMethodService = {
    */
   getAllSupportedCountries: async (): Promise<Country[]> => {
     const response = await api.paymentMethods.getSupportedCountries();
+    return response.data;
+  },
+
+  /**
+   * Upload icon for payment method creation
+   */
+  uploadIcon: async (
+    file: File
+  ): Promise<{ iconPath: string; message: string }> => {
+    const response = await api.paymentMethods.uploadIcon(file);
+    return response.data;
+  },
+
+  /**
+   * Update existing payment method icon
+   */
+  updateIcon: async (id: number, file: File): Promise<PaymentMethod> => {
+    const response = await api.paymentMethods.updateIcon(id, file);
+    return response.data;
+  },
+
+  /**
+   * Delete payment method icon
+   */
+  deleteIcon: async (id: number): Promise<void> => {
+    const response = await api.paymentMethods.deleteIcon(id);
     return response.data;
   },
 };

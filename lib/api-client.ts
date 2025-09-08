@@ -258,6 +258,7 @@ export const api = {
       fee?: number;
       isActive?: boolean;
       description?: string;
+      icon?: string;
     }) => apiClient.post("/payment/payment-methods", data),
     getAll: (params?: {
       country?: string;
@@ -277,12 +278,37 @@ export const api = {
         fee?: number;
         isActive?: boolean;
         description?: string;
+        icon?: string;
       }
     ) => apiClient.post(`/payment/payment-methods/${id}`, data),
     delete: (id: number) =>
       apiClient.post(`/payment/payment-methods/${id}/delete`),
     getCountries: () => apiClient.get("/payment/countries"),
     getSupportedCountries: () => apiClient.get("/payment/supported-countries"),
+
+    // Icon upload endpoints
+    uploadIcon: (file: File) => {
+      const formData = new FormData();
+      formData.append("icon", file);
+      return apiClient.post("/payment/payment-methods/upload-icon", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    },
+
+    updateIcon: (id: number, file: File) => {
+      const formData = new FormData();
+      formData.append("icon", file);
+      return apiClient.post(`/payment/payment-methods/${id}/icon`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    },
+
+    deleteIcon: (id: number) =>
+      apiClient.delete(`/payment/payment-methods/${id}/icon`),
   },
 
   techworks: {

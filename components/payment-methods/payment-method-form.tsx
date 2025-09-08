@@ -23,6 +23,9 @@ import {
   DollarSign,
   CreditCard,
   Loader2,
+  Upload,
+  X,
+  Image,
 } from "lucide-react";
 import {
   PaymentMethodService,
@@ -46,6 +49,7 @@ interface FormData {
   fee: string;
   isActive: boolean;
   description: string;
+  icon: string;
 }
 
 const commonCurrencies = [
@@ -63,6 +67,12 @@ export function PaymentMethodForm({
   onSuccess,
 }: PaymentMethodFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(
+    paymentMethod?.icon || null
+  );
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [iconError, setIconError] = useState<string | null>(null);
 
   const {
     register,
@@ -81,12 +91,75 @@ export function PaymentMethodForm({
       fee: paymentMethod?.fee?.toString() || "",
       isActive: paymentMethod?.isActive ?? true,
       description: paymentMethod?.description || "",
+      icon: paymentMethod?.icon || "",
     },
   });
 
   const watchedCountry = watch("country");
   const watchedCurrency = watch("currency");
   const watchedIsActive = watch("isActive");
+
+  // Icon upload handlers
+  const handleIconSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/svg+xml"];
+    if (!validTypes.includes(file.type)) {
+      setIconError("Поддерживаются только файлы JPEG, PNG и SVG");
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setIconError("Размер файла не должен превышать 5MB");
+      return;
+    }
+
+    setIconError(null);
+    setIconFile(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setIconPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleIconUpload = async () => {
+    if (!iconFile) return null;
+
+    setIsUploadingIcon(true);
+    try {
+      const response = await PaymentMethodService.uploadIcon(iconFile);
+      const iconPath = response.iconPath;
+      setValue("icon", iconPath);
+      setIconFile(null);
+      return iconPath;
+    } catch (error) {
+      console.error("Icon upload failed:", error);
+      setIconError("Ошибка загрузки иконки");
+      throw error;
+    } finally {
+      setIsUploadingIcon(false);
+    }
+  };
+
+  const handleRemoveIcon = async () => {
+    if (paymentMethod?.id && paymentMethod.icon) {
+      try {
+        await PaymentMethodService.deleteIcon(paymentMethod.id);
+      } catch (error) {
+        console.error("Failed to delete icon:", error);
+      }
+    }
+
+    setValue("icon", "");
+    setIconPreview(null);
+    setIconFile(null);
+  };
 
   // Fetch supported countries
   const { data: countries, isLoading: countriesLoading } = useQuery({
@@ -121,6 +194,15 @@ export function PaymentMethodForm({
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
+      // Upload icon first if a new file is selected
+      let iconPath = data.icon;
+      if (iconFile) {
+        const uploadedIconPath = await handleIconUpload();
+        if (uploadedIconPath) {
+          iconPath = uploadedIconPath;
+        }
+      }
+
       const payload = {
         name: data.name,
         methodCode: data.methodCode,
@@ -131,12 +213,16 @@ export function PaymentMethodForm({
         fee: data.fee ? parseFloat(data.fee) : undefined,
         isActive: data.isActive,
         description: data.description || undefined,
+        icon: iconPath || undefined,
       };
+
       if (paymentMethod) {
         await updateMutation.mutateAsync(payload);
       } else {
         await createMutation.mutateAsync(payload as CreatePaymentMethodDto);
       }
+    } catch (error) {
+      console.error("Form submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -250,6 +336,102 @@ export function PaymentMethodForm({
           </CardContent>
         </Card>
 
+        {/* Icon Upload */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Иконка метода</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Current icon preview */}
+            {iconPreview && (
+              <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/50">
+                <div className="relative">
+                  <img
+                    src={iconPreview}
+                    alt="Icon preview"
+                    className="w-12 h-12 object-contain rounded"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    {iconFile ? "Новая иконка" : "Текущая иконка"}
+                  </p>
+                  {iconFile && (
+                    <p className="text-xs text-muted-foreground">
+                      {iconFile.name} ({(iconFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveIcon}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Upload area */}
+            <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              <div className="space-y-4">
+                <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                  <Image className="w-6 h-6 text-muted-foreground" />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="icon-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {iconPreview ? "Изменить иконку" : "Загрузить иконку"}
+                  </Label>
+                  <input
+                    id="icon-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/svg+xml"
+                    onChange={handleIconSelect}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    JPEG, PNG или SVG до 5MB
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload button for new file */}
+            {iconFile && !isUploadingIcon && (
+              <Button
+                type="button"
+                onClick={handleIconUpload}
+                className="w-full"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Загрузить иконку
+              </Button>
+            )}
+
+            {isUploadingIcon && (
+              <div className="text-center py-4">
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Загрузка иконки...
+                </div>
+              </div>
+            )}
+
+            {iconError && (
+              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                {iconError}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Limits and Settings */}
         <Card>
           <CardHeader>
@@ -351,12 +533,14 @@ export function PaymentMethodForm({
             type="submit"
             disabled={
               isSubmitting ||
+              isUploadingIcon ||
               createMutation.isPending ||
               updateMutation.isPending
             }
             className="min-w-24"
           >
             {isSubmitting ||
+            isUploadingIcon ||
             createMutation.isPending ||
             updateMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
