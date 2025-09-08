@@ -55,7 +55,7 @@ interface PaymentMethodFormProps {
 
 interface FormData {
   name: string;
-  methodCode: string; // Changed from 'code' to 'methodCode'
+  code: string;
   country: string;
   currency: string;
   minAmount: string;
@@ -98,7 +98,7 @@ export function PaymentMethodForm({
   } = useForm<FormData>({
     defaultValues: {
       name: paymentMethod?.name || "",
-      methodCode: paymentMethod?.methodCode || "",
+      code: paymentMethod?.methodCode || "",
       country: paymentMethod?.country || "",
       currency: paymentMethod?.currency || "",
       minAmount: paymentMethod?.minAmount?.toString() || "",
@@ -220,7 +220,7 @@ export function PaymentMethodForm({
 
       const payload = {
         name: data.name,
-        methodCode: data.methodCode,
+        code: data.code,
         country: data.country,
         currency: data.currency,
         minAmount: data.minAmount ? parseFloat(data.minAmount) : undefined,
@@ -270,16 +270,16 @@ export function PaymentMethodForm({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="methodCode">Код *</Label>
+              <Label htmlFor="code">Код *</Label>
               <Input
-                id="methodCode"
-                {...register("methodCode", { required: "Код обязателен" })}
+                id="code"
+                {...register("code", { required: "Код обязателен" })}
                 placeholder="Например: CARD, QIWI"
               />
-              {errors.methodCode && (
+              {errors.code && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
-                  {errors.methodCode.message}
+                  {errors.code.message}
                 </p>
               )}
             </div>{" "}

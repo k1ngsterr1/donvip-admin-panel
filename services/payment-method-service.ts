@@ -19,7 +19,7 @@ export interface PaymentMethod {
 
 export interface CreatePaymentMethodDto {
   name: string;
-  methodCode: string; // Changed from 'code' to match API
+  code: string;
   country: string;
   currency: string;
   minAmount?: number;
@@ -32,7 +32,7 @@ export interface CreatePaymentMethodDto {
 
 export interface UpdatePaymentMethodDto {
   name?: string;
-  methodCode?: string; // Changed from 'code' to match API
+  code?: string;
   country?: string;
   currency?: string;
   minAmount?: number;
