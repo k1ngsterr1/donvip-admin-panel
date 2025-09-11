@@ -1,5 +1,17 @@
 import { AuthService } from "@/services"; // Assuming AuthService is correctly defined elsewhere
 import axios, { type AxiosResponse } from "axios";
+import {
+  CreateGameContentDto,
+  UpdateGameContentDto,
+  CreateReviewDto,
+  CreateFAQDto,
+  GameContent,
+  GameListResponse,
+  GameSearchResponse,
+  GameInstructionResponse,
+  GameReviewsResponse,
+  GameFAQResponse,
+} from "@/types/game-content-dto";
 
 // Define types to avoid implicit any errors
 interface RequestConfig {
@@ -342,5 +354,63 @@ export const api = {
     ): Promise<AxiosResponse<Bank>> => apiClient.patch(`/banks/${id}`, data),
     delete: (id: number): Promise<AxiosResponse<Bank>> =>
       apiClient.delete(`/banks/${id}`), // Kept for API completeness
+  },
+
+  gameContent: {
+    // Public endpoints
+    getAll: (): Promise<AxiosResponse<GameListResponse>> =>
+      apiClient.get("/game-content"),
+    search: (query: string): Promise<AxiosResponse<GameSearchResponse>> =>
+      apiClient.get(`/game-content/search?q=${encodeURIComponent(query)}`),
+    getById: (gameId: string): Promise<AxiosResponse<GameContent>> =>
+      apiClient.get(`/game-content/${gameId}`),
+    getInstruction: (
+      gameId: string
+    ): Promise<AxiosResponse<GameInstructionResponse>> =>
+      apiClient.get(`/game-content/${gameId}/instruction`),
+    getReviews: (
+      gameId: string,
+      page: number = 1,
+      limit: number = 10
+    ): Promise<AxiosResponse<GameReviewsResponse>> =>
+      apiClient.get(
+        `/game-content/${gameId}/reviews?page=${page}&limit=${limit}`
+      ),
+    getFAQ: (gameId: string): Promise<AxiosResponse<GameFAQResponse>> =>
+      apiClient.get(`/game-content/${gameId}/faq`),
+
+    // Admin endpoints
+    create: (data: CreateGameContentDto): Promise<AxiosResponse<GameContent>> =>
+      apiClient.post("/game-content", data),
+    update: (
+      gameId: string,
+      data: UpdateGameContentDto
+    ): Promise<AxiosResponse<GameContent>> =>
+      apiClient.put(`/game-content/${gameId}`, data),
+    delete: (
+      gameId: string
+    ): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
+      apiClient.delete(`/game-content/${gameId}`),
+
+    // Review management
+    addReview: (
+      gameId: string,
+      data: CreateReviewDto
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.post(`/game-content/${gameId}/reviews`, data),
+    deleteReview: (
+      gameId: string,
+      reviewId: string
+    ): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
+      apiClient.delete(`/game-content/${gameId}/reviews/${reviewId}`),
+
+    // FAQ management
+    addFAQ: (gameId: string, data: CreateFAQDto): Promise<AxiosResponse<any>> =>
+      apiClient.post(`/game-content/${gameId}/faq`, data),
+    deleteFAQ: (
+      gameId: string,
+      faqId: string
+    ): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
+      apiClient.delete(`/game-content/${gameId}/faq/${faqId}`),
   },
 };

@@ -1,0 +1,417 @@
+"use client";
+
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Loader2,
+  FileText,
+  GamepadIcon,
+  TrendingUp,
+} from "lucide-react";
+import { GameContentService } from "@/services/game-content-service";
+import { GameContentForm } from "./game-content-form";
+import { GameContent } from "@/types/game-content-dto";
+
+interface GameListItem {
+  gameId: string;
+  gameName: string;
+  description: string;
+  instruction?: {
+    headerText: string;
+    steps: Array<{ id: string; text: string; highlight?: string }>;
+    images: Array<{
+      id: string;
+      src: string;
+      alt: string;
+      width?: number;
+      height?: number;
+    }>;
+  };
+  reviewManagement?: any;
+  faqManagement?: any;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export function GameContentList() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingGame, setEditingGame] = useState<GameContent | null>(null);
+  const [deletingGameId, setDeletingGameId] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+
+  // Fetch games data
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["gameContent"],
+    queryFn: () => GameContentService.getAllGames(),
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (gameId: string) =>
+      GameContentService.deleteGameContent(gameId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gameContent"] });
+      toast({
+        title: "Успешно",
+        description: "Игровой контент удален",
+      });
+      setDeletingGameId(null);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить игровой контент",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Transform data to GameListItem
+  const games: GameListItem[] = data?.games || [];
+  const totalGames = games.length;
+
+  // Filter games based on search term
+  const filteredGames = games.filter(
+    (game) =>
+      game.gameName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      game.gameId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      game.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleEdit = (game: GameListItem) => {
+    // Convert GameListItem to GameContent for editing
+    const gameContent: GameContent = {
+      gameId: game.gameId,
+      gameName: game.gameName,
+      description: game.description,
+      instruction: game.instruction
+        ? {
+            headerText: game.instruction.headerText,
+            steps: game.instruction.steps,
+            images: game.instruction.images,
+          }
+        : {
+            headerText: "Инструкция",
+            steps: [],
+            images: [],
+          },
+      reviews: [],
+      faq: [],
+      averageRating: 0,
+      totalReviews: 0,
+      createdAt: game.createdAt || new Date().toISOString(),
+      updatedAt: game.updatedAt || new Date().toISOString(),
+    };
+    setEditingGame(gameContent);
+  };
+
+  const handleDelete = (gameId: string) => {
+    setDeletingGameId(gameId);
+  };
+
+  const confirmDelete = () => {
+    if (deletingGameId) {
+      deleteMutation.mutate(deletingGameId);
+    }
+  };
+
+  const handleFormSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["gameContent"] });
+    setShowCreateDialog(false);
+    setEditingGame(null);
+  };
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center text-red-600">
+            Ошибка загрузки данных: {error.message}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Всего игр</CardTitle>
+            <GamepadIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalGames}</div>
+            <p className="text-xs text-muted-foreground">игровых контентов</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              С инструкциями
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {
+                games.filter(
+                  (game) => (game.instruction?.steps?.length || 0) > 0
+                ).length
+              }
+            </div>
+            <p className="text-xs text-muted-foreground">имеют инструкции</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Активных</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalGames}</div>
+            <p className="text-xs text-muted-foreground">
+              доступно пользователям
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle>Игровой контент</CardTitle>
+              <CardDescription>
+                Управление игровым контентом и инструкциями
+              </CardDescription>
+            </div>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Добавить игру
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Search */}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по названию, ID или описанию..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID игры</TableHead>
+                  <TableHead>Название</TableHead>
+                  <TableHead>Описание</TableHead>
+                  <TableHead>Инструкции</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                      <p>Загрузка...</p>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredGames.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <GamepadIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        {searchTerm
+                          ? "Игры не найдены"
+                          : "Игровой контент отсутствует"}
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredGames.map((game) => (
+                    <TableRow key={game.gameId}>
+                      <TableCell className="font-medium">
+                        <Badge variant="outline">{game.gameId}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {game.gameName}
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <p className="truncate" title={game.description}>
+                          {game.description}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              (game.instruction?.steps?.length || 0) > 0
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {game.instruction?.steps?.length || 0} шагов
+                          </Badge>
+                          {(game.instruction?.images?.length || 0) > 0 && (
+                            <Badge variant="outline">
+                              {game.instruction?.images?.length || 0}{" "}
+                              изображений
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="default">Активная</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(game)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(game.gameId)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Create Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Создать новый игровой контент</DialogTitle>
+            <DialogDescription>
+              Добавьте новую игру с инструкциями для пользователей
+            </DialogDescription>
+          </DialogHeader>
+          <GameContentForm onSuccess={handleFormSuccess} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingGame} onOpenChange={() => setEditingGame(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Редактировать игровой контент</DialogTitle>
+            <DialogDescription>
+              Изменить информацию и инструкции для игры
+            </DialogDescription>
+          </DialogHeader>
+          {editingGame && (
+            <GameContentForm
+              gameContent={editingGame}
+              onSuccess={handleFormSuccess}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!deletingGameId}
+        onOpenChange={() => setDeletingGameId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить игровой контент?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие нельзя отменить. Игровой контент и все связанные с
+              ним инструкции будут удалены навсегда.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Удаление...
+                </>
+              ) : (
+                "Удалить"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
