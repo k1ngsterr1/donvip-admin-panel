@@ -490,5 +490,54 @@ export const api = {
         : "/game-content/faq/export";
       return apiClient.get(url);
     },
+
+    // New administrative endpoints
+    toggleGameStatus: (
+      gameId: string,
+      data: { active: boolean }
+    ): Promise<AxiosResponse<{ message: string; active: boolean }>> =>
+      apiClient.patch(`/game-content/${gameId}/status`, data),
+    bulkDeleteGames: (data: {
+      gameIds: string[];
+    }): Promise<AxiosResponse<{ message: string; deletedCount: number }>> =>
+      apiClient.post("/game-content/bulk-delete", data),
+    updateGameInstruction: (
+      gameId: string,
+      data: any
+    ): Promise<AxiosResponse<GameContent>> =>
+      apiClient.patch(`/game-content/${gameId}/instruction`, data),
+    updateGameDescription: (
+      gameId: string,
+      data: { description: string }
+    ): Promise<AxiosResponse<GameContent>> =>
+      apiClient.patch(`/game-content/${gameId}/description`, data),
+    duplicateGame: (
+      gameId: string,
+      data: { newGameId: string; newGameName?: string }
+    ): Promise<AxiosResponse<GameContent>> =>
+      apiClient.post(`/game-content/${gameId}/duplicate`, data),
+    getGamesByStatus: (active?: boolean): Promise<AxiosResponse<any>> => {
+      const url =
+        active !== undefined
+          ? `/game-content/games/by-status?active=${active}`
+          : "/game-content/games/by-status";
+      return apiClient.get(url);
+    },
+    searchGamesAdvanced: (filters: {
+      query?: string;
+      active?: boolean;
+      minReviews?: number;
+      minRating?: number;
+    }): Promise<AxiosResponse<any>> => {
+      const params = new URLSearchParams();
+      if (filters.query) params.append("query", filters.query);
+      if (filters.active !== undefined)
+        params.append("active", filters.active.toString());
+      if (filters.minReviews !== undefined)
+        params.append("minReviews", filters.minReviews.toString());
+      if (filters.minRating !== undefined)
+        params.append("minRating", filters.minRating.toString());
+      return apiClient.get(`/game-content/games/advanced-search?${params}`);
+    },
   },
 };

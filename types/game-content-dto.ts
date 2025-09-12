@@ -97,6 +97,7 @@ export interface GameListResponse {
     totalReviews: number;
     averageRating: number;
     lastUpdated: string;
+    isActive?: boolean;
   }>;
   total: number;
 }

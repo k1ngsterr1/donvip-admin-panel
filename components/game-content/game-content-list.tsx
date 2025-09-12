@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -81,6 +82,7 @@ interface GameListItem {
   averageRating?: number;
   createdAt?: string;
   updatedAt?: string;
+  isActive?: boolean;
 }
 
 export function GameContentList() {
@@ -88,6 +90,8 @@ export function GameContentList() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingGame, setEditingGame] = useState<GameContent | null>(null);
   const [deletingGameId, setDeletingGameId] = useState<string | null>(null);
+  const [selectedGames, setSelectedGames] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -113,6 +117,48 @@ export function GameContentList() {
       toast({
         title: "Ошибка",
         description: "Не удалось удалить игровой контент",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (gameIds: string[]) =>
+      GameContentService.bulkDeleteGames(gameIds),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["gameContent"] });
+      toast({
+        title: "Успешно",
+        description: `Удалено ${result.deletedCount} игр`,
+      });
+      setSelectedGames([]);
+      setShowBulkActions(false);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить игры",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle status mutation
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ gameId, active }: { gameId: string; active: boolean }) =>
+      GameContentService.toggleGameStatus(gameId, active),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["gameContent"] });
+      toast({
+        title: "Успешно",
+        description: result.message,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось изменить статус игры",
         variant: "destructive",
       });
     },
@@ -171,6 +217,32 @@ export function GameContentList() {
     queryClient.invalidateQueries({ queryKey: ["gameContent"] });
     setShowCreateDialog(false);
     setEditingGame(null);
+  };
+
+  // Selection handlers
+  const handleSelectGame = (gameId: string) => {
+    setSelectedGames((prev) =>
+      prev.includes(gameId)
+        ? prev.filter((id) => id !== gameId)
+        : [...prev, gameId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedGames.length === filteredGames.length) {
+      setSelectedGames([]);
+    } else {
+      setSelectedGames(filteredGames.map((game) => game.gameId));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedGames.length === 0) return;
+    bulkDeleteMutation.mutate(selectedGames);
+  };
+
+  const handleToggleStatus = (gameId: string, currentActive: boolean) => {
+    toggleStatusMutation.mutate({ gameId, active: !currentActive });
   };
 
   if (error) {
@@ -263,17 +335,50 @@ export function GameContentList() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search */}
-          <div className="flex items-center gap-2 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Поиск по названию, ID или описанию..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          {/* Search and Bulk Actions */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Поиск по названию, ID или описанию..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
+
+            {/* Bulk Actions */}
+            {selectedGames.length > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">
+                  Выбрано: {selectedGames.length} игр
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkDeleteMutation.isPending}
+                  >
+                    {bulkDeleteMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Удалить выбранные
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedGames([])}
+                  >
+                    Отменить выбор
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Table */}
@@ -281,6 +386,15 @@ export function GameContentList() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={
+                        selectedGames.length === filteredGames.length &&
+                        filteredGames.length > 0
+                      }
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>ID игры</TableHead>
                   <TableHead>Название</TableHead>
                   <TableHead>Описание</TableHead>
@@ -294,14 +408,14 @@ export function GameContentList() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
                       <p>Загрузка...</p>
                     </TableCell>
                   </TableRow>
                 ) : filteredGames.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       <GamepadIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                       <p className="text-muted-foreground">
                         {searchTerm
@@ -313,6 +427,12 @@ export function GameContentList() {
                 ) : (
                   filteredGames.map((game) => (
                     <TableRow key={game.gameId}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedGames.includes(game.gameId)}
+                          onCheckedChange={() => handleSelectGame(game.gameId)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         <Badge variant="outline">{game.gameId}</Badge>
                       </TableCell>
@@ -365,7 +485,21 @@ export function GameContentList() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="default">Активная</Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            handleToggleStatus(game.gameId, !game.isActive)
+                          }
+                          className="p-0"
+                        >
+                          <Badge
+                            variant={game.isActive ? "default" : "secondary"}
+                            className="cursor-pointer"
+                          >
+                            {game.isActive ? "Активная" : "Неактивная"}
+                          </Badge>
+                        </Button>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">

@@ -268,4 +268,90 @@ export const GameContentService = {
     const response = await api.gameContent.exportFAQ(gameId);
     return response.data;
   },
+
+  // Новые административные методы
+
+  /**
+   * Toggle game status
+   */
+  toggleGameStatus: async (
+    gameId: string,
+    active: boolean
+  ): Promise<{ message: string; active: boolean }> => {
+    const response = await api.gameContent.toggleGameStatus(gameId, { active });
+    return response.data;
+  },
+
+  /**
+   * Bulk delete games
+   */
+  bulkDeleteGames: async (
+    gameIds: string[]
+  ): Promise<{ message: string; deletedCount: number }> => {
+    const response = await api.gameContent.bulkDeleteGames({ gameIds });
+    return response.data;
+  },
+
+  /**
+   * Update only game instruction
+   */
+  updateGameInstruction: async (
+    gameId: string,
+    instructionDto: any
+  ): Promise<GameContent> => {
+    const response = await api.gameContent.updateGameInstruction(
+      gameId,
+      instructionDto
+    );
+    return response.data;
+  },
+
+  /**
+   * Update only game description
+   */
+  updateGameDescription: async (
+    gameId: string,
+    description: string
+  ): Promise<GameContent> => {
+    const response = await api.gameContent.updateGameDescription(gameId, {
+      description,
+    });
+    return response.data;
+  },
+
+  /**
+   * Duplicate game content
+   */
+  duplicateGame: async (
+    gameId: string,
+    newGameId: string,
+    newGameName?: string
+  ): Promise<GameContent> => {
+    const response = await api.gameContent.duplicateGame(gameId, {
+      newGameId,
+      newGameName,
+    });
+    return response.data;
+  },
+
+  /**
+   * Get games by status
+   */
+  getGamesByStatus: async (active?: boolean): Promise<GameListResponse> => {
+    const response = await api.gameContent.getGamesByStatus(active);
+    return response.data;
+  },
+
+  /**
+   * Advanced search games
+   */
+  searchGamesAdvanced: async (filters: {
+    query?: string;
+    active?: boolean;
+    minReviews?: number;
+    minRating?: number;
+  }): Promise<GameListResponse> => {
+    const response = await api.gameContent.searchGamesAdvanced(filters);
+    return response.data;
+  },
 };
