@@ -32,13 +32,13 @@ import {
   GamepadIcon,
 } from "lucide-react";
 import { GameContentService } from "@/services/game-content-service";
+import { ProductService } from "@/services/product-service";
 import {
   GameContent,
   CreateGameContentDto,
   UpdateGameContentDto,
   InstructionStepDto,
   InstructionImageDto,
-  AvailableGame,
 } from "@/types/game-content-dto";
 
 interface GameContentFormProps {
@@ -62,12 +62,21 @@ export function GameContentForm({
 }: GameContentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch available games for selection
-  const { data: availableGames } = useQuery({
-    queryKey: ["availableGames"],
-    queryFn: () => GameContentService.getAvailableGames(),
+  // Fetch available games from products
+  const { data: productsData } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => ProductService.getProducts({ activeOnly: true }),
     enabled: !gameContent, // Only fetch if creating new content
   });
+
+  const availableGames =
+    productsData?.data.map((product) => ({
+      gameId:
+        product.smile_api_game ||
+        product.name.toLowerCase().replace(/\s+/g, "-"),
+      gameName: product.name,
+      description: product.description,
+    })) || [];
 
   const {
     register,

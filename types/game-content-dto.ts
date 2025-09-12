@@ -39,11 +39,6 @@ export interface CreateGameContentDto {
   faq?: CreateFAQDto[];
 }
 
-export interface AvailableGame {
-  gameId: string;
-  gameName: string;
-}
-
 export interface UpdateGameContentDto {
   gameName?: string;
   instruction?: GameInstructionDto;
