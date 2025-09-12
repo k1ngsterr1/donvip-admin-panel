@@ -30,6 +30,8 @@ import {
   Image as ImageIcon,
   Type,
   GamepadIcon,
+  Star,
+  HelpCircle,
 } from "lucide-react";
 import { GameContentService } from "@/services/game-content-service";
 import { ProductService } from "@/services/product-service";
@@ -39,6 +41,8 @@ import {
   UpdateGameContentDto,
   InstructionStepDto,
   InstructionImageDto,
+  CreateReviewDto,
+  CreateFAQDto,
 } from "@/types/game-content-dto";
 
 interface GameContentFormProps {
@@ -54,6 +58,8 @@ interface FormData {
     steps: InstructionStepDto[];
     images: InstructionImageDto[];
   };
+  reviews: CreateReviewDto[];
+  faq: CreateFAQDto[];
 }
 
 export function GameContentForm({
@@ -96,6 +102,18 @@ export function GameContentForm({
         ],
         images: gameContent?.instruction?.images || [],
       },
+      reviews:
+        gameContent?.reviews?.map((review) => ({
+          userName: review.userName,
+          rating: review.rating,
+          comment: review.comment,
+          verified: review.verified,
+        })) || [],
+      faq:
+        gameContent?.faq?.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })) || [],
     },
   });
 
@@ -115,6 +133,24 @@ export function GameContentForm({
   } = useFieldArray({
     control,
     name: "instruction.images",
+  });
+
+  const {
+    fields: reviewFields,
+    append: appendReview,
+    remove: removeReview,
+  } = useFieldArray({
+    control,
+    name: "reviews",
+  });
+
+  const {
+    fields: faqFields,
+    append: appendFAQ,
+    remove: removeFAQ,
+  } = useFieldArray({
+    control,
+    name: "faq",
   });
 
   // Create mutation
@@ -166,6 +202,8 @@ export function GameContentForm({
         const payload: UpdateGameContentDto = {
           description: data.description,
           instruction: data.instruction,
+          reviews: data.reviews,
+          faq: data.faq,
         };
         await updateMutation.mutateAsync({
           gameId: gameContent.gameId,
@@ -177,6 +215,8 @@ export function GameContentForm({
           gameId: data.gameId,
           description: data.description,
           instruction: data.instruction,
+          reviews: data.reviews,
+          faq: data.faq,
         };
         await createMutation.mutateAsync(payload);
       }
@@ -200,6 +240,22 @@ export function GameContentForm({
       alt: "",
       width: 400,
       height: 200,
+    });
+  };
+
+  const addReview = () => {
+    appendReview({
+      userName: "",
+      rating: 5,
+      comment: "",
+      verified: false,
+    });
+  };
+
+  const addFAQ = () => {
+    appendFAQ({
+      question: "",
+      answer: "",
     });
   };
 
@@ -431,6 +487,183 @@ export function GameContentForm({
               <div className="text-center py-8 text-muted-foreground">
                 <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p>Изображения не добавлены</p>
+                <p className="text-sm">Нажмите кнопку выше для добавления</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Reviews Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                Отзывы пользователей
+              </div>
+              <Button type="button" onClick={addReview} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить отзыв
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              Добавьте отзывы пользователей о данной игре
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {reviewFields.map((field, index) => (
+              <div key={field.id} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">Отзыв {index + 1}</Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeReview(index)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Имя пользователя *</Label>
+                    <Input
+                      {...register(`reviews.${index}.userName`, {
+                        required: "Имя пользователя обязательно",
+                      })}
+                      placeholder="Игорь К."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Рейтинг *</Label>
+                    <Select
+                      value={watch(`reviews.${index}.rating`)?.toString()}
+                      onValueChange={(value) =>
+                        setValue(`reviews.${index}.rating`, parseInt(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите рейтинг" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map((rating) => (
+                          <SelectItem key={rating} value={rating.toString()}>
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: rating }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                                />
+                              ))}
+                              <span className="ml-1">{rating}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <Label>Комментарий *</Label>
+                    <Textarea
+                      {...register(`reviews.${index}.comment`, {
+                        required: "Комментарий обязателен",
+                      })}
+                      placeholder="Быстрая доставка алмазов, все пришло в течение 5 минут. Рекомендую!"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`verified-${index}`}
+                      {...register(`reviews.${index}.verified`)}
+                      className="rounded"
+                    />
+                    <Label htmlFor={`verified-${index}`}>
+                      Проверенный отзыв
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {reviewFields.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Star className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Отзывы не добавлены</p>
+                <p className="text-sm">Нажмите кнопку выше для добавления</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* FAQ Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="h-5 w-5" />
+                Часто задаваемые вопросы
+              </div>
+              <Button type="button" onClick={addFAQ} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить FAQ
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              Добавьте часто задаваемые вопросы и ответы
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {faqFields.map((field, index) => (
+              <div key={field.id} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">FAQ {index + 1}</Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFAQ(index)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Вопрос *</Label>
+                    <Input
+                      {...register(`faq.${index}.question`, {
+                        required: "Вопрос обязателен",
+                      })}
+                      placeholder="Как долго происходит начисление алмазов?"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Ответ *</Label>
+                    <Textarea
+                      {...register(`faq.${index}.answer`, {
+                        required: "Ответ обязателен",
+                      })}
+                      placeholder="Обычно алмазы поступают на аккаунт в течение 5-15 минут после оплаты."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {faqFields.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <HelpCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>FAQ не добавлены</p>
                 <p className="text-sm">Нажмите кнопку выше для добавления</p>
               </div>
             )}

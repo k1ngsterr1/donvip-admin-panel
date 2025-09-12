@@ -14,9 +14,9 @@ export interface InstructionImageDto {
 }
 
 export interface GameInstructionDto {
+  headerText: string;
   steps: InstructionStepDto[];
   images: InstructionImageDto[];
-  headerText?: string;
 }
 
 export interface CreateReviewDto {
@@ -43,6 +43,8 @@ export interface UpdateGameContentDto {
   gameName?: string;
   instruction?: GameInstructionDto;
   description?: string;
+  reviews?: CreateReviewDto[];
+  faq?: CreateFAQDto[];
 }
 
 export interface GameContentResponseDto {
@@ -63,6 +65,7 @@ export interface GameReview {
   rating: number;
   comment: string;
   verified: boolean;
+  date: string;
   createdAt: string;
 }
 

@@ -47,6 +47,7 @@ import {
   FileText,
   GamepadIcon,
   TrendingUp,
+  Star,
 } from "lucide-react";
 import { GameContentService } from "@/services/game-content-service";
 import { GameContentForm } from "./game-content-form";
@@ -67,8 +68,17 @@ interface GameListItem {
       height?: number;
     }>;
   };
-  reviewManagement?: any;
-  faqManagement?: any;
+  reviews?: Array<{
+    id: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    verified: boolean;
+    date: string;
+  }>;
+  faq?: Array<{ id: string; question: string; answer: string }>;
+  totalReviews?: number;
+  averageRating?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -178,7 +188,7 @@ export function GameContentList() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Всего игр</CardTitle>
@@ -211,14 +221,27 @@ export function GameContentList() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Активных</CardTitle>
+            <CardTitle className="text-sm font-medium">Отзывы</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {games.reduce((sum, game) => sum + (game.totalReviews || 0), 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">всего отзывов</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">FAQ</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalGames}</div>
-            <p className="text-xs text-muted-foreground">
-              доступно пользователям
-            </p>
+            <div className="text-2xl font-bold">
+              {games.reduce((sum, game) => sum + (game.faq?.length || 0), 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">вопросов и ответов</p>
           </CardContent>
         </Card>
       </div>
@@ -262,6 +285,8 @@ export function GameContentList() {
                   <TableHead>Название</TableHead>
                   <TableHead>Описание</TableHead>
                   <TableHead>Инструкции</TableHead>
+                  <TableHead>Отзывы</TableHead>
+                  <TableHead>FAQ</TableHead>
                   <TableHead>Статус</TableHead>
                   <TableHead className="text-right">Действия</TableHead>
                 </TableRow>
@@ -269,14 +294,14 @@ export function GameContentList() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
                       <p>Загрузка...</p>
                     </TableCell>
                   </TableRow>
                 ) : filteredGames.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <GamepadIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                       <p className="text-muted-foreground">
                         {searchTerm
@@ -317,6 +342,27 @@ export function GameContentList() {
                             </Badge>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Badge
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            <Star className="h-3 w-3" />
+                            {game.totalReviews || 0}
+                          </Badge>
+                          {(game.averageRating || 0) > 0 && (
+                            <span className="text-sm text-muted-foreground">
+                              ({game.averageRating?.toFixed(1)})
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {game.faq?.length || 0} вопросов
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="default">Активная</Badge>

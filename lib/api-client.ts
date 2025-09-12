@@ -412,5 +412,83 @@ export const api = {
       faqId: string
     ): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
       apiClient.delete(`/game-content/${gameId}/faq/${faqId}`),
+
+    // Extended Review endpoints
+    getReviewStats: (gameId: string): Promise<AxiosResponse<any>> =>
+      apiClient.get(`/game-content/${gameId}/reviews/stats`),
+    getTopReviews: (
+      gameId: string,
+      limit: number = 5
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.get(`/game-content/${gameId}/reviews/top?limit=${limit}`),
+    searchReviews: (
+      gameId: string,
+      query: string
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.get(
+        `/game-content/${gameId}/reviews/search?q=${encodeURIComponent(query)}`
+      ),
+    getReviewsByRating: (
+      gameId: string,
+      rating: number
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.get(`/game-content/${gameId}/reviews/rating/${rating}`),
+    markReviewAsSpam: (
+      gameId: string,
+      reviewId: string
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.post(`/game-content/${gameId}/reviews/${reviewId}/spam`),
+    exportReviews: (gameId?: string): Promise<AxiosResponse<any>> => {
+      const url = gameId
+        ? `/game-content/reviews/export?gameId=${gameId}`
+        : "/game-content/reviews/export";
+      return apiClient.get(url);
+    },
+    getAllGamesReviewStats: (): Promise<AxiosResponse<any>> =>
+      apiClient.get("/game-content/reviews/stats/all"),
+
+    // Extended FAQ endpoints
+    addFAQItem: (
+      gameId: string,
+      data: CreateFAQDto
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.post(`/game-content/${gameId}/faq`, data),
+    deleteFAQItem: (
+      gameId: string,
+      faqId: string
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.delete(`/game-content/${gameId}/faq/${faqId}`),
+    searchFAQ: (gameId: string, query: string): Promise<AxiosResponse<any>> =>
+      apiClient.get(
+        `/game-content/${gameId}/faq/search?q=${encodeURIComponent(query)}`
+      ),
+    getRandomFAQ: (
+      gameId: string,
+      limit: number = 3
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.get(`/game-content/${gameId}/faq/random?limit=${limit}`),
+    getFAQStats: (gameId: string): Promise<AxiosResponse<any>> =>
+      apiClient.get(`/game-content/${gameId}/faq/stats`),
+    updateFAQItem: (
+      gameId: string,
+      faqId: string,
+      data: { question?: string; answer?: string }
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.put(`/game-content/${gameId}/faq/${faqId}`, data),
+    generateFAQItem: (
+      gameId: string,
+      template: string
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.post(
+        `/game-content/${gameId}/faq/generate?template=${template}`
+      ),
+    getAllGamesFAQ: (): Promise<AxiosResponse<any>> =>
+      apiClient.get("/game-content/faq/all"),
+    exportFAQ: (gameId?: string): Promise<AxiosResponse<any>> => {
+      const url = gameId
+        ? `/game-content/faq/export?gameId=${gameId}`
+        : "/game-content/faq/export";
+      return apiClient.get(url);
+    },
   },
 };
