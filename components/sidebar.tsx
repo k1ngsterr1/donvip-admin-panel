@@ -14,6 +14,7 @@ import {
   Settings,
   University,
   Image,
+  Gamepad2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -30,6 +31,7 @@ const navItems = [
   { title: "Продукты", href: "/dashboard/products", icon: Package },
   { title: "Заказы", href: "/dashboard/orders", icon: ShoppingCart },
   { title: "Купоны", href: "/dashboard/coupons", icon: Tag },
+  { title: "Игровой контент", href: "/dashboard/game-content", icon: Gamepad2 },
   { title: "Отзывы", href: "/dashboard/feedback", icon: Star },
   { title: "Банки", href: "/dashboard/banks", icon: University },
   {

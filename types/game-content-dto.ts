@@ -32,12 +32,16 @@ export interface CreateFAQDto {
 }
 
 export interface CreateGameContentDto {
-  gameId: string;
-  gameName: string;
+  gameId: string; // Выбирается из существующих игр
   instruction: GameInstructionDto;
   description: string;
   reviews?: CreateReviewDto[];
   faq?: CreateFAQDto[];
+}
+
+export interface AvailableGame {
+  gameId: string;
+  gameName: string;
 }
 
 export interface UpdateGameContentDto {

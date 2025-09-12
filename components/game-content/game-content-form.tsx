@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +14,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, Loader2, Image as ImageIcon, Type } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Image as ImageIcon,
+  Type,
+  GamepadIcon,
+} from "lucide-react";
 import { GameContentService } from "@/services/game-content-service";
 import {
   GameContent,
@@ -24,6 +38,7 @@ import {
   UpdateGameContentDto,
   InstructionStepDto,
   InstructionImageDto,
+  AvailableGame,
 } from "@/types/game-content-dto";
 
 interface GameContentFormProps {
@@ -33,7 +48,6 @@ interface GameContentFormProps {
 
 interface FormData {
   gameId: string;
-  gameName: string;
   description: string;
   instruction: {
     headerText: string;
@@ -48,15 +62,23 @@ export function GameContentForm({
 }: GameContentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fetch available games for selection
+  const { data: availableGames } = useQuery({
+    queryKey: ["availableGames"],
+    queryFn: () => GameContentService.getAvailableGames(),
+    enabled: !gameContent, // Only fetch if creating new content
+  });
+
   const {
     register,
     handleSubmit,
     control,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
       gameId: gameContent?.gameId || "",
-      gameName: gameContent?.gameName || "",
       description: gameContent?.description || "",
       instruction: {
         headerText: gameContent?.instruction?.headerText || "Инструкция",
@@ -133,7 +155,6 @@ export function GameContentForm({
       if (gameContent) {
         // Update existing game
         const payload: UpdateGameContentDto = {
-          gameName: data.gameName,
           description: data.description,
           instruction: data.instruction,
         };
@@ -142,10 +163,9 @@ export function GameContentForm({
           payload,
         });
       } else {
-        // Create new game
+        // Create new game content
         const payload: CreateGameContentDto = {
           gameId: data.gameId,
-          gameName: data.gameName,
           description: data.description,
           instruction: data.instruction,
         };
@@ -185,35 +205,49 @@ export function GameContentForm({
               Основная информация
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="gameId">ID игры *</Label>
-              <Input
-                id="gameId"
-                {...register("gameId", { required: "ID игры обязателен" })}
-                placeholder="bigo-live"
-                disabled={!!gameContent} // Disable editing ID for existing games
-              />
-              {errors.gameId && (
-                <p className="text-sm text-red-600">{errors.gameId.message}</p>
-              )}
-            </div>
+          <CardContent className="space-y-4">
+            {!gameContent ? (
+              <div className="space-y-2">
+                <Label htmlFor="gameId">Выберите игру *</Label>
+                <Select
+                  value={watch("gameId")}
+                  onValueChange={(value) => setValue("gameId", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите игру для создания контента" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableGames?.map((game) => (
+                      <SelectItem key={game.gameId} value={game.gameId}>
+                        <div className="flex items-center gap-2">
+                          <GamepadIcon className="h-4 w-4" />
+                          <span>{game.gameName}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {game.gameId}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.gameId && (
+                  <p className="text-sm text-red-600">
+                    {errors.gameId.message}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Игра</Label>
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                  <GamepadIcon className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium">{gameContent.gameName}</span>
+                  <Badge variant="outline">{gameContent.gameId}</Badge>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
-              <Label htmlFor="gameName">Название игры *</Label>
-              <Input
-                id="gameName"
-                {...register("gameName", { required: "Название обязательно" })}
-                placeholder="Bigo Live"
-              />
-              {errors.gameName && (
-                <p className="text-sm text-red-600">
-                  {errors.gameName.message}
-                </p>
-              )}
-            </div>
-
-            <div className="md:col-span-2 space-y-2">
               <Label htmlFor="description">Описание игры *</Label>
               <Textarea
                 id="description"

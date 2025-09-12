@@ -235,7 +235,7 @@ export function GameContentList() {
             </div>
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Добавить игру
+              Добавить контент для игры
             </Button>
           </div>
         </CardHeader>
@@ -353,9 +353,9 @@ export function GameContentList() {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Создать новый игровой контент</DialogTitle>
+            <DialogTitle>Добавить контент для игры</DialogTitle>
             <DialogDescription>
-              Добавьте новую игру с инструкциями для пользователей
+              Выберите игру и добавьте для неё инструкции и контент
             </DialogDescription>
           </DialogHeader>
           <GameContentForm onSuccess={handleFormSuccess} />

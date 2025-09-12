@@ -16,6 +16,16 @@ import {
 
 export const GameContentService = {
   /**
+   * Get all available games (for content creation)
+   */
+  getAvailableGames: async (): Promise<
+    Array<{ gameId: string; gameName: string }>
+  > => {
+    const response = await api.apiClient.get("/games/available");
+    return response.data;
+  },
+
+  /**
    * Get all games with content
    */
   getAllGames: async (): Promise<GameListResponse> => {
