@@ -156,7 +156,7 @@ export function PaymentMethodsTable() {
     paymentMethods?.data?.filter(
       (method) =>
         method.name.toLowerCase().includes(search.toLowerCase()) ||
-        method.methodCode.toLowerCase().includes(search.toLowerCase()) ||
+        method.code.toLowerCase().includes(search.toLowerCase()) ||
         method.country.toLowerCase().includes(search.toLowerCase()) ||
         method.currency.toLowerCase().includes(search.toLowerCase())
     ) || [];
@@ -332,7 +332,7 @@ export function PaymentMethodsTable() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-mono">
-                      {method.methodCode}
+                      {method.code}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -468,7 +468,7 @@ export function PaymentMethodsTable() {
                   {deleteConfirmMethod?.name}
                 </p>
                 <p className="text-sm text-red-600 mt-1">
-                  Код: {deleteConfirmMethod?.methodCode} | Страна:{" "}
+                  Код: {deleteConfirmMethod?.code} | Страна:{" "}
                   {deleteConfirmMethod?.country}
                 </p>
               </div>

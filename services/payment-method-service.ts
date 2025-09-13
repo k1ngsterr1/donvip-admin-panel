@@ -3,7 +3,7 @@ import { api } from "@/lib/api-client";
 export interface PaymentMethod {
   id: number;
   name: string;
-  methodCode: string; // Changed from 'code' to match API response
+  code: string; // Changed to match form field name
   country: string;
   currency: string;
   icon?: string | null; // Added icon field from API response

@@ -98,7 +98,7 @@ export function PaymentMethodForm({
   } = useForm<FormData>({
     defaultValues: {
       name: paymentMethod?.name || "",
-      code: paymentMethod?.methodCode || "",
+      code: paymentMethod?.code || "",
       country: paymentMethod?.country || "",
       currency: paymentMethod?.currency || "",
       minAmount: paymentMethod?.minAmount?.toString() || "",
