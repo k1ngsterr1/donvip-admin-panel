@@ -69,6 +69,7 @@ import {
   Country,
 } from "@/services/payment-method-service";
 import { PaymentMethodForm } from "./payment-method-form";
+import { getIconUrl } from "@/lib/icon-utils";
 
 export function PaymentMethodsTable() {
   const [search, setSearch] = useState("");
@@ -307,7 +308,7 @@ export function PaymentMethodsTable() {
                     <div className="flex items-center justify-center">
                       {method.icon ? (
                         <img
-                          src={method.icon}
+                          src={getIconUrl(method.icon) || ""}
                           alt={method.name}
                           className="h-8 w-8 object-contain rounded"
                         />

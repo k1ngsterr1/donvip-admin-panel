@@ -47,6 +47,7 @@ import {
   CreatePaymentMethodDto,
   UpdatePaymentMethodDto,
 } from "@/services/payment-method-service";
+import { getIconUrl } from "@/lib/icon-utils";
 
 interface PaymentMethodFormProps {
   paymentMethod?: PaymentMethod;
@@ -83,7 +84,7 @@ export function PaymentMethodForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(
-    paymentMethod?.icon || null
+    getIconUrl(paymentMethod?.icon || null)
   );
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [iconError, setIconError] = useState<string | null>(null);
