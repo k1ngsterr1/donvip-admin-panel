@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -153,6 +153,21 @@ export function GameContentForm({
     name: "faq",
   });
 
+  // Update form when gameContent changes
+  useEffect(() => {
+    if (gameContent) {
+      console.log("Initializing form with game content:", gameContent);
+      console.log("FAQ data from gameContent:", gameContent.faq);
+      console.log("Reviews data from gameContent:", gameContent.reviews);
+
+      setValue("gameId", gameContent.gameId);
+      setValue("description", gameContent.description);
+      setValue("instruction", gameContent.instruction);
+      setValue("reviews", gameContent.reviews || []);
+      setValue("faq", gameContent.faq || []);
+    }
+  }, [gameContent, setValue]);
+
   // Create mutation
   const createMutation = useMutation({
     mutationFn: (data: CreateGameContentDto) =>
@@ -177,14 +192,16 @@ export function GameContentForm({
   const updateMutation = useMutation({
     mutationFn: (data: { gameId: string; payload: UpdateGameContentDto }) =>
       GameContentService.updateGameContent(data.gameId, data.payload),
-    onSuccess: () => {
+    onSuccess: (updatedGameContent) => {
+      console.log("Successfully updated game content:", updatedGameContent);
       toast({
         title: "Успешно",
         description: "Игровой контент обновлен",
       });
       onSuccess();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error updating game content:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось обновить игровой контент",
@@ -205,6 +222,11 @@ export function GameContentForm({
           reviews: data.reviews,
           faq: data.faq,
         };
+
+        console.log("Updating game content with payload:", payload);
+        console.log("FAQ data:", payload.faq);
+        console.log("Reviews data:", payload.reviews);
+
         await updateMutation.mutateAsync({
           gameId: gameContent.gameId,
           payload,
@@ -218,6 +240,9 @@ export function GameContentForm({
           reviews: data.reviews,
           faq: data.faq,
         };
+
+        console.log("Creating game content with payload:", payload);
+
         await createMutation.mutateAsync(payload);
       }
     } finally {
