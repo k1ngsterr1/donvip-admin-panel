@@ -278,7 +278,6 @@ export function PaymentMethodsTable() {
               <TableHead className="font-medium">Код</TableHead>
               <TableHead className="font-medium">Страна</TableHead>
               <TableHead className="font-medium">Валюта</TableHead>
-              <TableHead className="font-medium">Лимиты</TableHead>
               <TableHead className="font-medium">Комиссия</TableHead>
               <TableHead className="font-medium">Статус</TableHead>
               <TableHead className="text-right font-medium">Действия</TableHead>
@@ -348,24 +347,7 @@ export function PaymentMethodsTable() {
                       {method.currency}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    {method.minAmount || method.maxAmount ? (
-                      <div className="text-sm">
-                        {method.minAmount && (
-                          <div>
-                            Мин: {method.minAmount} {method.currency}
-                          </div>
-                        )}
-                        {method.maxAmount && (
-                          <div>
-                            Макс: {method.maxAmount} {method.currency}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
+
                   <TableCell>
                     {method.fee ? (
                       <span>{method.fee}%</span>
