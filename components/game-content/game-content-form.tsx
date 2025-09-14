@@ -571,6 +571,59 @@ export function GameContentForm({
                   </Button>
                 </div>
 
+                {/* Image Preview */}
+                <div className="mb-4">
+                  {(imageSourceMode[index] || "url") === "url" &&
+                    watch(`instruction.images.${index}.src`) && (
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <img
+                          src={
+                            getIconUrl(
+                              watch(`instruction.images.${index}.src`)
+                            ) || ""
+                          }
+                          alt={
+                            watch(`instruction.images.${index}.alt`) || "Превью"
+                          }
+                          className="w-20 h-20 object-cover rounded border"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
+                          }}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            Текущее изображение
+                          </p>
+                          <p className="text-xs text-gray-600 break-all">
+                            {watch(`instruction.images.${index}.src`)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                  {(imageSourceMode[index] || "url") === "file" &&
+                    imagePreviews[index] && (
+                      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                        <img
+                          src={imagePreviews[index]}
+                          alt="Превью файла"
+                          className="w-20 h-20 object-cover rounded border"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            Загруженный файл
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {imageFiles[index]?.name} (
+                            {Math.round((imageFiles[index]?.size || 0) / 1024)}{" "}
+                            KB)
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                </div>
+
                 <div className="grid grid-cols-1 gap-4">
                   {/* Image Source Selection */}
                   <div className="space-y-3">
@@ -617,56 +670,25 @@ export function GameContentForm({
                   {(imageSourceMode[index] || "url") === "url" ? (
                     <div className="space-y-2">
                       <Label>URL изображения *</Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          {...register(`instruction.images.${index}.src`, {
-                            required: "URL изображения обязателен",
-                          })}
-                          placeholder="/info-buy.png"
-                        />
-                        {watch(`instruction.images.${index}.src`) && (
-                          <img
-                            src={
-                              getIconUrl(
-                                watch(`instruction.images.${index}.src`)
-                              ) || ""
-                            }
-                            alt="URL Preview"
-                            className="w-16 h-16 object-cover rounded border"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display =
-                                "none";
-                            }}
-                          />
-                        )}
-                      </div>
+                      <Input
+                        {...register(`instruction.images.${index}.src`, {
+                          required: "URL изображения обязателен",
+                        })}
+                        placeholder="/info-buy.png"
+                      />
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <Label>Файл изображения *</Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            handleImageFileSelect(index, file);
-                          }}
-                          className="file:mr-3 file:py-1 file:px-3 file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700"
-                        />
-                        {imagePreviews[index] && (
-                          <img
-                            src={imagePreviews[index]}
-                            alt="Preview"
-                            className="w-16 h-16 object-cover rounded border"
-                          />
-                        )}
-                      </div>
-                      {imageFiles[index] && (
-                        <p className="text-sm text-gray-600">
-                          Выбран файл: {imageFiles[index]?.name}
-                        </p>
-                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          handleImageFileSelect(index, file);
+                        }}
+                        className="file:mr-3 file:py-1 file:px-3 file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700"
+                      />
                     </div>
                   )}
 
