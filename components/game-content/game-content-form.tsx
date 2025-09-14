@@ -74,6 +74,9 @@ export function GameContentForm({
   const [imagePreviews, setImagePreviews] = useState<{ [key: number]: string }>(
     {}
   );
+  const [imageSourceMode, setImageSourceMode] = useState<{
+    [key: number]: "url" | "file";
+  }>({});
 
   // Fetch available games from products
   const { data: productsData } = useQuery({
@@ -376,6 +379,11 @@ export function GameContentForm({
       delete newPreviews[index];
       return newPreviews;
     });
+    setImageSourceMode((prev) => {
+      const newModes = { ...prev };
+      delete newModes[index];
+      return newModes;
+    });
   };
 
   return (
@@ -573,8 +581,14 @@ export function GameContentForm({
                           type="radio"
                           name={`imageSource-${index}`}
                           value="url"
-                          checked={!imageFiles[index]}
-                          onChange={() => handleImageFileSelect(index, null)}
+                          checked={(imageSourceMode[index] || "url") === "url"}
+                          onChange={() => {
+                            setImageSourceMode((prev) => ({
+                              ...prev,
+                              [index]: "url",
+                            }));
+                            handleImageFileSelect(index, null);
+                          }}
                           className="text-blue-600"
                         />
                         <span>URL</span>
@@ -584,8 +598,14 @@ export function GameContentForm({
                           type="radio"
                           name={`imageSource-${index}`}
                           value="file"
-                          checked={!!imageFiles[index]}
-                          onChange={() => {}}
+                          checked={(imageSourceMode[index] || "url") === "file"}
+                          onChange={() => {
+                            setImageSourceMode((prev) => ({
+                              ...prev,
+                              [index]: "file",
+                            }));
+                            setValue(`instruction.images.${index}.src`, "");
+                          }}
                           className="text-blue-600"
                         />
                         <span>Файл</span>
@@ -594,7 +614,7 @@ export function GameContentForm({
                   </div>
 
                   {/* URL Input or File Upload */}
-                  {!imageFiles[index] ? (
+                  {(imageSourceMode[index] || "url") === "url" ? (
                     <div className="space-y-2">
                       <Label>URL изображения *</Label>
                       <div className="flex items-center gap-3">
