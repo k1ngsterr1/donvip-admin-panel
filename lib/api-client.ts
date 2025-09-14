@@ -539,5 +539,20 @@ export const api = {
         params.append("minRating", filters.minRating.toString());
       return apiClient.get(`/game-content/games/advanced-search?${params}`);
     },
+
+    // Image upload endpoint for instructions
+    uploadInstructionImage: (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return apiClient.post(
+        "/game-content/upload-instruction-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+    },
   },
 };

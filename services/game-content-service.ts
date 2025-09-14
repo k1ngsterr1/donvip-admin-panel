@@ -354,4 +354,14 @@ export const GameContentService = {
     const response = await api.gameContent.searchGamesAdvanced(filters);
     return response.data;
   },
+
+  /**
+   * Upload instruction image
+   */
+  uploadInstructionImage: async (
+    file: File
+  ): Promise<{ imagePath: string; message: string }> => {
+    const response = await api.gameContent.uploadInstructionImage(file);
+    return response.data;
+  },
 };

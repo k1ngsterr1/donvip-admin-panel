@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { GameContentService } from "@/services/game-content-service";
 import { ProductService } from "@/services/product-service";
+import { getIconUrl } from "@/lib/icon-utils";
 import {
   GameContent,
   CreateGameContentDto,
@@ -67,6 +68,12 @@ export function GameContentForm({
   onSuccess,
 }: GameContentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFiles, setImageFiles] = useState<{ [key: number]: File | null }>(
+    {}
+  );
+  const [imagePreviews, setImagePreviews] = useState<{ [key: number]: string }>(
+    {}
+  );
 
   // Fetch available games from products
   const { data: productsData } = useQuery({
@@ -163,8 +170,20 @@ export function GameContentForm({
       setValue("gameId", gameContent.gameId);
       setValue("description", gameContent.description);
       setValue("instruction", gameContent.instruction);
-      setValue("reviews", gameContent.reviews || []);
+
+      // Convert reviews from API format to form format
+      const formattedReviews =
+        gameContent.reviews?.map((review) => ({
+          userName: review.userName,
+          rating: review.rating,
+          comment: review.comment,
+          verified: review.verified || false,
+        })) || [];
+
+      setValue("reviews", formattedReviews);
       setValue("faq", gameContent.faq || []);
+
+      console.log("Formatted reviews for form:", formattedReviews);
     }
   }, [gameContent, setValue]);
 
@@ -213,12 +232,46 @@ export function GameContentForm({
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
 
+    console.log("=== FORM SUBMISSION START ===");
+    console.log("Raw form data:", data);
+    console.log("Form reviews field:", data.reviews);
+    console.log("Form faq field:", data.faq);
+    console.log("Image files:", imageFiles);
+
     try {
+      // Upload image files first if any
+      const updatedInstruction = { ...data.instruction };
+
+      for (let i = 0; i < updatedInstruction.images.length; i++) {
+        const imageFile = imageFiles[i];
+        if (imageFile) {
+          console.log(`Uploading image ${i}:`, imageFile.name);
+          try {
+            const uploadResponse =
+              await GameContentService.uploadInstructionImage(imageFile);
+            console.log(
+              `Image ${i} uploaded successfully:`,
+              uploadResponse.imagePath
+            );
+            // Update the src with the uploaded image path
+            updatedInstruction.images[i].src = uploadResponse.imagePath;
+          } catch (error) {
+            console.error(`Failed to upload image ${i}:`, error);
+            toast({
+              title: "Ошибка загрузки изображения",
+              description: `Не удалось загрузить изображение ${i + 1}`,
+              variant: "destructive",
+            });
+            throw error;
+          }
+        }
+      }
+
       if (gameContent) {
         // Update existing game
         const payload: UpdateGameContentDto = {
           description: data.description,
-          instruction: data.instruction,
+          instruction: updatedInstruction,
           reviews: data.reviews,
           faq: data.faq,
         };
@@ -236,7 +289,7 @@ export function GameContentForm({
         const payload: CreateGameContentDto = {
           gameId: data.gameId,
           description: data.description,
-          instruction: data.instruction,
+          instruction: updatedInstruction,
           reviews: data.reviews,
           faq: data.faq,
         };
@@ -281,6 +334,47 @@ export function GameContentForm({
     appendFAQ({
       question: "",
       answer: "",
+    });
+  };
+
+  // File handling functions
+  const handleImageFileSelect = (index: number, file: File | null) => {
+    if (file) {
+      // Update file state
+      setImageFiles((prev) => ({ ...prev, [index]: file }));
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreviews((prev) => ({
+          ...prev,
+          [index]: e.target?.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+
+      // Set alt text based on filename if empty
+      const currentAlt = watch(`instruction.images.${index}.alt`);
+      if (!currentAlt) {
+        setValue(`instruction.images.${index}.alt`, file.name.split(".")[0]);
+      }
+    } else {
+      // Clear file and preview
+      setImageFiles((prev) => ({ ...prev, [index]: null }));
+      setImagePreviews((prev) => ({ ...prev, [index]: "" }));
+    }
+  };
+
+  const removeImageFile = (index: number) => {
+    setImageFiles((prev) => {
+      const newFiles = { ...prev };
+      delete newFiles[index];
+      return newFiles;
+    });
+    setImagePreviews((prev) => {
+      const newPreviews = { ...prev };
+      delete newPreviews[index];
+      return newPreviews;
     });
   };
 
@@ -459,50 +553,131 @@ export function GameContentForm({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeImage(index)}
+                    onClick={() => {
+                      removeImageFile(index);
+                      removeImage(index);
+                    }}
                     className="text-red-600"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label>URL изображения *</Label>
-                    <Input
-                      {...register(`instruction.images.${index}.src`, {
-                        required: "URL изображения обязателен",
-                      })}
-                      placeholder="/info-buy.png"
-                    />
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Image Source Selection */}
+                  <div className="space-y-3">
+                    <Label>Источник изображения</Label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name={`imageSource-${index}`}
+                          value="url"
+                          checked={!imageFiles[index]}
+                          onChange={() => handleImageFileSelect(index, null)}
+                          className="text-blue-600"
+                        />
+                        <span>URL</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name={`imageSource-${index}`}
+                          value="file"
+                          checked={!!imageFiles[index]}
+                          onChange={() => {}}
+                          className="text-blue-600"
+                        />
+                        <span>Файл</span>
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Описание изображения *</Label>
-                    <Input
-                      {...register(`instruction.images.${index}.alt`, {
-                        required: "Описание обязательно",
-                      })}
-                      placeholder="Инструкция по покупке"
-                    />
-                  </div>
+                  {/* URL Input or File Upload */}
+                  {!imageFiles[index] ? (
+                    <div className="space-y-2">
+                      <Label>URL изображения *</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          {...register(`instruction.images.${index}.src`, {
+                            required: "URL изображения обязателен",
+                          })}
+                          placeholder="/info-buy.png"
+                        />
+                        {watch(`instruction.images.${index}.src`) && (
+                          <img
+                            src={
+                              getIconUrl(
+                                watch(`instruction.images.${index}.src`)
+                              ) || ""
+                            }
+                            alt="URL Preview"
+                            className="w-16 h-16 object-cover rounded border"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display =
+                                "none";
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>Файл изображения *</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            handleImageFileSelect(index, file);
+                          }}
+                          className="file:mr-3 file:py-1 file:px-3 file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700"
+                        />
+                        {imagePreviews[index] && (
+                          <img
+                            src={imagePreviews[index]}
+                            alt="Preview"
+                            className="w-16 h-16 object-cover rounded border"
+                          />
+                        )}
+                      </div>
+                      {imageFiles[index] && (
+                        <p className="text-sm text-gray-600">
+                          Выбран файл: {imageFiles[index]?.name}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                  <div className="space-y-2">
-                    <Label>Ширина (px)</Label>
-                    <Input
-                      type="number"
-                      {...register(`instruction.images.${index}.width`)}
-                      placeholder="400"
-                    />
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label>Описание изображения *</Label>
+                      <Input
+                        {...register(`instruction.images.${index}.alt`, {
+                          required: "Описание обязательно",
+                        })}
+                        placeholder="Инструкция по покупке"
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label>Высота (px)</Label>
-                    <Input
-                      type="number"
-                      {...register(`instruction.images.${index}.height`)}
-                      placeholder="200"
-                    />
+                    <div className="space-y-2">
+                      <Label>Ширина (px)</Label>
+                      <Input
+                        type="number"
+                        {...register(`instruction.images.${index}.width`)}
+                        placeholder="400"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Высота (px)</Label>
+                      <Input
+                        type="number"
+                        {...register(`instruction.images.${index}.height`)}
+                        placeholder="200"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -697,6 +872,23 @@ export function GameContentForm({
 
         {/* Submit Buttons */}
         <div className="flex justify-end gap-3">
+          {/* Debug button - remove in production */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const currentData = watch();
+              console.log("=== DEBUG: Current form data ===");
+              console.log("All form data:", currentData);
+              console.log("Reviews:", currentData.reviews);
+              console.log("FAQ:", currentData.faq);
+              console.log("Reviews length:", currentData.reviews?.length);
+              console.log("FAQ length:", currentData.faq?.length);
+            }}
+          >
+            Debug Form
+          </Button>
+
           <Button
             type="submit"
             disabled={
