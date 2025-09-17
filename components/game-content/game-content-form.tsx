@@ -35,7 +35,6 @@ import {
 } from "lucide-react";
 import { GameContentService } from "@/services/game-content-service";
 import { ProductService } from "@/services/product-service";
-import { getIconUrl } from "@/lib/icon-utils";
 import {
   GameContent,
   CreateGameContentDto,
@@ -74,9 +73,6 @@ export function GameContentForm({
   const [imagePreviews, setImagePreviews] = useState<{ [key: number]: string }>(
     {}
   );
-  const [imageSourceMode, setImageSourceMode] = useState<{
-    [key: number]: "url" | "file";
-  }>({});
 
   // Fetch available games from products
   const { data: productsData } = useQuery({
@@ -379,11 +375,6 @@ export function GameContentForm({
       delete newPreviews[index];
       return newPreviews;
     });
-    setImageSourceMode((prev) => {
-      const newModes = { ...prev };
-      delete newModes[index];
-      return newModes;
-    });
   };
 
   return (
@@ -573,124 +564,45 @@ export function GameContentForm({
 
                 {/* Image Preview */}
                 <div className="mb-4">
-                  {(imageSourceMode[index] || "url") === "url" &&
-                    watch(`instruction.images.${index}.src`) && (
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <img
-                          src={
-                            getIconUrl(
-                              watch(`instruction.images.${index}.src`)
-                            ) || ""
-                          }
-                          alt={
-                            watch(`instruction.images.${index}.alt`) || "Превью"
-                          }
-                          className="w-20 h-20 object-cover rounded border"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                          }}
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">
-                            Текущее изображение
-                          </p>
-                          <p className="text-xs text-gray-600 break-all">
-                            {watch(`instruction.images.${index}.src`)}
-                          </p>
-                        </div>
+                  {imagePreviews[index] && (
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                      <img
+                        src={imagePreviews[index]}
+                        alt="Превью файла"
+                        className="w-20 h-20 object-cover rounded border"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Загруженный файл</p>
+                        <p className="text-xs text-gray-600">
+                          {imageFiles[index]?.name} (
+                          {Math.round((imageFiles[index]?.size || 0) / 1024)}{" "}
+                          KB)
+                        </p>
                       </div>
-                    )}
-
-                  {(imageSourceMode[index] || "url") === "file" &&
-                    imagePreviews[index] && (
-                      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                        <img
-                          src={imagePreviews[index]}
-                          alt="Превью файла"
-                          className="w-20 h-20 object-cover rounded border"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">
-                            Загруженный файл
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {imageFiles[index]?.name} (
-                            {Math.round((imageFiles[index]?.size || 0) / 1024)}{" "}
-                            KB)
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {/* Image Source Selection */}
-                  <div className="space-y-3">
-                    <Label>Источник изображения</Label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          name={`imageSource-${index}`}
-                          value="url"
-                          checked={(imageSourceMode[index] || "url") === "url"}
-                          onChange={() => {
-                            setImageSourceMode((prev) => ({
-                              ...prev,
-                              [index]: "url",
-                            }));
-                            handleImageFileSelect(index, null);
-                          }}
-                          className="text-blue-600"
-                        />
-                        <span>URL</span>
-                      </label>
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          name={`imageSource-${index}`}
-                          value="file"
-                          checked={(imageSourceMode[index] || "url") === "file"}
-                          onChange={() => {
-                            setImageSourceMode((prev) => ({
-                              ...prev,
-                              [index]: "file",
-                            }));
-                            setValue(`instruction.images.${index}.src`, "");
-                          }}
-                          className="text-blue-600"
-                        />
-                        <span>Файл</span>
-                      </label>
-                    </div>
+                  {/* File Upload */}
+                  <div className="space-y-2">
+                    <Label>Файл изображения *</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        handleImageFileSelect(index, file);
+                      }}
+                      className="file:mr-3 file:py-1 file:px-3 file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700"
+                    />
                   </div>
 
-                  {/* URL Input or File Upload */}
-                  {(imageSourceMode[index] || "url") === "url" ? (
-                    <div className="space-y-2">
-                      <Label>URL изображения *</Label>
-                      <Input
-                        {...register(`instruction.images.${index}.src`, {
-                          required: "URL изображения обязателен",
-                        })}
-                        placeholder="/info-buy.png"
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label>Файл изображения *</Label>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          handleImageFileSelect(index, file);
-                        }}
-                        className="file:mr-3 file:py-1 file:px-3 file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700"
-                      />
-                    </div>
-                  )}
+                  {/* Hidden field for src - will be populated by file upload */}
+                  <input
+                    type="hidden"
+                    {...register(`instruction.images.${index}.src`)}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="space-y-2">
