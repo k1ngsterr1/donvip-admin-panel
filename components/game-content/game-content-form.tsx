@@ -250,10 +250,10 @@ export function GameContentForm({
               await GameContentService.uploadInstructionImage(imageFile);
             console.log(
               `Image ${i} uploaded successfully:`,
-              uploadResponse.imagePath
+              uploadResponse.imageUrl
             );
-            // Update the src with the uploaded image path
-            updatedInstruction.images[i].src = uploadResponse.imagePath;
+            // Update the src with the uploaded image URL
+            updatedInstruction.images[i].src = uploadResponse.imageUrl;
           } catch (error) {
             console.error(`Failed to upload image ${i}:`, error);
             toast({
