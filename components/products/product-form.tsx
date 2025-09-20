@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api-client";
 import {
@@ -100,6 +101,7 @@ const formSchema = z.object({
   }),
   currency_image: z.union([fileSchema, z.instanceof(File).optional()]),
   currency_name: z.string().min(1, "Currency name is required"),
+  isServerRequired: z.boolean().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -123,6 +125,7 @@ interface ProductFormProps {
     type?: ProductType;
     currency_image?: string;
     currency_name?: string;
+    isServerRequired?: boolean;
   };
   onSuccess?: () => void;
 }
@@ -177,6 +180,7 @@ export function ProductForm({
       type: defaultValues?.type || undefined,
       currency_name: defaultValues?.currency_name || "",
       currency_image: undefined as any, // Will be set by file input
+      isServerRequired: defaultValues?.isServerRequired || false,
     },
     mode: "onChange",
   });
@@ -542,6 +546,12 @@ export function ProductForm({
 
       // Append currency name
       formData.append("currency_name", values.currency_name);
+
+      // Append isServerRequired
+      formData.append(
+        "isServerRequired",
+        (values.isServerRequired ?? false).toString()
+      );
 
       // Append currency image if selected
       if (selectedCurrencyFile instanceof File) {
@@ -1134,6 +1144,32 @@ export function ProductForm({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="isServerRequired"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-primary">
+                          Server ID Required
+                        </FormLabel>
+                        <FormDescription className="text-gray-600">
+                          Check this if users need to provide a server ID for
+                          this product
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="currency_image"
