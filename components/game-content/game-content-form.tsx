@@ -54,6 +54,7 @@ interface FormData {
   gameId: string;
   gameName: string;
   description: string;
+  mainDescription: string;
   instruction: {
     headerText: string;
     steps: InstructionStepDto[];
@@ -103,6 +104,7 @@ export function GameContentForm({
       gameId: gameContent?.gameId || "",
       gameName: gameContent?.gameName || "",
       description: gameContent?.description || "",
+      mainDescription: gameContent?.mainDescription || "",
       instruction: {
         headerText: gameContent?.instruction?.headerText || "Инструкция",
         steps: gameContent?.instruction?.steps || [
@@ -286,6 +288,7 @@ export function GameContentForm({
         const payload: UpdateGameContentDto = {
           gameName: data.gameName,
           description: data.description,
+          mainDescription: data.mainDescription,
           instruction: updatedInstruction,
           reviews: data.reviews,
           faq: data.faq,
@@ -305,6 +308,7 @@ export function GameContentForm({
           gameId: data.gameId,
           gameName: data.gameName,
           description: data.description,
+          mainDescription: data.mainDescription,
           instruction: updatedInstruction,
           reviews: data.reviews,
           faq: data.faq,
@@ -477,6 +481,21 @@ export function GameContentForm({
               {errors.description && (
                 <p className="text-sm text-red-600">
                   {errors.description.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mainDescription">Основное описание игры</Label>
+              <Textarea
+                id="mainDescription"
+                {...register("mainDescription")}
+                placeholder="Подробное описание игры для пользователей..."
+                rows={4}
+              />
+              {errors.mainDescription && (
+                <p className="text-sm text-red-600">
+                  {errors.mainDescription.message}
                 </p>
               )}
             </div>

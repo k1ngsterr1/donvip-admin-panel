@@ -36,6 +36,7 @@ export interface CreateGameContentDto {
   gameName?: string; // Опциональное название игры
   instruction: GameInstructionDto;
   description: string;
+  mainDescription?: string; // Основное описание игры
   reviews?: CreateReviewDto[];
   faq?: CreateFAQDto[];
 }
@@ -44,6 +45,7 @@ export interface UpdateGameContentDto {
   gameName?: string;
   instruction?: GameInstructionDto;
   description?: string;
+  mainDescription?: string; // Основное описание игры
   reviews?: CreateReviewDto[];
   faq?: CreateFAQDto[];
 }
@@ -53,6 +55,7 @@ export interface GameContentResponseDto {
   gameName: string;
   instruction: GameInstructionDto;
   description: string;
+  mainDescription?: string; // Основное описание игры
   totalReviews: number;
   averageRating: number;
   totalFAQItems: number;
@@ -82,6 +85,7 @@ export interface GameContent {
   gameName: string;
   instruction: GameInstructionDto;
   description: string;
+  mainDescription?: string; // Основное описание игры
   reviews: GameReview[];
   faq: GameFAQItem[];
   averageRating: number;
