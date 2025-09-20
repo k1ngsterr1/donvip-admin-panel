@@ -52,6 +52,7 @@ interface GameContentFormProps {
 
 interface FormData {
   gameId: string;
+  gameName: string;
   description: string;
   instruction: {
     headerText: string;
@@ -100,6 +101,7 @@ export function GameContentForm({
   } = useForm<FormData>({
     defaultValues: {
       gameId: gameContent?.gameId || "",
+      gameName: gameContent?.gameName || "",
       description: gameContent?.description || "",
       instruction: {
         headerText: gameContent?.instruction?.headerText || "Инструкция",
@@ -186,6 +188,19 @@ export function GameContentForm({
     }
   }, [gameContent, setValue]);
 
+  // Auto-fill game name when gameId is selected
+  useEffect(() => {
+    const selectedGameId = watch("gameId");
+    if (selectedGameId && availableGames && !gameContent) {
+      const selectedGame = availableGames.find(
+        (game) => game.gameId === selectedGameId
+      );
+      if (selectedGame) {
+        setValue("gameName", selectedGame.gameName);
+      }
+    }
+  }, [watch("gameId"), availableGames, gameContent, setValue]);
+
   // Create mutation
   const createMutation = useMutation({
     mutationFn: (data: CreateGameContentDto) =>
@@ -269,6 +284,7 @@ export function GameContentForm({
       if (gameContent) {
         // Update existing game
         const payload: UpdateGameContentDto = {
+          gameName: data.gameName,
           description: data.description,
           instruction: updatedInstruction,
           reviews: data.reviews,
@@ -287,6 +303,7 @@ export function GameContentForm({
         // Create new game content
         const payload: CreateGameContentDto = {
           gameId: data.gameId,
+          gameName: data.gameName,
           description: data.description,
           instruction: updatedInstruction,
           reviews: data.reviews,
@@ -429,6 +446,23 @@ export function GameContentForm({
                 </div>
               </div>
             )}
+
+            {/* Game Title Field - для создания и редактирования */}
+            <div className="space-y-2">
+              <Label htmlFor="gameName">Название игры *</Label>
+              <Input
+                id="gameName"
+                {...register("gameName", {
+                  required: "Название игры обязательно",
+                })}
+                placeholder="Введите название игры..."
+              />
+              {errors.gameName && (
+                <p className="text-sm text-red-600">
+                  {errors.gameName.message}
+                </p>
+              )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Описание игры *</Label>

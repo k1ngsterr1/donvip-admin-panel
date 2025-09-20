@@ -33,6 +33,7 @@ export interface CreateFAQDto {
 
 export interface CreateGameContentDto {
   gameId: string; // Выбирается из существующих игр
+  gameName?: string; // Опциональное название игры
   instruction: GameInstructionDto;
   description: string;
   reviews?: CreateReviewDto[];
