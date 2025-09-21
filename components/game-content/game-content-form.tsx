@@ -292,12 +292,38 @@ export function GameContentForm({
         }
       }
 
+      // Upload description image if selected
+      let descriptionImageUrl = data.descriptionImage;
+      if (descriptionImageFile) {
+        console.log("Uploading description image:", descriptionImageFile.name);
+        try {
+          const uploadResponse =
+            await GameContentService.uploadDescriptionImage(
+              descriptionImageFile
+            );
+          console.log(
+            "Description image uploaded successfully:",
+            uploadResponse.imageUrl
+          );
+          descriptionImageUrl = uploadResponse.imageUrl;
+        } catch (error) {
+          console.error("Failed to upload description image:", error);
+          toast({
+            title: "Ошибка загрузки изображения описания",
+            description: "Не удалось загрузить изображение для описания",
+            variant: "destructive",
+          });
+          throw error;
+        }
+      }
+
       if (gameContent) {
         // Update existing game
         const payload: UpdateGameContentDto = {
           gameName: data.gameName,
           title: data.title,
           description: data.description,
+          descriptionImage: descriptionImageUrl,
           mainDescription: data.mainDescription,
           instruction: updatedInstruction,
           reviews: data.reviews,
@@ -319,6 +345,7 @@ export function GameContentForm({
           gameName: data.gameName,
           title: data.title,
           description: data.description,
+          descriptionImage: descriptionImageUrl,
           mainDescription: data.mainDescription,
           instruction: updatedInstruction,
           reviews: data.reviews,
