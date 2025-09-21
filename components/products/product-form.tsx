@@ -102,6 +102,10 @@ const formSchema = z.object({
   currency_image: z.union([fileSchema, z.instanceof(File).optional()]),
   currency_name: z.string().min(1, "Currency name is required"),
   isServerRequired: z.boolean().optional(),
+  requireUserId: z.boolean().optional(),
+  requireServer: z.boolean().optional(),
+  requireEmail: z.boolean().optional(),
+  requireUID: z.boolean().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -126,6 +130,10 @@ interface ProductFormProps {
     currency_image?: string;
     currency_name?: string;
     isServerRequired?: boolean;
+    requireUserId?: boolean;
+    requireServer?: boolean;
+    requireEmail?: boolean;
+    requireUID?: boolean;
   };
   onSuccess?: () => void;
 }
@@ -181,6 +189,10 @@ export function ProductForm({
       currency_name: defaultValues?.currency_name || "",
       currency_image: undefined as any, // Will be set by file input
       isServerRequired: defaultValues?.isServerRequired || false,
+      requireUserId: defaultValues?.requireUserId ?? true,
+      requireServer: defaultValues?.requireServer || false,
+      requireEmail: defaultValues?.requireEmail || false,
+      requireUID: defaultValues?.requireUID || false,
     },
     mode: "onChange",
   });
@@ -552,6 +564,21 @@ export function ProductForm({
         "isServerRequired",
         (values.isServerRequired ?? false).toString()
       );
+
+      // Append new requirement fields
+      formData.append(
+        "requireUserId",
+        (values.requireUserId ?? true).toString()
+      );
+      formData.append(
+        "requireServer",
+        (values.requireServer ?? false).toString()
+      );
+      formData.append(
+        "requireEmail",
+        (values.requireEmail ?? false).toString()
+      );
+      formData.append("requireUID", (values.requireUID ?? false).toString());
 
       // Append currency image if selected
       if (selectedCurrencyFile instanceof File) {
@@ -1163,6 +1190,104 @@ export function ProductForm({
                         <FormDescription className="text-gray-600">
                           Check this if users need to provide a server ID for
                           this product
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="requireUserId"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-primary">
+                          User ID Required
+                        </FormLabel>
+                        <FormDescription className="text-gray-600">
+                          Check this if users need to provide a user ID for
+                          purchase
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="requireServer"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-primary">
+                          Server Required
+                        </FormLabel>
+                        <FormDescription className="text-gray-600">
+                          Check this if server information is required for
+                          purchase
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="requireEmail"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-primary">
+                          Email Required
+                        </FormLabel>
+                        <FormDescription className="text-gray-600">
+                          Check this if email is required for purchase
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="requireUID"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-primary">
+                          UID Required
+                        </FormLabel>
+                        <FormDescription className="text-gray-600">
+                          Check this if UID is required for purchase
                         </FormDescription>
                       </div>
                       <FormMessage />

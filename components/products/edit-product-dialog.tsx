@@ -217,10 +217,17 @@ export function EditProductDialog({
                   )
                 : [],
               smile_api_game: parsedProduct.smile_api_game,
+              donatbank_product_id: parsedProduct.donatbank_product_id,
               //@ts-ignore
               type: parsedProduct.type,
               currency_image: parsedProduct.currency_image,
               currency_name: parsedProduct.currency_name,
+              order_number: parsedProduct.order_number,
+              isServerRequired: parsedProduct.isServerRequired,
+              requireUserId: parsedProduct.requireUserId,
+              requireServer: parsedProduct.requireServer,
+              requireEmail: parsedProduct.requireEmail,
+              requireUID: parsedProduct.requireUID,
             }}
             onSuccess={handleSuccess}
             onChange={handleFormChange}
