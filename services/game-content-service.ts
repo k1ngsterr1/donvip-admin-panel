@@ -369,4 +369,19 @@ export const GameContentService = {
     const response = await api.gameContent.uploadInstructionImage(file);
     return response.data;
   },
+
+  /**
+   * Upload description image
+   */
+  uploadDescriptionImage: async (
+    file: File
+  ): Promise<{
+    imageUrl: string;
+    message: string;
+    success: boolean;
+    filename: string;
+  }> => {
+    const response = await api.gameContent.uploadDescriptionImage(file);
+    return response.data;
+  },
 };

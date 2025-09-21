@@ -53,7 +53,9 @@ interface GameContentFormProps {
 interface FormData {
   gameId: string;
   gameName: string;
+  title: string;
   description: string;
+  descriptionImage: string;
   mainDescription: string;
   instruction: {
     headerText: string;
@@ -75,6 +77,11 @@ export function GameContentForm({
   const [imagePreviews, setImagePreviews] = useState<{ [key: number]: string }>(
     {}
   );
+  const [descriptionImageFile, setDescriptionImageFile] = useState<File | null>(
+    null
+  );
+  const [descriptionImagePreview, setDescriptionImagePreview] =
+    useState<string>("");
 
   // Fetch available games from products
   const { data: productsData } = useQuery({
@@ -103,7 +110,9 @@ export function GameContentForm({
     defaultValues: {
       gameId: gameContent?.gameId || "",
       gameName: gameContent?.gameName || "",
+      title: gameContent?.title || "",
       description: gameContent?.description || "",
+      descriptionImage: gameContent?.descriptionImage || "",
       mainDescription: gameContent?.mainDescription || "",
       instruction: {
         headerText: gameContent?.instruction?.headerText || "Инструкция",
@@ -287,6 +296,7 @@ export function GameContentForm({
         // Update existing game
         const payload: UpdateGameContentDto = {
           gameName: data.gameName,
+          title: data.title,
           description: data.description,
           mainDescription: data.mainDescription,
           instruction: updatedInstruction,
@@ -307,6 +317,7 @@ export function GameContentForm({
         const payload: CreateGameContentDto = {
           gameId: data.gameId,
           gameName: data.gameName,
+          title: data.title,
           description: data.description,
           mainDescription: data.mainDescription,
           instruction: updatedInstruction,
@@ -468,6 +479,19 @@ export function GameContentForm({
               )}
             </div>
 
+            {/* Title Field */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Заголовок игры</Label>
+              <Input
+                id="title"
+                {...register("title")}
+                placeholder="Красивый заголовок для пользователей (например: Bigo Live - Прямые трансляции и развлечения)"
+              />
+              {errors.title && (
+                <p className="text-sm text-red-600">{errors.title.message}</p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Описание игры *</Label>
               <Textarea
@@ -498,6 +522,66 @@ export function GameContentForm({
                   {errors.mainDescription.message}
                 </p>
               )}
+            </div>
+
+            {/* Description Image Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="descriptionImage">Изображение для описания</Label>
+              <div className="space-y-4">
+                <Input
+                  id="descriptionImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setDescriptionImageFile(file);
+                      const previewUrl = URL.createObjectURL(file);
+                      setDescriptionImagePreview(previewUrl);
+                      setValue("descriptionImage", ""); // Will be set after upload
+                    }
+                  }}
+                  className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+                />
+
+                {/* Current image preview */}
+                {descriptionImagePreview && (
+                  <div className="relative">
+                    <img
+                      src={descriptionImagePreview}
+                      alt="Description preview"
+                      className="max-w-sm max-h-48 rounded-md border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setDescriptionImageFile(null);
+                        setDescriptionImagePreview("");
+                        setValue("descriptionImage", "");
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Existing image from server */}
+                {!descriptionImagePreview && watch("descriptionImage") && (
+                  <div className="relative">
+                    <img
+                      src={watch("descriptionImage")}
+                      alt="Current description image"
+                      className="max-w-sm max-h-48 rounded-md border"
+                    />
+                    <Badge variant="outline" className="absolute top-2 left-2">
+                      Текущее изображение
+                    </Badge>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

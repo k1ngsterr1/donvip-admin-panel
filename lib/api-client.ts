@@ -554,5 +554,20 @@ export const api = {
         }
       );
     },
+
+    // Image upload endpoint for description
+    uploadDescriptionImage: (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return apiClient.post(
+        "/game-content/upload-description-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+    },
   },
 };

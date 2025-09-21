@@ -34,8 +34,10 @@ export interface CreateFAQDto {
 export interface CreateGameContentDto {
   gameId: string; // Выбирается из существующих игр
   gameName?: string; // Опциональное название игры
+  title?: string; // Заголовок игры
   instruction: GameInstructionDto;
   description: string;
+  descriptionImage?: string; // Изображение для описания
   mainDescription?: string; // Основное описание игры
   reviews?: CreateReviewDto[];
   faq?: CreateFAQDto[];
@@ -43,8 +45,10 @@ export interface CreateGameContentDto {
 
 export interface UpdateGameContentDto {
   gameName?: string;
+  title?: string; // Заголовок игры
   instruction?: GameInstructionDto;
   description?: string;
+  descriptionImage?: string; // Изображение для описания
   mainDescription?: string; // Основное описание игры
   reviews?: CreateReviewDto[];
   faq?: CreateFAQDto[];
@@ -53,8 +57,10 @@ export interface UpdateGameContentDto {
 export interface GameContentResponseDto {
   gameId: string;
   gameName: string;
+  title?: string; // Заголовок игры
   instruction: GameInstructionDto;
   description: string;
+  descriptionImage?: string; // Изображение для описания
   mainDescription?: string; // Основное описание игры
   totalReviews: number;
   averageRating: number;
@@ -83,8 +89,10 @@ export interface GameFAQItem {
 export interface GameContent {
   gameId: string;
   gameName: string;
+  title?: string; // Заголовок игры
   instruction: GameInstructionDto;
   description: string;
+  descriptionImage?: string; // Изображение для описания
   mainDescription?: string; // Основное описание игры
   reviews: GameReview[];
   faq: GameFAQItem[];
@@ -98,7 +106,9 @@ export interface GameListResponse {
   games: Array<{
     gameId: string;
     gameName: string;
+    title?: string; // Заголовок игры
     description: string;
+    mainDescription?: string; // Основное описание игры
     totalReviews: number;
     averageRating: number;
     lastUpdated: string;
@@ -111,7 +121,9 @@ export interface GameSearchResponse {
   results: Array<{
     gameId: string;
     gameName: string;
+    title?: string; // Заголовок игры
     description: string;
+    mainDescription?: string; // Основное описание игры
     averageRating: number;
   }>;
   total: number;
@@ -121,6 +133,7 @@ export interface GameSearchResponse {
 export interface GameInstructionResponse {
   gameId: string;
   gameName: string;
+  title?: string; // Заголовок игры
   instruction: GameInstructionDto;
 }
 
