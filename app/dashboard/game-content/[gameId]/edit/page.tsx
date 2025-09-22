@@ -13,9 +13,9 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 
 interface GameContentEditPageProps {
-  params: {
+  params: Promise<{
     gameId: string;
-  };
+  }>;
 }
 
 export default function GameContentEditPage({
@@ -29,11 +29,22 @@ export default function GameContentEditPage({
   );
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showTester, setShowTester] = useState(false);
+  const [gameId, setGameId] = useState<string>("");
 
   useEffect(() => {
+    const initParams = async () => {
+      const resolvedParams = await params;
+      setGameId(resolvedParams.gameId);
+    };
+    initParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!gameId) return;
+
     const loadGameContent = async () => {
       setIsLoadingData(true);
-      const data = await getGameContent(params.gameId);
+      const data = await getGameContent(gameId);
       if (data) {
         setGameContent(data);
       }
@@ -41,10 +52,11 @@ export default function GameContentEditPage({
     };
 
     loadGameContent();
-  }, [params.gameId, getGameContent]);
+  }, [gameId, getGameContent]);
 
   const handleSubmit = async (data: any) => {
-    const result = await updateGameContent(params.gameId, data);
+    if (!gameId) return;
+    const result = await updateGameContent(gameId, data);
     if (result) {
       router.push("/dashboard/game-content");
     }
