@@ -116,10 +116,17 @@ interface Product {
   images?: string[];
   replenishment: ReplenishmentOption[] | string;
   smile_api_game?: string;
+  donatbank_product_id?: string;
   type?: string;
   currency_image?: string;
   currency_name?: string;
   isActive?: boolean; // Add isActive field
+  // Required fields for purchase
+  isServerRequired?: boolean;
+  requireUserId?: boolean;
+  requireServer?: boolean;
+  requireEmail?: boolean;
+  requireUID?: boolean;
 }
 
 interface ProductsResponse {
@@ -1265,9 +1272,7 @@ export function ProductsTable() {
                 order_number: editingProduct.order_number,
                 description: editingProduct.description,
                 description_en: editingProduct.description_en,
-                images:
-                  editingProduct.images ||
-                  (editingProduct.image ? [editingProduct.image] : []),
+                image: editingProduct.image || "",
                 replenishment: parseReplenishment(editingProduct).map(
                   (item) => ({
                     amount: item.amount || 1,
@@ -1278,9 +1283,16 @@ export function ProductsTable() {
                   })
                 ),
                 smile_api_game: editingProduct.smile_api_game || "", // Preserve original value without modification
+                donatbank_product_id: editingProduct.donatbank_product_id || "",
                 type: editingProduct.type || "",
                 currency_image: editingProduct.currency_image || "",
                 currency_name: editingProduct.currency_name || "",
+                // Add required fields from API response
+                isServerRequired: editingProduct.isServerRequired || false,
+                requireUserId: editingProduct.requireUserId ?? true,
+                requireServer: editingProduct.requireServer || false,
+                requireEmail: editingProduct.requireEmail || false,
+                requireUID: editingProduct.requireUID || false,
               }}
               onSuccess={handleEditSuccess}
             />
