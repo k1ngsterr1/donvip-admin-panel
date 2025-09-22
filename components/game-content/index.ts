@@ -1,2 +1,7 @@
 export { GameContentList } from "./game-content-list";
 export { GameContentForm } from "./game-content-form";
+export { GameContentEditForm } from "./game-content-edit-form";
+export { LanguageToggle } from "./language-toggle";
+export { InstructionEditor } from "./instruction-editor";
+export { ReviewsEditor } from "./reviews-editor";
+export { FAQEditor } from "./faq-editor";
