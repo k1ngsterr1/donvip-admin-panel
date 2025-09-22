@@ -3,17 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GameContentEditForm } from "@/components/game-content/game-content-edit-form";
+import { GameContentApiTester } from "@/components/game-content/api-tester";
 import { useGameContent } from "@/hooks/use-game-content";
 import {
   CreateGameContentDto,
   GameContentResponseDto,
 } from "@/types/game-content-dto";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
 
 export default function GameContentCreatePage() {
   const router = useRouter();
   const { createGameContent, isLoading } = useGameContent();
+  const [showTester, setShowTester] = useState(true);
 
   // Создаем пустую структуру для нового контента
   const emptyGameContent: GameContentResponseDto = {
@@ -80,8 +83,24 @@ export default function GameContentCreatePage() {
             Создайте новый игровой контент с поддержкой двух языков
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowTester(!showTester)}
+          className="ml-auto"
+        >
+          {showTester ? "Скрыть тестер" : "Показать API тестер"}
+        </Button>
       </div>
 
+      {/* API Tester */}
+      {showTester && (
+        <>
+          <GameContentApiTester />
+          <Separator />
+        </>
+      )}
+
+      {/* Main Form */}
       <GameContentEditForm
         gameContent={emptyGameContent}
         onSubmit={handleSubmit}

@@ -9,8 +9,9 @@ import {
 } from "@/types/game-content-dto";
 import { useToast } from "@/hooks/use-toast";
 
-// Здесь будут API вызовы - адаптируйте под ваш API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+// API конфигурация для реального эндпоинта
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://admin-panel.don-vip.com/api";
 
 interface UseGameContentReturn {
   // State
@@ -88,8 +89,10 @@ export function useGameContent(): UseGameContentReturn {
           const response = await fetch(`${API_BASE_URL}/game-content`, {
             method: "POST",
             headers: {
+              Accept: "*/*",
               "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(data),
           });
 
@@ -118,8 +121,10 @@ export function useGameContent(): UseGameContentReturn {
             {
               method: "PATCH",
               headers: {
+                Accept: "*/*",
                 "Content-Type": "application/json",
               },
+              credentials: "include",
               body: JSON.stringify(data),
             }
           );
@@ -141,21 +146,35 @@ export function useGameContent(): UseGameContentReturn {
     async (gameId: string): Promise<GameContentResponseDto | null> => {
       return handleApiCall(
         async () => {
+          console.log(`🔍 Fetching game content for: ${gameId}`);
+          console.log(`📡 API URL: ${API_BASE_URL}/game-content/${gameId}`);
+
           const response = await fetch(
             `${API_BASE_URL}/game-content/${gameId}`,
             {
               method: "GET",
               headers: {
+                Accept: "*/*",
                 "Content-Type": "application/json",
               },
+              credentials: "include", // Для отправки cookies
             }
           );
 
+          console.log(`📊 Response status: ${response.status}`);
+          console.log(`📊 Response ok: ${response.ok}`);
+
           if (!response.ok) {
-            throw new Error("Ошибка при получении игрового контента");
+            const errorText = await response.text();
+            console.error(`❌ API Error: ${response.status} - ${errorText}`);
+            throw new Error(
+              `Ошибка при получении игрового контента: ${response.status}`
+            );
           }
 
-          return response.json();
+          const data = await response.json();
+          console.log(`✅ Received data:`, data);
+          return data;
         },
         undefined,
         "Ошибка при загрузке игрового контента"
@@ -173,8 +192,10 @@ export function useGameContent(): UseGameContentReturn {
             {
               method: "DELETE",
               headers: {
+                Accept: "*/*",
                 "Content-Type": "application/json",
               },
+              credentials: "include",
             }
           );
 
@@ -231,8 +252,10 @@ export function useGameContentList() {
           {
             method: "GET",
             headers: {
+              Accept: "*/*",
               "Content-Type": "application/json",
             },
+            credentials: "include",
           }
         );
 
@@ -281,8 +304,10 @@ export function useGameContentComponents() {
           {
             method: "PATCH",
             headers: {
+              Accept: "*/*",
               "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify({ reviews }),
           }
         );
@@ -320,8 +345,10 @@ export function useGameContentComponents() {
           {
             method: "PATCH",
             headers: {
+              Accept: "*/*",
               "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify({ faq }),
           }
         );

@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GameContentEditForm } from "@/components/game-content/game-content-edit-form";
+import { GameContentApiTester } from "@/components/game-content/api-tester";
 import { useGameContent } from "@/hooks/use-game-content";
 import { GameContentResponseDto } from "@/types/game-content-dto";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 
 interface GameContentEditPageProps {
@@ -26,6 +28,7 @@ export default function GameContentEditPage({
     null
   );
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [showTester, setShowTester] = useState(false);
 
   useEffect(() => {
     const loadGameContent = async () => {
@@ -128,8 +131,24 @@ export default function GameContentEditPage({
             Редактируйте контент для игры: {gameContent.gameName}
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowTester(!showTester)}
+          className="ml-auto"
+        >
+          {showTester ? "Скрыть тестер" : "Показать API тестер"}
+        </Button>
       </div>
 
+      {/* API Tester */}
+      {showTester && (
+        <>
+          <GameContentApiTester />
+          <Separator />
+        </>
+      )}
+
+      {/* Main Form */}
       <GameContentEditForm
         gameContent={gameContent}
         onSubmit={handleSubmit}
