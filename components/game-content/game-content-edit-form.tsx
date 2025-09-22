@@ -17,10 +17,13 @@ import {
   CreateReviewDto,
   CreateFAQDto,
 } from "@/types/game-content-dto";
-import { LanguageToggle } from "./language-toggle";
-import { InstructionEditor } from "./instruction-editor";
-import { ReviewsEditor } from "./reviews-editor";
-import { FAQEditor } from "./faq-editor";
+import {
+  LanguageToggle,
+  InstructionEditor,
+  ReviewsEditor,
+  FAQEditor,
+  ImageUpload,
+} from "@/components/game-content";
 
 interface GameContentEditFormProps {
   gameContent: GameContentResponseDto;
@@ -60,11 +63,12 @@ export function GameContentEditForm({
     await onSubmit(formData);
   };
 
-  const hasEnglishContent =
+  const hasEnglishContent = !!(
     gameContent.gameName_en ||
     gameContent.title_en ||
     gameContent.description_en ||
-    gameContent.mainDescription_en;
+    gameContent.mainDescription_en
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -220,29 +224,12 @@ export function GameContentEditForm({
               </div>
 
               {/* Description Image */}
-              <div className="space-y-2">
-                <Label htmlFor="descriptionImage">
-                  Изображение для описания
-                </Label>
-                <Input
-                  id="descriptionImage"
-                  type="url"
-                  value={formData.descriptionImage || ""}
-                  onChange={(e) =>
-                    updateField("descriptionImage", e.target.value)
-                  }
-                  placeholder="Введите URL изображения"
-                />
-                {formData.descriptionImage && (
-                  <div className="mt-2">
-                    <img
-                      src={formData.descriptionImage}
-                      alt="Preview"
-                      className="max-w-xs rounded-md border"
-                    />
-                  </div>
-                )}
-              </div>
+              <ImageUpload
+                value={formData.descriptionImage || ""}
+                onChange={(url) => updateField("descriptionImage", url)}
+                type="description"
+                label="Изображение для описания"
+              />
             </CardContent>
           </Card>
         </TabsContent>

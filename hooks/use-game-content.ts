@@ -100,10 +100,7 @@ export function useGameContent(): UseGameContentReturn {
     ): Promise<GameContentResponseDto | null> => {
       return handleApiCall(
         async () => {
-          const response = await apiClient.patch(
-            `/game-content/${gameId}`,
-            data
-          );
+          const response = await apiClient.put(`/game-content/${gameId}`, data);
           return response.data;
         },
         "Игровой контент успешно обновлен",

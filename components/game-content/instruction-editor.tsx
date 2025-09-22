@@ -14,6 +14,7 @@ import {
   InstructionImageDto,
   SupportedLanguage,
 } from "@/types/game-content-dto";
+import { ImageUpload } from "./image-upload";
 
 interface InstructionEditorProps {
   instruction?: GameInstructionDto;
@@ -459,14 +460,12 @@ export function InstructionEditor({
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>URL изображения</Label>
-                <Input
-                  value={newImage.src}
-                  onChange={(e) =>
-                    setNewImage({ ...newImage, src: e.target.value })
-                  }
-                  placeholder="https://example.com/image.jpg"
+              <div className="col-span-1 md:col-span-2">
+                <ImageUpload
+                  value={newImage.src || ""}
+                  onChange={(url) => setNewImage({ ...newImage, src: url })}
+                  type="instruction"
+                  label="Изображение для инструкции"
                 />
               </div>
 

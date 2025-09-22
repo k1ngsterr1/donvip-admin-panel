@@ -99,7 +99,7 @@ export function GameContentApiTester() {
       description_en: "Updated description",
     };
 
-    handleApiCall(`PATCH /game-content/${gameId}`, () =>
+    handleApiCall(`PUT /game-content/${gameId}`, () =>
       updateGameContent(gameId, updateData)
     );
   };

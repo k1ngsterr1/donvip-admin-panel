@@ -6,3 +6,4 @@ export { InstructionEditor } from "./instruction-editor";
 export { ReviewsEditor } from "./reviews-editor";
 export { FAQEditor } from "./faq-editor";
 export { GameContentApiTester } from "./api-tester";
+export { ImageUpload } from "./image-upload";
