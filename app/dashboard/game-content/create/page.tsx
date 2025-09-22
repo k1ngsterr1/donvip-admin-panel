@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { GameContentEditForm } from '@/components/game-content/game-content-edit-form';
-import { useGameContent } from '@/hooks/use-game-content';
-import { CreateGameContentDto, GameContentResponseDto } from '@/types/game-content-dto';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { GameContentEditForm } from "@/components/game-content/game-content-edit-form";
+import { useGameContent } from "@/hooks/use-game-content";
+import {
+  CreateGameContentDto,
+  GameContentResponseDto,
+} from "@/types/game-content-dto";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function GameContentCreatePage() {
   const router = useRouter();
@@ -14,26 +17,26 @@ export default function GameContentCreatePage() {
 
   // Создаем пустую структуру для нового контента
   const emptyGameContent: GameContentResponseDto = {
-    gameId: '',
-    gameName: '',
-    gameName_en: '',
-    title: '',
-    title_en: '',
+    gameId: "",
+    gameName: "",
+    gameName_en: "",
+    title: "",
+    title_en: "",
     instruction: {
-      headerText: '',
-      headerText_en: '',
+      headerText: "",
+      headerText_en: "",
       steps: [],
-      images: []
+      images: [],
     },
-    description: '',
-    description_en: '',
-    descriptionImage: '',
-    mainDescription: '',
-    mainDescription_en: '',
+    description: "",
+    description_en: "",
+    descriptionImage: "",
+    mainDescription: "",
+    mainDescription_en: "",
     totalReviews: 0,
     averageRating: 0,
     totalFAQItems: 0,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   };
 
   const handleSubmit = async (data: any) => {
@@ -51,17 +54,17 @@ export default function GameContentCreatePage() {
       mainDescription: data.mainDescription,
       mainDescription_en: data.mainDescription_en,
       reviews: data.reviews || [],
-      faq: data.faq || []
+      faq: data.faq || [],
     };
 
     const result = await createGameContent(createData);
     if (result) {
-      router.push('/dashboard/game-content');
+      router.push("/dashboard/game-content");
     }
   };
 
   const handleBack = () => {
-    router.push('/dashboard/game-content');
+    router.push("/dashboard/game-content");
   };
 
   return (
