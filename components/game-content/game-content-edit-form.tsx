@@ -13,6 +13,9 @@ import {
   UpdateGameContentDto,
   GameContentResponseDto,
   SupportedLanguage,
+  GameInstructionDto,
+  CreateReviewDto,
+  CreateFAQDto,
 } from "@/types/game-content-dto";
 import { LanguageToggle } from "./language-toggle";
 import { InstructionEditor } from "./instruction-editor";
@@ -249,7 +252,9 @@ export function GameContentEditForm({
           <InstructionEditor
             instruction={formData.instruction}
             currentLanguage={currentLanguage}
-            onChange={(instruction) => updateField("instruction", instruction)}
+            onChange={(instruction: GameInstructionDto) =>
+              updateField("instruction", instruction)
+            }
           />
         </TabsContent>
 
@@ -258,7 +263,9 @@ export function GameContentEditForm({
           <ReviewsEditor
             reviews={formData.reviews || []}
             currentLanguage={currentLanguage}
-            onChange={(reviews) => updateField("reviews", reviews)}
+            onChange={(reviews: CreateReviewDto[]) =>
+              updateField("reviews", reviews)
+            }
           />
         </TabsContent>
 
@@ -267,7 +274,7 @@ export function GameContentEditForm({
           <FAQEditor
             faq={formData.faq || []}
             currentLanguage={currentLanguage}
-            onChange={(faq) => updateField("faq", faq)}
+            onChange={(faq: CreateFAQDto[]) => updateField("faq", faq)}
           />
         </TabsContent>
       </Tabs>

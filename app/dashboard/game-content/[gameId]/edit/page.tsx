@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { GameContentEditForm } from '@/components/game-content/game-content-edit-form';
-import { useGameContent } from '@/hooks/use-game-content';
-import { GameContentResponseDto } from '@/types/game-content-dto';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { GameContentEditForm } from "@/components/game-content/game-content-edit-form";
+import { useGameContent } from "@/hooks/use-game-content";
+import { GameContentResponseDto } from "@/types/game-content-dto";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 
 interface GameContentEditPageProps {
   params: {
@@ -16,10 +16,15 @@ interface GameContentEditPageProps {
   };
 }
 
-export default function GameContentEditPage({ params }: GameContentEditPageProps) {
+export default function GameContentEditPage({
+  params,
+}: GameContentEditPageProps) {
   const router = useRouter();
-  const { getGameContent, updateGameContent, isLoading, error } = useGameContent();
-  const [gameContent, setGameContent] = useState<GameContentResponseDto | null>(null);
+  const { getGameContent, updateGameContent, isLoading, error } =
+    useGameContent();
+  const [gameContent, setGameContent] = useState<GameContentResponseDto | null>(
+    null
+  );
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
@@ -38,12 +43,12 @@ export default function GameContentEditPage({ params }: GameContentEditPageProps
   const handleSubmit = async (data: any) => {
     const result = await updateGameContent(params.gameId, data);
     if (result) {
-      router.push('/dashboard/game-content');
+      router.push("/dashboard/game-content");
     }
   };
 
   const handleBack = () => {
-    router.push('/dashboard/game-content');
+    router.push("/dashboard/game-content");
   };
 
   if (isLoadingData) {
@@ -91,16 +96,16 @@ export default function GameContentEditPage({ params }: GameContentEditPageProps
             <div className="flex items-center space-x-3 text-destructive">
               <AlertCircle className="h-5 w-5" />
               <div>
-                <p className="font-medium">Не удалось загрузить игровой контент</p>
+                <p className="font-medium">
+                  Не удалось загрузить игровой контент
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  {error || 'Игра с указанным ID не найдена'}
+                  {error || "Игра с указанным ID не найдена"}
                 </p>
               </div>
             </div>
             <div className="mt-4">
-              <Button onClick={handleBack}>
-                Вернуться к списку игр
-              </Button>
+              <Button onClick={handleBack}>Вернуться к списку игр</Button>
             </div>
           </CardContent>
         </Card>
@@ -116,7 +121,9 @@ export default function GameContentEditPage({ params }: GameContentEditPageProps
           Назад
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Редактирование игрового контента</h1>
+          <h1 className="text-2xl font-bold">
+            Редактирование игрового контента
+          </h1>
           <p className="text-muted-foreground">
             Редактируйте контент для игры: {gameContent.gameName}
           </p>

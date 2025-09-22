@@ -87,6 +87,7 @@ interface GameListItem {
 }
 
 export function GameContentList() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingGame, setEditingGame] = useState<GameContent | null>(null);
@@ -178,30 +179,8 @@ export function GameContentList() {
   );
 
   const handleEdit = (game: GameListItem) => {
-    // Convert GameListItem to GameContent for editing
-    const gameContent: GameContent = {
-      gameId: game.gameId,
-      gameName: game.gameName,
-      description: game.description,
-      instruction: game.instruction
-        ? {
-            headerText: game.instruction.headerText,
-            steps: game.instruction.steps,
-            images: game.instruction.images,
-          }
-        : {
-            headerText: "Инструкция",
-            steps: [],
-            images: [],
-          },
-      reviews: [],
-      faq: [],
-      averageRating: 0,
-      totalReviews: 0,
-      createdAt: game.createdAt || new Date().toISOString(),
-      updatedAt: game.updatedAt || new Date().toISOString(),
-    };
-    setEditingGame(gameContent);
+    // Перенаправляем на новую страницу редактирования с поддержкой двух языков
+    router.push(`/dashboard/game-content/${game.gameId}/edit`);
   };
 
   const handleDelete = (gameId: string) => {
@@ -329,7 +308,9 @@ export function GameContentList() {
                 Управление игровым контентом и инструкциями
               </CardDescription>
             </div>
-            <Button onClick={() => setShowCreateDialog(true)}>
+            <Button
+              onClick={() => router.push("/dashboard/game-content/create")}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Добавить контент для игры
             </Button>
