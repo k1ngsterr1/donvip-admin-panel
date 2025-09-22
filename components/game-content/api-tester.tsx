@@ -297,11 +297,11 @@ export function GameContentApiTester() {
         {/* API Info */}
         <div className="text-xs text-muted-foreground">
           <p>
-            <strong>Base URL:</strong> https://admin-panel.don-vip.com/api
+            <strong>Base URL:</strong> http://api.don-vip.com
           </p>
           <p>
-            <strong>Credentials:</strong> include (cookies отправляются
-            автоматически)
+            <strong>Authentication:</strong> Bearer token (автоматически
+            добавляется)
           </p>
           <p>
             <strong>Content-Type:</strong> application/json

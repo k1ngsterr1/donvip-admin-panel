@@ -8,10 +8,7 @@ import {
   DeleteResponse,
 } from "@/types/game-content-dto";
 import { useToast } from "@/hooks/use-toast";
-
-// API конфигурация для реального эндпоинта
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://admin-panel.don-vip.com/api";
+import { apiClient } from "@/lib/api-client";
 
 interface UseGameContentReturn {
   // State
@@ -86,21 +83,8 @@ export function useGameContent(): UseGameContentReturn {
     ): Promise<GameContentResponseDto | null> => {
       return handleApiCall(
         async () => {
-          const response = await fetch(`${API_BASE_URL}/game-content`, {
-            method: "POST",
-            headers: {
-              Accept: "*/*",
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(data),
-          });
-
-          if (!response.ok) {
-            throw new Error("Ошибка при создании игрового контента");
-          }
-
-          return response.json();
+          const response = await apiClient.post("/game-content", data);
+          return response.data;
         },
         "Игровой контент успешно создан",
         "Ошибка при создании игрового контента"
@@ -116,24 +100,11 @@ export function useGameContent(): UseGameContentReturn {
     ): Promise<GameContentResponseDto | null> => {
       return handleApiCall(
         async () => {
-          const response = await fetch(
-            `${API_BASE_URL}/game-content/${gameId}`,
-            {
-              method: "PATCH",
-              headers: {
-                Accept: "*/*",
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify(data),
-            }
+          const response = await apiClient.patch(
+            `/game-content/${gameId}`,
+            data
           );
-
-          if (!response.ok) {
-            throw new Error("Ошибка при обновлении игрового контента");
-          }
-
-          return response.json();
+          return response.data;
         },
         "Игровой контент успешно обновлен",
         "Ошибка при обновлении игрового контента"
@@ -147,34 +118,13 @@ export function useGameContent(): UseGameContentReturn {
       return handleApiCall(
         async () => {
           console.log(`🔍 Fetching game content for: ${gameId}`);
-          console.log(`📡 API URL: ${API_BASE_URL}/game-content/${gameId}`);
 
-          const response = await fetch(
-            `${API_BASE_URL}/game-content/${gameId}`,
-            {
-              method: "GET",
-              headers: {
-                Accept: "*/*",
-                "Content-Type": "application/json",
-              },
-              credentials: "include", // Для отправки cookies
-            }
-          );
+          const response = await apiClient.get(`/game-content/${gameId}`);
 
           console.log(`📊 Response status: ${response.status}`);
-          console.log(`📊 Response ok: ${response.ok}`);
+          console.log(`✅ Received data:`, response.data);
 
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`❌ API Error: ${response.status} - ${errorText}`);
-            throw new Error(
-              `Ошибка при получении игрового контента: ${response.status}`
-            );
-          }
-
-          const data = await response.json();
-          console.log(`✅ Received data:`, data);
-          return data;
+          return response.data;
         },
         undefined,
         "Ошибка при загрузке игрового контента"
@@ -187,23 +137,8 @@ export function useGameContent(): UseGameContentReturn {
     async (gameId: string): Promise<boolean> => {
       const result = await handleApiCall(
         async () => {
-          const response = await fetch(
-            `${API_BASE_URL}/game-content/${gameId}`,
-            {
-              method: "DELETE",
-              headers: {
-                Accept: "*/*",
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error("Ошибка при удалении игрового контента");
-          }
-
-          const data: DeleteResponse = await response.json();
+          const response = await apiClient.delete(`/game-content/${gameId}`);
+          const data: DeleteResponse = response.data;
           return data.success;
         },
         "Игровой контент успешно удален",
@@ -247,23 +182,10 @@ export function useGameContentList() {
         if (params?.limit) searchParams.set("limit", params.limit.toString());
         if (params?.search) searchParams.set("search", params.search);
 
-        const response = await fetch(
-          `${API_BASE_URL}/game-content?${searchParams.toString()}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "*/*",
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          }
+        const response = await apiClient.get(
+          `/game-content?${searchParams.toString()}`
         );
-
-        if (!response.ok) {
-          throw new Error("Ошибка при получении списка игрового контента");
-        }
-
-        return await response.json();
+        return response.data;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Произошла ошибка";
         setError(message);
@@ -299,29 +221,17 @@ export function useGameContentComponents() {
     async (gameId: string, reviews: any[]) => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/game-content/${gameId}/reviews`,
-          {
-            method: "PATCH",
-            headers: {
-              Accept: "*/*",
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ reviews }),
-          }
+        const response = await apiClient.patch(
+          `/game-content/${gameId}/reviews`,
+          { reviews }
         );
-
-        if (!response.ok) {
-          throw new Error("Ошибка при обновлении отзывов");
-        }
 
         toast({
           title: "Успешно",
           description: "Отзывы успешно обновлены",
         });
 
-        return await response.json();
+        return response.data;
       } catch (error) {
         toast({
           title: "Ошибка",
@@ -340,29 +250,16 @@ export function useGameContentComponents() {
     async (gameId: string, faq: any[]) => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/game-content/${gameId}/faq`,
-          {
-            method: "PATCH",
-            headers: {
-              Accept: "*/*",
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ faq }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Ошибка при обновлении FAQ");
-        }
+        const response = await apiClient.patch(`/game-content/${gameId}/faq`, {
+          faq,
+        });
 
         toast({
           title: "Успешно",
           description: "FAQ успешно обновлены",
         });
 
-        return await response.json();
+        return response.data;
       } catch (error) {
         toast({
           title: "Ошибка",
