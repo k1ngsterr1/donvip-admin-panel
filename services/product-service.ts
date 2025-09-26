@@ -156,4 +156,22 @@ export const ProductService = {
     const response = await api.products.getActive(params);
     return response.data;
   },
+
+  /**
+   * Add discount package to product
+   */
+  addDiscountPackage: async (
+    productId: number,
+    packageId: number,
+    discountPercent: number
+  ) => {
+    const response = await apiClient.post(
+      `/product/${productId}/discount-package`,
+      {
+        packageId,
+        discountPercent,
+      }
+    );
+    return response.data;
+  },
 };

@@ -72,6 +72,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ProductForm } from "@/components/products/product-form";
+import { DiscountPackageManager } from "@/components/products/discount-package-manager";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -1146,6 +1147,17 @@ export function ProductsTable() {
                                       )}
                                     </div>
                                   </CardContent>
+                                  <CardFooter className="pt-0 flex justify-end gap-2">
+                                    <DiscountPackageManager
+                                      productId={product.id}
+                                      packages={replenishmentOptions || []}
+                                      onSuccess={() =>
+                                        queryClient.invalidateQueries({
+                                          queryKey: ["products"],
+                                        })
+                                      }
+                                    />
+                                  </CardFooter>
                                 </Card>
                               </div>
 
