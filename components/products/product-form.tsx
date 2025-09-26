@@ -729,13 +729,13 @@ export function ProductForm({
     const currentItems = form.getValues("replenishment");
     form.setValue("replenishment", [
       ...currentItems,
-      { 
-        price: 0, 
-        amount: 1, 
-        type: "", 
+      {
+        price: 0,
+        amount: 1,
+        type: "",
         sku: "",
         originalPrice: undefined,
-        discountPercent: undefined
+        discountPercent: undefined,
       },
     ]);
   };
@@ -1929,7 +1929,7 @@ export function ProductForm({
                             step={0.01}
                             placeholder="Для скидки"
                             {...field}
-                            value={field.value?.toString() || ''}
+                            value={field.value?.toString() || ""}
                           />
                         </FormControl>
                         <FormDescription className="text-gray-600 text-xs">
@@ -1956,7 +1956,7 @@ export function ProductForm({
                             max={90}
                             placeholder="0-90"
                             {...field}
-                            value={field.value?.toString() || ''}
+                            value={field.value?.toString() || ""}
                           />
                         </FormControl>
                         <FormDescription className="text-gray-600 text-xs">
