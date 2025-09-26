@@ -209,6 +209,10 @@ export function ProductForm({
   useEffect(() => {
     console.log("DefaultValues passed to form:", defaultValues);
     console.log(
+      "Raw replenishment from defaultValues:",
+      defaultValues?.replenishment
+    );
+    console.log(
       "Processed replenishment:",
       defaultValues?.replenishment?.map((item) => ({
         ...item,
@@ -219,12 +223,59 @@ export function ProductForm({
       }))
     );
 
+    // Log current form values
+    const currentValues = form.getValues();
+    console.log(
+      "Current form replenishment values:",
+      currentValues.replenishment
+    );
+
     const subscription = form.watch((value) => {
       console.log("Form values changed:", value);
+      console.log("Current replenishment:", value.replenishment);
       console.log("Current smile_api_game:", value.smile_api_game);
     });
     return () => subscription.unsubscribe();
   }, [form, defaultValues]);
+
+  // Reset form when defaultValues change
+  useEffect(() => {
+    if (defaultValues && productId) {
+      console.log("Resetting form with new defaultValues:", defaultValues);
+      const processedReplenishment = defaultValues.replenishment?.map(
+        (item) => ({
+          ...item,
+          discountPercent:
+            item.discountPercent && item.discountPercent > 0
+              ? item.discountPercent
+              : undefined,
+        })
+      ) || [
+        { price: 0, amount: 1, type: "", sku: "", discountPercent: undefined },
+      ];
+
+      console.log("Processed replenishment for reset:", processedReplenishment);
+
+      form.reset({
+        name: defaultValues.name || "",
+        order_number: defaultValues.order_number ?? 1,
+        image: undefined as any,
+        description: defaultValues.description || "",
+        description_en: defaultValues.description_en || "",
+        replenishment: processedReplenishment,
+        smile_api_game: defaultValues.smile_api_game || "",
+        donatbank_product_id: defaultValues.donatbank_product_id || "",
+        type: defaultValues.type || undefined,
+        currency_name: defaultValues.currency_name || "",
+        currency_image: undefined as any,
+        isServerRequired: defaultValues.isServerRequired || false,
+        requireUserId: defaultValues.requireUserId ?? true,
+        requireServer: defaultValues.requireServer || false,
+        requireEmail: defaultValues.requireEmail || false,
+        requireUID: defaultValues.requireUID || false,
+      });
+    }
+  }, [defaultValues, productId, form]);
 
   // Watch for product type changes to conditionally show Smile API fields
   const productType = useWatch({
@@ -1950,36 +2001,50 @@ export function ProductForm({
                   <FormField
                     control={form.control}
                     name={`replenishment.${index}.discountPercent`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">
-                          Скидка (%)
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            className="text-primary"
-                            min={0}
-                            max={90}
-                            placeholder="0-90"
-                            {...field}
-                            value={field.value?.toString() || ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === "" || value === "0") {
-                                field.onChange(undefined);
-                              } else {
-                                field.onChange(parseInt(value) || undefined);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription className="text-gray-600 text-xs">
-                          Процент скидки (опционально)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      console.log(`Field discountPercent[${index}]:`, {
+                        fieldValue: field.value,
+                        formValue: form.getValues(
+                          `replenishment.${index}.discountPercent`
+                        ),
+                        rawValue: form.getValues(`replenishment.${index}`),
+                      });
+
+                      return (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Скидка (%)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              className="text-primary"
+                              min={0}
+                              max={90}
+                              placeholder="0-90"
+                              {...field}
+                              value={field.value?.toString() || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                console.log(
+                                  `Discount field ${index} changed:`,
+                                  value
+                                );
+                                if (value === "" || value === "0") {
+                                  field.onChange(undefined);
+                                } else {
+                                  field.onChange(parseInt(value) || undefined);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription className="text-gray-600 text-xs">
+                            Процент скидки (опционально)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
               ))}
