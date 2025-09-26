@@ -1967,7 +1967,7 @@ export function ProductForm({
                     )}
                   />
                 </div>
-              ))
+              ))}
             </div>
 
             <Button
