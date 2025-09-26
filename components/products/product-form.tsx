@@ -63,6 +63,8 @@ const replenishmentItemSchema = z.object({
   amount: z.coerce.number().min(1, "Amount must be at least 1"),
   type: z.string().min(1, "Type is required"),
   sku: z.string().min(1, "SKU is required"),
+  originalPrice: z.coerce.number().optional(),
+  discountPercent: z.coerce.number().min(0).max(90).optional(),
 });
 
 // Create a file validation schema
@@ -727,7 +729,14 @@ export function ProductForm({
     const currentItems = form.getValues("replenishment");
     form.setValue("replenishment", [
       ...currentItems,
-      { price: 0, amount: 1, type: "", sku: "" }, // Changed amount from 0 to 1
+      { 
+        price: 0, 
+        amount: 1, 
+        type: "", 
+        sku: "",
+        originalPrice: undefined,
+        discountPercent: undefined
+      },
     ]);
   };
 
@@ -1730,7 +1739,7 @@ export function ProductForm({
               {form.watch("replenishment").map((_, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border rounded-md"
+                  className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 p-4 border rounded-md"
                 >
                   <FormField
                     control={form.control}
@@ -1903,8 +1912,62 @@ export function ProductForm({
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.originalPrice`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">
+                          Оригинальная цена (₽)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            className="text-primary"
+                            min={0.01}
+                            step={0.01}
+                            placeholder="Для скидки"
+                            {...field}
+                            value={field.value?.toString() || ''}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-gray-600 text-xs">
+                          Цена без скидки (опционально)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.discountPercent`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-primary">
+                          Скидка (%)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            className="text-primary"
+                            min={0}
+                            max={90}
+                            placeholder="0-90"
+                            {...field}
+                            value={field.value?.toString() || ''}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-gray-600 text-xs">
+                          Процент скидки (опционально)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              ))}
+              ))
             </div>
 
             <Button
