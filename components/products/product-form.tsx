@@ -124,6 +124,7 @@ interface ProductFormProps {
       amount: number;
       type: string;
       sku: string;
+      discountPercent?: number;
     }>;
     smile_api_game?: string;
     donatbank_product_id?: string;
@@ -181,8 +182,14 @@ export function ProductForm({
       image: undefined as any,
       description: defaultValues?.description || "",
       description_en: defaultValues?.description_en || "",
-      replenishment: defaultValues?.replenishment || [
-        { price: 0, amount: 1, type: "", sku: "" }, // Changed amount from 0 to 1
+      replenishment: defaultValues?.replenishment?.map((item) => ({
+        ...item,
+        discountPercent:
+          item.discountPercent && item.discountPercent > 0
+            ? item.discountPercent
+            : undefined,
+      })) || [
+        { price: 0, amount: 1, type: "", sku: "", discountPercent: undefined },
       ],
       smile_api_game: defaultValues?.smile_api_game || "",
       donatbank_product_id: defaultValues?.donatbank_product_id || "",
@@ -200,12 +207,24 @@ export function ProductForm({
 
   // Add debugging for form values
   useEffect(() => {
+    console.log("DefaultValues passed to form:", defaultValues);
+    console.log(
+      "Processed replenishment:",
+      defaultValues?.replenishment?.map((item) => ({
+        ...item,
+        discountPercent:
+          item.discountPercent && item.discountPercent > 0
+            ? item.discountPercent
+            : undefined,
+      }))
+    );
+
     const subscription = form.watch((value) => {
       console.log("Form values changed:", value);
       console.log("Current smile_api_game:", value.smile_api_game);
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, defaultValues]);
 
   // Watch for product type changes to conditionally show Smile API fields
   const productType = useWatch({
@@ -555,7 +574,20 @@ export function ProductForm({
       formData.append("type", values.type);
 
       // Convert replenishment array to JSON string and append
-      formData.append("replenishment", JSON.stringify(values.replenishment));
+      // Process replenishment to ensure discountPercent is properly handled
+      const processedReplenishment = values.replenishment.map((item) => ({
+        ...item,
+        discountPercent:
+          item.discountPercent && item.discountPercent > 0
+            ? item.discountPercent
+            : undefined,
+      }));
+
+      console.log(
+        "Processed replenishment before sending:",
+        processedReplenishment
+      );
+      formData.append("replenishment", JSON.stringify(processedReplenishment));
 
       // Append currency name
       formData.append("currency_name", values.currency_name);
@@ -595,7 +627,11 @@ export function ProductForm({
       // Log the FormData entries for debugging
       console.log("FormData entries:");
       for (const pair of formData.entries()) {
-        console.log(pair[0], typeof pair[1], pair[1]);
+        if (pair[0] === "replenishment") {
+          console.log(pair[0], "JSON:", JSON.parse(pair[1] as string));
+        } else {
+          console.log(pair[0], typeof pair[1], pair[1]);
+        }
       }
 
       if (productId) {
@@ -1928,6 +1964,14 @@ export function ProductForm({
                             placeholder="0-90"
                             {...field}
                             value={field.value?.toString() || ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "" || value === "0") {
+                                field.onChange(undefined);
+                              } else {
+                                field.onChange(parseInt(value) || undefined);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormDescription className="text-gray-600 text-xs">
