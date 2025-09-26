@@ -241,15 +241,41 @@ export function ProductForm({
   // Reset form when defaultValues change
   useEffect(() => {
     if (defaultValues && productId) {
-      console.log("Resetting form with new defaultValues:", defaultValues);
+      console.log("=== FORM RESET DEBUG ===");
+      console.log(
+        "Full defaultValues from backend:",
+        JSON.stringify(defaultValues, null, 2)
+      );
+      console.log("Raw replenishment items:", defaultValues.replenishment);
+
+      // Check each replenishment item for discountPercent
+      defaultValues.replenishment?.forEach((item, index) => {
+        console.log(`Replenishment[${index}]:`, {
+          hasDiscountPercent: "discountPercent" in item,
+          discountPercentValue: item.discountPercent,
+          fullItem: item,
+        });
+      });
+
       const processedReplenishment = defaultValues.replenishment?.map(
-        (item) => ({
-          ...item,
-          discountPercent:
-            item.discountPercent && item.discountPercent > 0
-              ? item.discountPercent
-              : undefined,
-        })
+        (item) => {
+          // Ensure every item has discountPercent field, even if it's undefined
+          const processedItem = {
+            ...item,
+            discountPercent: undefined as number | undefined, // Default to undefined
+          };
+
+          // If discountPercent exists and is > 0, use it
+          if (item.discountPercent && item.discountPercent > 0) {
+            processedItem.discountPercent = item.discountPercent;
+          }
+
+          console.log(`Processing item:`, {
+            original: item,
+            processed: processedItem,
+          });
+          return processedItem;
+        }
       ) || [
         { price: 0, amount: 1, type: "", sku: "", discountPercent: undefined },
       ];
