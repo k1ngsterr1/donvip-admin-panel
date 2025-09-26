@@ -153,22 +153,9 @@ export function DiscountPackageManager({
                 return (
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">Оригинальная цена:</span>
-                      <span className="text-sm line-through text-muted-foreground">
-                        {originalPrice.toFixed(2)} руб
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <span className="text-sm">Цена со скидкой:</span>
                       <span className="text-sm font-medium text-red-600">
                         {discountedPrice.toFixed(2)} руб
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">Экономия:</span>
-                      <span className="text-sm font-medium text-green-600">
-                        {(originalPrice - discountedPrice).toFixed(2)} руб (
-                        {discountPercent}%)
                       </span>
                     </div>
                   </div>
