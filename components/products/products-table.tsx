@@ -105,6 +105,7 @@ interface ReplenishmentOption {
   type: string;
   sku?: string;
   error?: string;
+  discountPercent?: number;
 }
 
 interface Product {
@@ -416,6 +417,10 @@ export function ProductsTable() {
               type: item.type || "",
               price: item.price !== undefined ? Number(item.price) : 0, // Convert to number and default to 0
               sku: item.sku || "",
+              discountPercent:
+                item.discountPercent !== undefined
+                  ? Number(item.discountPercent)
+                  : undefined, // Add discountPercent handling
               ...item,
             }))
           : [];
@@ -766,6 +771,14 @@ export function ProductsTable() {
                                     <span className="text-primary font-semibold">
                                       ₽{item.price}
                                     </span>
+                                    {item.discountPercent && (
+                                      <Badge
+                                        variant="destructive"
+                                        className="px-1.5 py-0 bg-red-100 text-red-700 border-red-200"
+                                      >
+                                        -{item.discountPercent}%
+                                      </Badge>
+                                    )}
                                   </div>
                                 ))}
                             {Array.isArray(replenishmentOptions) &&
@@ -1098,13 +1111,27 @@ export function ProductsTable() {
                                                     <Gem className="h-3 w-3 mr-1" />
                                                     {option.type || "Unknown"}
                                                   </Badge>
+                                                  {option.discountPercent && (
+                                                    <Badge
+                                                      variant="destructive"
+                                                      className="px-2 py-0.5 bg-red-100 text-red-700 border-red-200"
+                                                    >
+                                                      -{option.discountPercent}%
+                                                    </Badge>
+                                                  )}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground text-primary mt-1">
+                                                <div className="text-xs text-muted-foreground mt-1">
                                                   {option.sku
                                                     ? `SKU: ${option.sku}`
                                                     : option.error
                                                     ? `Error: ${option.error}`
                                                     : "Без SKU"}
+                                                  {option.discountPercent && (
+                                                    <span className="ml-2 text-green-600 font-medium">
+                                                      Скидка{" "}
+                                                      {option.discountPercent}%
+                                                    </span>
+                                                  )}
                                                 </div>
                                               </div>
                                               <div className="flex items-center gap-3">
