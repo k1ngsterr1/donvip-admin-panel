@@ -1318,6 +1318,7 @@ export function ProductsTable() {
                     type: item.type || "",
                     price: item.price || 0,
                     sku: item.sku || "",
+                    discountPercent: item.discountPercent || undefined,
                     error: item.error,
                   })
                 ),
