@@ -2043,10 +2043,7 @@ export function ProductForm({
                           </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
                               className="text-primary"
-                              min={0}
-                              max={90}
                               placeholder="0-90"
                               {...field}
                               value={field.value?.toString() || ""}
@@ -2056,10 +2053,10 @@ export function ProductForm({
                                   `Discount field ${index} changed:`,
                                   value
                                 );
-                                if (value === "" || value === "0") {
+                                if (value === "") {
                                   field.onChange(undefined);
                                 } else {
-                                  field.onChange(parseInt(value) || undefined);
+                                  field.onChange(parseInt(value) || 0);
                                 }
                               }}
                             />
