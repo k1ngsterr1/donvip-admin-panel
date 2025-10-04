@@ -2045,7 +2045,8 @@ export function ProductForm({
                             <Input
                               className="text-primary"
                               placeholder="0-90"
-                              {...field}
+                              name={field.name}
+                              ref={field.ref}
                               value={field.value?.toString() || ""}
                               onChange={(e) => {
                                 const value = e.target.value;
@@ -2056,7 +2057,10 @@ export function ProductForm({
                                 if (value === "") {
                                   field.onChange(undefined);
                                 } else {
-                                  field.onChange(parseInt(value) || 0);
+                                  const numValue = parseInt(value);
+                                  field.onChange(
+                                    isNaN(numValue) ? 0 : numValue
+                                  );
                                 }
                               }}
                             />
