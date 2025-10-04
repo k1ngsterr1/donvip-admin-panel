@@ -2045,24 +2045,7 @@ export function ProductForm({
                             <Input
                               className="text-primary"
                               placeholder="0-90"
-                              name={field.name}
-                              ref={field.ref}
-                              value={field.value?.toString() || ""}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                console.log(
-                                  `Discount field ${index} changed:`,
-                                  value
-                                );
-                                if (value === "") {
-                                  field.onChange(undefined);
-                                } else {
-                                  const numValue = parseInt(value);
-                                  field.onChange(
-                                    isNaN(numValue) ? 0 : numValue
-                                  );
-                                }
-                              }}
+                              {...field}
                             />
                           </FormControl>
                           <FormDescription className="text-gray-600 text-xs">
