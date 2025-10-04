@@ -198,7 +198,6 @@ export function CouponFormWithGameSelector({
               <FormLabel className="text-primary">Скидка (%)</FormLabel>
               <FormControl>
                 <Input
-                  type="number"
                   className="placeholder:text-gray-600 text-gray-600"
                   min={1}
                   max={100}
