@@ -628,10 +628,17 @@ export const api = {
     // Upload article featured image
     uploadFeaturedImage: (
       file: File
-    ): Promise<AxiosResponse<{ url: string }>> => {
+    ): Promise<
+      AxiosResponse<{
+        message: string;
+        filename: string;
+        path: string;
+        url: string;
+      }>
+    > => {
       const formData = new FormData();
       formData.append("image", file);
-      return apiClient.post("/articles/upload-featured-image", formData, {
+      return apiClient.post("/articles/upload-image", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -641,10 +648,17 @@ export const api = {
     // Upload image for article content
     uploadContentImage: (
       file: File
-    ): Promise<AxiosResponse<{ url: string }>> => {
+    ): Promise<
+      AxiosResponse<{
+        message: string;
+        filename: string;
+        path: string;
+        url: string;
+      }>
+    > => {
       const formData = new FormData();
       formData.append("image", file);
-      return apiClient.post("/articles/upload-content-image", formData, {
+      return apiClient.post("/articles/upload-image", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
