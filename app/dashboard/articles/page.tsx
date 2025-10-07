@@ -26,6 +26,9 @@ export default function ArticlesPage() {
   const fetchArticles = async (page = 1, search = "") => {
     setLoading(true);
     try {
+      // Временная заглушка для тестирования
+      console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
       let response;
 
       if (search) {
@@ -35,15 +38,52 @@ export default function ArticlesPage() {
       }
 
       const data = response.data;
-      setArticles(data.articles);
-      setPagination(data.pagination);
-    } catch (error) {
+      console.log("API Response:", data);
+
+      // Защита от undefined и неправильного формата данных
+      if (data && data.articles && Array.isArray(data.articles)) {
+        setArticles(data.articles);
+        setPagination(
+          data.pagination || { page: 1, limit: 10, total: 0, pages: 0 }
+        );
+      } else {
+        console.warn("Invalid articles data format:", data);
+        setArticles([]);
+        setPagination({ page: 1, limit: 10, total: 0, pages: 0 });
+        toast({
+          title: "Предупреждение",
+          description: "Получен неправильный формат данных от сервера",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
       console.error("Error fetching articles:", error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить статьи",
-        variant: "destructive",
-      });
+      setArticles([]); // Устанавливаем пустой массив при ошибке
+      setPagination({ page: 1, limit: 10, total: 0, pages: 0 });
+
+      // Более детальная обработка ошибок
+      if (error?.response) {
+        toast({
+          title: "Ошибка сервера",
+          description: `HTTP ${error.response.status}: ${
+            error.response.data?.message || "Не удалось загрузить статьи"
+          }`,
+          variant: "destructive",
+        });
+      } else if (error?.request) {
+        toast({
+          title: "Ошибка соединения",
+          description:
+            "Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен на http://localhost:6001",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Ошибка",
+          description: error?.message || "Не удалось загрузить статьи",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -123,7 +163,7 @@ export default function ArticlesPage() {
 
       {loading ? (
         <div className="text-center py-8">Загрузка...</div>
-      ) : (
+      ) : articles && articles.length > 0 ? (
         <>
           <div className="grid gap-4">
             {articles.map((article) => (
@@ -241,6 +281,26 @@ export default function ArticlesPage() {
             Показано {articles.length} из {pagination.total} статей
           </div>
         </>
+      ) : (
+        <div className="text-center py-12">
+          <div className="text-gray-500 mb-4">
+            <Edit className="mx-auto h-12 w-12 mb-2 text-gray-300" />
+            <h3 className="text-lg font-medium mb-2">Нет статей</h3>
+            <p className="text-sm">
+              {searchQuery
+                ? `По запросу "${searchQuery}" ничего не найдено`
+                : "Начните создавать статьи для вашего сайта"}
+            </p>
+          </div>
+          {!searchQuery && (
+            <Link href="/dashboard/articles/create">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Создать первую статью
+              </Button>
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );
