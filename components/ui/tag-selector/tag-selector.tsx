@@ -30,13 +30,54 @@ export function TagSelector({
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await api.tags.getAll({ limit: 100 });
-        setAvailableTags(response.data.tags);
+        console.log("Fetching tags...");
+        const response = await api.tags.getAll();
+        console.log("Tags response:", response);
+        console.log("Tags data:", response.data);
+
+        // Бэкенд возвращает массив тегов напрямую
+        if (Array.isArray(response.data)) {
+          setAvailableTags(response.data);
+          console.log("Available tags set:", response.data);
+        } else {
+          console.warn("Expected array but got:", response.data);
+          setAvailableTags([]);
+        }
       } catch (error) {
         console.error("Error fetching tags:", error);
+        // Временно добавим моковые теги для тестирования
+        const mockTags: Tag[] = [
+          {
+            id: 1,
+            name: "Новости",
+            slug: "news",
+            color: "#3B82F6",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: 2,
+            name: "Гайды",
+            slug: "guides",
+            color: "#10B981",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: 3,
+            name: "Обновления",
+            slug: "updates",
+            color: "#F59E0B",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ];
+        setAvailableTags(mockTags);
+
         toast({
           title: "Ошибка",
-          description: "Не удалось загрузить теги",
+          description:
+            "Не удалось загрузить теги, используются тестовые данные",
           variant: "destructive",
         });
       }

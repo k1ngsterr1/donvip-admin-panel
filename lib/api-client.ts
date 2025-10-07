@@ -676,8 +676,8 @@ export const api = {
   // Tags API
   tags: {
     // Get all tags with filters and pagination
-    getAll: (filters?: TagFilters): Promise<AxiosResponse<TagsResponse>> =>
-      apiClient.get("/articles/tags", { params: filters }),
+    getAll: (filters?: TagFilters): Promise<AxiosResponse<Tag[]>> =>
+      apiClient.get("/articles/tags/all", { params: filters }),
 
     // Search tags
     search: (

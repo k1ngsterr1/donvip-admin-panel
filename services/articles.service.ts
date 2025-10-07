@@ -75,7 +75,16 @@ export class ArticlesService {
   // Tags methods
   static async getAllTags(filters?: TagFilters) {
     const response = await api.tags.getAll(filters);
-    return response.data;
+    // Бэкенд возвращает массив тегов напрямую
+    return {
+      tags: response.data,
+      pagination: {
+        page: 1,
+        limit: 100,
+        total: response.data.length,
+        pages: 1,
+      },
+    };
   }
 
   static async searchTags(query: string, filters?: Omit<TagFilters, "search">) {
