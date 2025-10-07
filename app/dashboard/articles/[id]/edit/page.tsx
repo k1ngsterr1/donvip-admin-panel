@@ -121,7 +121,7 @@ export default function EditArticlePage() {
   const handleSave = async (publish?: boolean) => {
     const updateData: UpdateArticleDto = {
       ...formData,
-      tags: selectedTags.map((tag) => tag.id),
+      tag_ids: selectedTags.map((tag) => tag.id),
     };
 
     if (publish !== undefined) {

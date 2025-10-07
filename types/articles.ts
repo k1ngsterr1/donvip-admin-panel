@@ -41,7 +41,7 @@ export interface CreateArticleDto {
   meta_description?: string;
   is_published?: boolean;
   author_id?: number;
-  tags?: number[]; // Array of tag IDs
+  tag_ids?: number[]; // Array of tag IDs
 }
 
 export interface UpdateArticleDto {
@@ -53,7 +53,7 @@ export interface UpdateArticleDto {
   meta_title?: string;
   meta_description?: string;
   is_published?: boolean;
-  tags?: number[]; // Array of tag IDs
+  tag_ids?: number[]; // Array of tag IDs
 }
 
 export interface CreateTagDto {

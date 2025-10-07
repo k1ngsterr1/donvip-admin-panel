@@ -103,7 +103,7 @@ export default function CreateArticlePage() {
         meta_title: formData.meta_title,
         meta_description: formData.meta_description,
         is_published: publish,
-        tags: selectedTags.map((tag) => tag.id),
+        tag_ids: selectedTags.map((tag) => tag.id),
       };
 
       await api.articles.create(articleData);
