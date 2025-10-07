@@ -1,0 +1,87 @@
+/* WYSIWYG Editor Styles */
+.wysiwyg-content {
+  line-height: 1.6;
+}
+
+.wysiwyg-content h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.wysiwyg-content h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0.8rem 0;
+}
+
+.wysiwyg-content h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 0.6rem 0;
+}
+
+.wysiwyg-content p {
+  margin: 0.5rem 0;
+}
+
+.wysiwyg-content ul,
+.wysiwyg-content ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.wysiwyg-content ul li {
+  list-style-type: disc;
+}
+
+.wysiwyg-content ol li {
+  list-style-type: decimal;
+}
+
+.wysiwyg-content li {
+  margin: 0.25rem 0;
+}
+
+.wysiwyg-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.wysiwyg-content a:hover {
+  color: #2563eb;
+}
+
+.wysiwyg-content strong {
+  font-weight: bold;
+}
+
+.wysiwyg-content em {
+  font-style: italic;
+}
+
+.wysiwyg-content u {
+  text-decoration: underline;
+}
+
+/* Toolbar button active states */
+.wysiwyg-toolbar button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+
+.wysiwyg-toolbar button:active {
+  transform: translateY(1px);
+}
+
+/* Placeholder styling */
+[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+}
+
+[contenteditable]:focus::before {
+  display: none;
+}
