@@ -12,6 +12,18 @@ import {
   GameReviewsResponse,
   GameFAQResponse,
 } from "@/types/game-content-dto";
+import {
+  Article,
+  Tag,
+  CreateArticleDto,
+  UpdateArticleDto,
+  CreateTagDto,
+  UpdateTagDto,
+  ArticlesResponse,
+  TagsResponse,
+  ArticleFilters,
+  TagFilters,
+} from "@/types/articles";
 
 // Define types to avoid implicit any errors
 interface RequestConfig {
@@ -569,5 +581,117 @@ export const api = {
         }
       );
     },
+  },
+
+  // Articles API
+  articles: {
+    // Get all articles with filters and pagination
+    getAll: (
+      filters?: ArticleFilters
+    ): Promise<AxiosResponse<ArticlesResponse>> =>
+      apiClient.get("/articles", { params: filters }),
+
+    // Search articles
+    search: (
+      query: string,
+      filters?: Omit<ArticleFilters, "search">
+    ): Promise<AxiosResponse<ArticlesResponse>> =>
+      apiClient.get("/articles/search", { params: { q: query, ...filters } }),
+
+    // Get article by ID
+    getById: (id: number): Promise<AxiosResponse<Article>> =>
+      apiClient.get(`/articles/${id}`),
+
+    // Get article by slug
+    getBySlug: (slug: string): Promise<AxiosResponse<Article>> =>
+      apiClient.get(`/articles/slug/${slug}`),
+
+    // Create new article
+    create: (data: CreateArticleDto): Promise<AxiosResponse<Article>> =>
+      apiClient.post("/articles", data),
+
+    // Update article
+    update: (
+      id: number,
+      data: UpdateArticleDto
+    ): Promise<AxiosResponse<Article>> =>
+      apiClient.patch(`/articles/${id}`, data),
+
+    // Delete article
+    delete: (id: number): Promise<AxiosResponse<void>> =>
+      apiClient.delete(`/articles/${id}`),
+
+    // Toggle article publication status
+    togglePublish: (id: number): Promise<AxiosResponse<Article>> =>
+      apiClient.patch(`/articles/${id}/toggle-publish`),
+
+    // Upload article featured image
+    uploadFeaturedImage: (
+      file: File
+    ): Promise<AxiosResponse<{ url: string }>> => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return apiClient.post("/articles/upload-featured-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    },
+
+    // Upload image for article content
+    uploadContentImage: (
+      file: File
+    ): Promise<AxiosResponse<{ url: string }>> => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return apiClient.post("/articles/upload-content-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    },
+
+    // Get articles by tag
+    getByTag: (
+      tagSlug: string,
+      filters?: Omit<ArticleFilters, "tag">
+    ): Promise<AxiosResponse<ArticlesResponse>> =>
+      apiClient.get(`/articles/tag/${tagSlug}`, { params: filters }),
+  },
+
+  // Tags API
+  tags: {
+    // Get all tags with filters and pagination
+    getAll: (filters?: TagFilters): Promise<AxiosResponse<TagsResponse>> =>
+      apiClient.get("/articles/tags", { params: filters }),
+
+    // Search tags
+    search: (
+      query: string,
+      filters?: Omit<TagFilters, "search">
+    ): Promise<AxiosResponse<TagsResponse>> =>
+      apiClient.get("/articles/tags/search", {
+        params: { q: query, ...filters },
+      }),
+
+    // Get tag by ID
+    getById: (id: number): Promise<AxiosResponse<Tag>> =>
+      apiClient.get(`/articles/tags/${id}`),
+
+    // Get tag by slug
+    getBySlug: (slug: string): Promise<AxiosResponse<Tag>> =>
+      apiClient.get(`/articles/tags/slug/${slug}`),
+
+    // Create new tag
+    create: (data: CreateTagDto): Promise<AxiosResponse<Tag>> =>
+      apiClient.post("/articles/tags", data),
+
+    // Update tag
+    update: (id: number, data: UpdateTagDto): Promise<AxiosResponse<Tag>> =>
+      apiClient.patch(`/articles/tags/${id}`, data),
+
+    // Delete tag
+    delete: (id: number): Promise<AxiosResponse<void>> =>
+      apiClient.delete(`/articles/tags/${id}`),
   },
 };

@@ -7,38 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Edit, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
-
-interface Article {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  featured_image?: string;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-  author?: {
-    id: number;
-    first_name?: string;
-    last_name?: string;
-  };
-  tags: Array<{
-    id: number;
-    name: string;
-    slug: string;
-    color?: string;
-  }>;
-}
-
-interface ArticlesResponse {
-  articles: Article[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
+import { api } from "@/lib/api-client";
+import { Article, ArticlesResponse } from "@/types/articles";
+import { toast } from "@/hooks/use-toast";
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -55,23 +26,24 @@ export default function ArticlesPage() {
   const fetchArticles = async (page = 1, search = "") => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/articles?page=${page}&limit=10`;
+      let response;
 
       if (search) {
-        url = `${
-          process.env.NEXT_PUBLIC_API_URL
-        }/articles/search?q=${encodeURIComponent(
-          search
-        )}&page=${page}&limit=10`;
+        response = await api.articles.search(search, { page, limit: 10 });
+      } else {
+        response = await api.articles.getAll({ page, limit: 10 });
       }
 
-      const response = await fetch(url);
-      const data: ArticlesResponse = await response.json();
-
+      const data = response.data;
       setArticles(data.articles);
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching articles:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить статьи",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -92,21 +64,21 @@ export default function ArticlesPage() {
     }
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      await api.articles.delete(id);
 
-      if (response.ok) {
-        fetchArticles(currentPage, searchQuery);
-      } else {
-        alert("Ошибка при удалении статьи");
-      }
+      toast({
+        title: "Успешно",
+        description: "Статья удалена",
+      });
+
+      fetchArticles(currentPage, searchQuery);
     } catch (error) {
       console.error("Error deleting article:", error);
-      alert("Ошибка при удалении статьи");
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить статью",
+        variant: "destructive",
+      });
     }
   };
 

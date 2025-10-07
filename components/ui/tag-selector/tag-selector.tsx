@@ -6,13 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Tag {
-  id: number;
-  name: string;
-  slug: string;
-  color?: string;
-}
+import { api } from "@/lib/api-client";
+import { Tag } from "@/types/articles";
+import { toast } from "@/hooks/use-toast";
 
 interface TagSelectorProps {
   selectedTags: Tag[];
@@ -28,17 +24,25 @@ export function TagSelector({
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState("");
   const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Загрузка доступных тегов (заглушка - в реальности будет API запрос)
+  // Загрузка доступных тегов
   useEffect(() => {
-    // Здесь будет запрос к API для получения тегов
-    const mockTags: Tag[] = [
-      { id: 1, name: "Новости", slug: "news", color: "#3B82F6" },
-      { id: 2, name: "Гайды", slug: "guides", color: "#10B981" },
-      { id: 3, name: "Обновления", slug: "updates", color: "#F59E0B" },
-      { id: 4, name: "События", slug: "events", color: "#EF4444" },
-    ];
-    setAvailableTags(mockTags);
+    const fetchTags = async () => {
+      try {
+        const response = await api.tags.getAll({ limit: 100 });
+        setAvailableTags(response.data.tags);
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить теги",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchTags();
   }, []);
 
   const addTag = (tag: Tag) => {
@@ -54,18 +58,41 @@ export function TagSelector({
   const createNewTag = async () => {
     if (!newTagName.trim()) return;
 
-    // Здесь будет API запрос для создания нового тега
-    const newTag: Tag = {
-      id: Date.now(), // В реальности получим ID от сервера
-      name: newTagName,
-      slug: newTagName.toLowerCase().replace(/\s+/g, "-"),
-      color: "#6B7280",
-    };
+    setIsLoading(true);
+    try {
+      const tagData = {
+        name: newTagName,
+        slug: newTagName
+          .toLowerCase()
+          .replace(/[^a-zа-я0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .trim(),
+        color: "#6B7280",
+      };
 
-    setAvailableTags([...availableTags, newTag]);
-    addTag(newTag);
-    setNewTagName("");
-    setIsCreatingTag(false);
+      const response = await api.tags.create(tagData);
+      const newTag = response.data;
+
+      setAvailableTags([...availableTags, newTag]);
+      addTag(newTag);
+      setNewTagName("");
+      setIsCreatingTag(false);
+
+      toast({
+        title: "Успешно",
+        description: "Тег создан",
+      });
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать тег",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const unselectedTags = availableTags.filter(
@@ -128,9 +155,10 @@ export function TagSelector({
               onChange={(e) => setNewTagName(e.target.value)}
               placeholder="Название нового тега"
               onKeyPress={(e) => e.key === "Enter" && createNewTag()}
+              disabled={isLoading}
             />
-            <Button onClick={createNewTag} size="sm">
-              Создать
+            <Button onClick={createNewTag} size="sm" disabled={isLoading}>
+              {isLoading ? "..." : "Создать"}
             </Button>
             <Button
               onClick={() => {
@@ -139,6 +167,7 @@ export function TagSelector({
               }}
               variant="outline"
               size="sm"
+              disabled={isLoading}
             >
               Отмена
             </Button>

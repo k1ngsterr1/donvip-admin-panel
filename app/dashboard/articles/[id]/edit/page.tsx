@@ -1,22 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { WysiwygEditor } from "@/components/ui/wysiwyg-editor/wysiwyg-editor";
 import { TagSelector } from "@/components/ui/tag-selector/tag-selector";
-import { ArrowLeft, Save, Eye, Upload, X } from "lucide-react";
+import { ArrowLeft, Save, Eye, Upload, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { api } from "@/lib/api-client";
-import { Tag } from "@/types/articles";
+import { ArticlesService } from "@/services/articles.service";
+import { Tag, UpdateArticleDto } from "@/types/articles";
 
-interface CreateArticleForm {
+interface UpdateArticleForm {
   title: string;
   slug: string;
   content: string;
@@ -27,14 +26,18 @@ interface CreateArticleForm {
   is_published: boolean;
 }
 
-export default function CreateArticlePage() {
+export default function EditArticlePage() {
   const router = useRouter();
+  const params = useParams();
+  const articleId = parseInt(params.id as string);
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingArticle, setIsLoadingArticle] = useState(true);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const [formData, setFormData] = useState<CreateArticleForm>({
+  const [formData, setFormData] = useState<UpdateArticleForm>({
     title: "",
     slug: "",
     content: "",
@@ -45,17 +48,52 @@ export default function CreateArticlePage() {
     is_published: false,
   });
 
+  // Загрузка статьи
+  useEffect(() => {
+    const fetchArticle = async () => {
+      try {
+        const article = await ArticlesService.getArticleById(articleId);
+
+        setFormData({
+          title: article.title,
+          slug: article.slug,
+          content: article.content,
+          excerpt: article.excerpt || "",
+          featured_image: article.featured_image || "",
+          meta_title: article.meta_title || "",
+          meta_description: article.meta_description || "",
+          is_published: article.is_published,
+        });
+
+        setSelectedTags(article.tags);
+
+        if (article.featured_image) {
+          setImagePreview(article.featured_image);
+        }
+      } catch (error) {
+        console.error("Error fetching article:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить статью",
+          variant: "destructive",
+        });
+        router.push("/dashboard/articles");
+      } finally {
+        setIsLoadingArticle(false);
+      }
+    };
+
+    if (articleId) {
+      fetchArticle();
+    }
+  }, [articleId, router]);
+
   // Автоматическое создание slug из заголовка
   const handleTitleChange = (title: string) => {
     setFormData((prev) => ({
       ...prev,
       title,
-      slug: title
-        .toLowerCase()
-        .replace(/[^a-zа-я0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .trim(),
+      slug: ArticlesService.generateSlug(title),
     }));
   };
 
@@ -80,53 +118,71 @@ export default function CreateArticlePage() {
   };
 
   // Сохранение статьи
-  const handleSave = async (publish: boolean = false) => {
+  const handleSave = async (publish?: boolean) => {
+    const updateData: UpdateArticleDto = {
+      ...formData,
+      tags: selectedTags.map((tag) => tag.id),
+    };
+
+    if (publish !== undefined) {
+      updateData.is_published = publish;
+    }
+
+    // Валидация
+    const errors = ArticlesService.validateArticleData(updateData);
+    if (errors.length > 0) {
+      toast({
+        title: "Ошибка валидации",
+        description: errors.join(", "),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       let featuredImageUrl = formData.featured_image;
 
-      // Загружаем изображение, если оно выбрано
+      // Загружаем новое изображение, если оно выбрано
       if (featuredImage) {
-        const imageResponse = await api.articles.uploadFeaturedImage(
+        const imageResponse = await ArticlesService.uploadFeaturedImage(
           featuredImage
         );
-        featuredImageUrl = imageResponse.data.url;
+        featuredImageUrl = imageResponse.url;
+        updateData.featured_image = featuredImageUrl;
       }
 
-      const articleData = {
-        title: formData.title,
-        slug: formData.slug,
-        content: formData.content,
-        excerpt: formData.excerpt,
-        featured_image: featuredImageUrl,
-        meta_title: formData.meta_title,
-        meta_description: formData.meta_description,
-        is_published: publish,
-        tags: selectedTags.map((tag) => tag.id),
-      };
-
-      await api.articles.create(articleData);
+      await ArticlesService.updateArticle(articleId, updateData);
 
       toast({
-        title: publish ? "Статья опубликована" : "Статья сохранена",
-        description: publish
-          ? "Статья успешно опубликована и доступна для чтения"
-          : "Статья сохранена как черновик",
+        title: "Успешно",
+        description: "Статья обновлена",
       });
 
       router.push("/dashboard/articles");
     } catch (error) {
-      console.error("Error saving article:", error);
+      console.error("Error updating article:", error);
       toast({
         title: "Ошибка",
-        description: "Не удалось сохранить статью",
+        description: "Не удалось обновить статью",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoadingArticle) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Загрузка статьи...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -137,25 +193,27 @@ export default function CreateArticlePage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Назад
           </Button>
-          <h1 className="text-2xl font-bold">Создать статью</h1>
+          <h1 className="text-2xl font-bold">Редактировать статью</h1>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => handleSave(false)}
+            onClick={() => handleSave()}
             disabled={isLoading || !formData.title}
           >
             <Save className="h-4 w-4 mr-2" />
-            Сохранить черновик
+            Сохранить
           </Button>
-          <Button
-            onClick={() => handleSave(true)}
-            disabled={isLoading || !formData.title || !formData.content}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Опубликовать
-          </Button>
+          {!formData.is_published && (
+            <Button
+              onClick={() => handleSave(true)}
+              disabled={isLoading || !formData.title || !formData.content}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Опубликовать
+            </Button>
+          )}
         </div>
       </div>
 
