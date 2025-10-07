@@ -41,11 +41,14 @@ export default function ArticlesPage() {
       console.log("API Response:", data);
 
       // Защита от undefined и неправильного формата данных
-      if (data && data.articles && Array.isArray(data.articles)) {
-        setArticles(data.articles);
-        setPagination(
-          data.pagination || { page: 1, limit: 10, total: 0, pages: 0 }
-        );
+      if (data && data.data && Array.isArray(data.data)) {
+        setArticles(data.data);
+        setPagination({
+          page: data.pagination?.page || 1,
+          limit: data.pagination?.limit || 10,
+          total: data.pagination?.total || 0,
+          pages: data.pagination?.totalPages || 0,
+        });
       } else {
         console.warn("Invalid articles data format:", data);
         setArticles([]);

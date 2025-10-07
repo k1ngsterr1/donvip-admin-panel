@@ -71,22 +71,22 @@ export interface UpdateTagDto {
 }
 
 export interface ArticlesResponse {
-  articles: Article[];
+  data: Article[];
   pagination: {
     page: number;
     limit: number;
     total: number;
-    pages: number;
+    totalPages: number;
   };
 }
 
 export interface TagsResponse {
-  tags: Tag[];
+  data: Tag[];
   pagination: {
     page: number;
     limit: number;
     total: number;
-    pages: number;
+    totalPages: number;
   };
 }
 
