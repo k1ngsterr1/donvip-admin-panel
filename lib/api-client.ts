@@ -708,4 +708,59 @@ export const api = {
     delete: (id: number): Promise<AxiosResponse<void>> =>
       apiClient.delete(`/articles/tags/${id}`),
   },
+
+  // Design Services API
+  designServices: {
+    // Get all design services for admin
+    getAll: (): Promise<
+      AxiosResponse<import("@/types/design-services").DesignService[]>
+    > => apiClient.get("/design-services/admin/all"),
+
+    // Get design service by ID
+    getById: (
+      id: number
+    ): Promise<
+      AxiosResponse<import("@/types/design-services").DesignService>
+    > => apiClient.get(`/design-services/admin/${id}`),
+
+    // Create new design service
+    create: (
+      data: import("@/types/design-services").CreateDesignServiceDto
+    ): Promise<
+      AxiosResponse<import("@/types/design-services").DesignService>
+    > => apiClient.post("/design-services/admin/create", data),
+
+    // Update design service
+    update: (
+      id: number,
+      data: import("@/types/design-services").UpdateDesignServiceDto
+    ): Promise<
+      AxiosResponse<import("@/types/design-services").DesignService>
+    > => apiClient.patch(`/design-services/admin/${id}`, data),
+
+    // Update only price
+    updatePrice: (
+      id: number,
+      data: import("@/types/design-services").UpdatePriceDto
+    ): Promise<
+      AxiosResponse<import("@/types/design-services").DesignService>
+    > => apiClient.patch(`/design-services/admin/${id}/price`, data),
+
+    // Update price by service key
+    updatePriceByKey: (
+      key: string,
+      data: import("@/types/design-services").UpdatePriceDto
+    ): Promise<
+      AxiosResponse<import("@/types/design-services").DesignService>
+    > => apiClient.patch(`/design-services/admin/key/${key}/price`, data),
+
+    // Delete design service
+    delete: (id: number): Promise<AxiosResponse<void>> =>
+      apiClient.delete(`/design-services/admin/${id}`),
+
+    // Initialize default services
+    initialize: (): Promise<
+      AxiosResponse<{ message: string; count: number }>
+    > => apiClient.post("/design-services/admin/initialize"),
+  },
 };

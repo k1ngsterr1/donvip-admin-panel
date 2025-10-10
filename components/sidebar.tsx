@@ -16,6 +16,7 @@ import {
   Image,
   Gamepad2,
   Pencil,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -33,6 +34,7 @@ const navItems = [
   { title: "Заказы", href: "/dashboard/orders", icon: ShoppingCart },
   { title: "Купоны", href: "/dashboard/coupons", icon: Tag },
   { title: "Статьи", href: "/dashboard/articles", icon: Pencil },
+  { title: "Дизайн-услуги", href: "/dashboard/design-services", icon: Palette },
 
   { title: "Игровой контент", href: "/dashboard/game-content", icon: Gamepad2 },
   { title: "Отзывы", href: "/dashboard/feedback", icon: Star },
