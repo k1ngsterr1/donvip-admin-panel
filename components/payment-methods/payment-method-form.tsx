@@ -384,7 +384,6 @@ export function PaymentMethodForm({
                 rows={2}
               />
             </div>
-            
             {/* Toggle switches for isActive and isMoneta */}
             <div className="md:col-span-2 space-y-4 pt-4 border-t">
               <div className="flex items-center justify-between">
@@ -400,7 +399,7 @@ export function PaymentMethodForm({
                   onCheckedChange={(checked) => setValue("isActive", checked)}
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="isMoneta">Использовать Moneta</Label>
