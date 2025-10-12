@@ -214,11 +214,6 @@ export default function ArticlesPage() {
                         {article.is_published ? "Опубликована" : "Черновик"}
                       </Badge>
                       <div className="flex gap-2">
-                        <Link href={`/dashboard/articles/${article.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
                         <Link href={`/dashboard/articles/${article.id}/edit`}>
                           <Button variant="outline" size="sm">
                             <Edit className="w-4 h-4" />
