@@ -63,6 +63,7 @@ interface FormData {
   maxAmount: string;
   fee: string;
   isActive: boolean;
+  isMoneta: boolean;
   description: string;
   icon: string;
 }
@@ -106,6 +107,7 @@ export function PaymentMethodForm({
       maxAmount: paymentMethod?.maxAmount?.toString() || "",
       fee: paymentMethod?.fee?.toString() || "",
       isActive: paymentMethod?.isActive ?? true,
+      isMoneta: paymentMethod?.isMoneta ?? false,
       description: paymentMethod?.description || "",
       icon: paymentMethod?.icon || "",
     },
@@ -114,6 +116,7 @@ export function PaymentMethodForm({
   const watchedCountry = watch("country");
   const watchedCurrency = watch("currency");
   const watchedIsActive = watch("isActive");
+  const watchedIsMoneta = watch("isMoneta");
 
   // Icon upload handlers
   const handleIconSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,6 +231,7 @@ export function PaymentMethodForm({
         maxAmount: data.maxAmount ? parseFloat(data.maxAmount) : undefined,
         fee: data.fee ? parseFloat(data.fee) : undefined,
         isActive: data.isActive,
+        isMoneta: data.isMoneta,
         description: data.description || undefined,
         icon: iconPath || undefined,
       };
@@ -379,6 +383,37 @@ export function PaymentMethodForm({
                 placeholder="Краткое описание платежного метода"
                 rows={2}
               />
+            </div>
+            
+            {/* Toggle switches for isActive and isMoneta */}
+            <div className="md:col-span-2 space-y-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="isActive">Активен</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Включить/выключить этот метод оплаты для пользователей
+                  </p>
+                </div>
+                <Switch
+                  id="isActive"
+                  checked={watchedIsActive}
+                  onCheckedChange={(checked) => setValue("isActive", checked)}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="isMoneta">Использовать Moneta</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Обрабатывать платежи через платежный шлюз Moneta.ru
+                  </p>
+                </div>
+                <Switch
+                  id="isMoneta"
+                  checked={watchedIsMoneta}
+                  onCheckedChange={(checked) => setValue("isMoneta", checked)}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

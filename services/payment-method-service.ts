@@ -12,6 +12,7 @@ export interface PaymentMethod {
   maxAmount?: number;
   fee?: number;
   isActive: boolean;
+  isMoneta?: boolean; // Flag for Moneta payment methods
   description?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -26,6 +27,7 @@ export interface CreatePaymentMethodDto {
   maxAmount?: number;
   fee?: number;
   isActive?: boolean;
+  isMoneta?: boolean;
   description?: string;
   icon?: string;
 }
@@ -39,6 +41,7 @@ export interface UpdatePaymentMethodDto {
   maxAmount?: number;
   fee?: number;
   isActive?: boolean;
+  isMoneta?: boolean;
   description?: string;
   icon?: string;
 }
