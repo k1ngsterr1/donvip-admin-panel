@@ -42,6 +42,7 @@ import {
 import { OrderRow } from "./order-row";
 import { OrderDetailsDialog } from "./order-details-dialog";
 import { OrdersTableSkeleton } from "./orders-table-skeleton";
+import { OrdersTableLoading } from "./orders-loading";
 import {
   OrderFilters,
   type OrderFilters as OrderFiltersType,
@@ -73,313 +74,59 @@ export function OrdersTable() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
+    setPageInput("1");
   }, [filters]);
 
-  // Fetch all orders for filtering - no hardcoded limit
+  // Update page input when page changes
+  useEffect(() => {
+    setPageInput(page.toString());
+  }, [page]);
+
+  // Fetch orders with proper server-side pagination
   const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ["orders", "all"],
+    queryKey: ["orders", page, limit, filters],
     queryFn: async () => {
-      // Explicitly set limit to one million to get all orders
-      const response = await api.orders.getAllForAdmin({
-        page: 1,
-        limit: 10000, // One million limit
-      });
+      const params: any = {
+        page,
+        limit,
+      };
+
+      // Add filters to API call
+      if (filters.search) params.search = filters.search;
+      if (filters.status !== "all") params.status = filters.status;
+      if (filters.paymentMethod !== "all")
+        params.paymentMethod = filters.paymentMethod;
+      if (filters.productId) params.productId = filters.productId;
+      if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+      if (filters.dateTo) params.dateTo = filters.dateTo;
+      if (filters.minAmount) params.minAmount = filters.minAmount;
+      if (filters.maxAmount) params.maxAmount = filters.maxAmount;
+      if (filters.providerStatus !== "all")
+        params.providerStatus = filters.providerStatus;
+
+      const response = await api.orders.getAllForAdmin(params);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    staleTime: 30 * 1000, // Cache for 30 seconds
+    keepPreviousData: true, // Keep previous data while loading new data
   });
 
-  // Orders from API with server-side pagination
+  // Orders from API response
   const allOrders: Order[] = Array.isArray(data?.data)
     ? data.data.filter((order) => order && (order.orderId || order.id))
     : [];
 
-  // Get total count from API response (assuming the API returns total count)
-  const totalFromApi = data?.total || data?.count || allOrders.length;
+  // Get total count and pagination info from API response
+  const totalFromApi =
+    data?.total || data?.pagination?.total || allOrders.length;
+  const totalPages = Math.ceil(totalFromApi / limit);
 
-  // Frontend filtering logic
-  const filteredOrders = useMemo(() => {
-    let filtered = [...allOrders];
+  // Since filtering and pagination are now done server-side, we just use the orders from API
+  const filteredOrders = allOrders;
+  const paginatedOrders = allOrders; // API already returns paginated results
 
-    // Search filter
-    if (filters.search.trim()) {
-      const searchTerm = filters.search.toLowerCase().trim();
-      filtered = filtered.filter((order) => {
-        // Helper function to safely convert to string and toLowerCase
-        const safeToLowerCase = (value: any): string => {
-          if (value === null || value === undefined) return "";
-          return String(value).toLowerCase();
-        };
-
-        // Helper function to safely convert to string for partial matching
-        const safeToString = (value: any): string => {
-          if (value === null || value === undefined) return "";
-          return String(value);
-        };
-
-        // Check if search term looks like an email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailRegex.test(searchTerm)) {
-          // If it's an email, search for exact matches in user email fields
-          return (
-            safeToLowerCase(order.user?.email) === searchTerm ||
-            safeToLowerCase(order.user?.username) === searchTerm ||
-            safeToLowerCase(order.customer) === searchTerm
-          );
-        }
-
-        // For all searches (including numeric), use partial matching
-        const searchableFields = [
-          safeToString(order.orderId),
-          safeToString(order.user?.id),
-          safeToString(order.playerId),
-          safeToString(order.account_id),
-          safeToLowerCase(order.customer),
-          safeToLowerCase(order.user?.first_name),
-          safeToLowerCase(order.user?.last_name),
-          safeToLowerCase(order.user?.phone),
-          safeToLowerCase(order.user?.email),
-          safeToLowerCase(order.user?.username),
-          safeToLowerCase(order.product?.name),
-        ];
-
-        // Check if any field contains the search term
-        return searchableFields.some((field) => {
-          if (!field) return false;
-          return field.toLowerCase().includes(searchTerm);
-        });
-      });
-    }
-
-    // Status filter
-    if (filters.status && filters.status !== "all") {
-      filtered = filtered.filter((order) => order.status === filters.status);
-    }
-
-    // Payment method filter
-    if (filters.paymentMethod && filters.paymentMethod !== "all") {
-      filtered = filtered.filter(
-        (order) => order.method === filters.paymentMethod
-      );
-    }
-
-    // Product ID filter
-    if (filters.productId.trim()) {
-      const productId = Number.parseInt(filters.productId);
-      if (!isNaN(productId)) {
-        filtered = filtered.filter((order) => order.productId === productId);
-      }
-    }
-
-    // Date range filter
-    if (filters.dateFrom || filters.dateTo) {
-      filtered = filtered.filter((order) => {
-        if (!order.date) return false;
-
-        // Parse the date from your API format "6/9/2025"
-        const orderDate = new Date(order.date);
-        if (isNaN(orderDate.getTime())) return false; // <== Add this line
-
-        if (filters.dateFrom) {
-          const fromDate = new Date(filters.dateFrom);
-          if (orderDate < fromDate) return false;
-        }
-
-        if (filters.dateTo) {
-          const toDate = new Date(filters.dateTo);
-          toDate.setHours(23, 59, 59, 999); // Include the entire day
-          if (orderDate > toDate) return false;
-        }
-
-        return true;
-      });
-    }
-
-    // Amount range filter
-    if (filters.minAmount || filters.maxAmount) {
-      filtered = filtered.filter((order) => {
-        if (!order.price || order.price === "—") return false;
-
-        const priceMatch = order.price.match(/[\d.]+/);
-        if (!priceMatch) return false;
-
-        const orderAmount = Number.parseFloat(priceMatch[0]);
-
-        if (filters.minAmount) {
-          const minAmount = Number.parseFloat(filters.minAmount);
-          if (!isNaN(minAmount) && orderAmount < minAmount) return false;
-        }
-
-        if (filters.maxAmount) {
-          const maxAmount = Number.parseFloat(filters.maxAmount);
-          if (!isNaN(maxAmount) && orderAmount > maxAmount) return false;
-        }
-
-        return true;
-      });
-    }
-
-    // Provider status filter (if you have this field in your API)
-    if (filters.providerStatus && filters.providerStatus !== "all") {
-      // Add this when you have provider status in your API
-      // filtered = filtered.filter((order) => order.providerStatus === filters.providerStatus)
-    }
-
-    // Manual duplicate filtering - remove orders with 1-10 second difference (accounts for rendering delays)
-    const deduplicated = [];
-    const processedOrderIds = new Set();
-
-    // Sort orders by time (newest first) to ensure we keep the most recent duplicate
-    const sortedFiltered = [...filtered].sort((a, b) => {
-      const getOrderTime = (order) => {
-        if (order.time) {
-          // Handle "07.09.2025 09:49:43" format
-          if (typeof order.time === "string" && order.time.includes(".")) {
-            const parts = order.time.match(
-              /(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/
-            );
-            if (parts) {
-              const [, day, month, year, hour, minute, second] = parts;
-              return new Date(
-                `${year}-${month}-${day}T${hour}:${minute}:${second}`
-              ).getTime();
-            }
-          }
-          return new Date(order.time).getTime();
-        }
-        if (order.date) return new Date(order.date).getTime();
-        return 0;
-      };
-      return getOrderTime(b) - getOrderTime(a); // Newest first
-    });
-
-    for (let i = 0; i < sortedFiltered.length; i++) {
-      const order = sortedFiltered[i];
-
-      if (processedOrderIds.has(order.id || order.orderId)) {
-        continue; // Skip if already processed as duplicate
-      }
-
-      // Parse order time
-      let orderTime;
-      if (order.time) {
-        if (typeof order.time === "string" && order.time.includes(".")) {
-          // Handle "07.09.2025 09:49:43" format
-          const parts = order.time.match(
-            /(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/
-          );
-          if (parts) {
-            const [, day, month, year, hour, minute, second] = parts;
-            orderTime = new Date(
-              `${year}-${month}-${day}T${hour}:${minute}:${second}`
-            );
-          }
-        } else {
-          orderTime = new Date(order.time);
-        }
-      } else if (order.date) {
-        orderTime = new Date(order.date);
-      }
-
-      if (!orderTime || isNaN(orderTime.getTime())) {
-        deduplicated.push(order);
-        processedOrderIds.add(order.id || order.orderId);
-        continue;
-      }
-
-      // Look for duplicates in remaining orders
-      let foundDuplicate = false;
-
-      for (let j = i + 1; j < sortedFiltered.length; j++) {
-        const otherOrder = sortedFiltered[j];
-
-        if (processedOrderIds.has(otherOrder.id || otherOrder.orderId)) {
-          continue;
-        }
-
-        // Parse other order time
-        let otherOrderTime;
-        if (otherOrder.time) {
-          if (
-            typeof otherOrder.time === "string" &&
-            otherOrder.time.includes(".")
-          ) {
-            const parts = otherOrder.time.match(
-              /(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/
-            );
-            if (parts) {
-              const [, day, month, year, hour, minute, second] = parts;
-              otherOrderTime = new Date(
-                `${year}-${month}-${day}T${hour}:${minute}:${second}`
-              );
-            }
-          } else {
-            otherOrderTime = new Date(otherOrder.time);
-          }
-        } else if (otherOrder.date) {
-          otherOrderTime = new Date(otherOrder.date);
-        }
-
-        if (!otherOrderTime || isNaN(otherOrderTime.getTime())) {
-          continue;
-        }
-
-        // Check time difference (1-10 seconds to account for rendering delays)
-        const timeDifference = Math.abs(
-          orderTime.getTime() - otherOrderTime.getTime()
-        );
-        const isWithinRange = timeDifference >= 1000 && timeDifference <= 10000;
-
-        if (isWithinRange) {
-          // Check if they are likely duplicates (same customer, product, amount)
-          const sameCustomer =
-            order.customer === otherOrder.customer ||
-            order.playerId === otherOrder.playerId ||
-            order.account_id === otherOrder.account_id;
-
-          const sameProduct =
-            order.product?.name === otherOrder.product?.name ||
-            order.type === otherOrder.type;
-
-          const sameAmount = order.price === otherOrder.price;
-
-          const sameMethod = order.method === otherOrder.method;
-
-          // Consider as duplicate if customer, product/type, amount and method match
-          if (sameCustomer && sameProduct && sameAmount && sameMethod) {
-            processedOrderIds.add(otherOrder.id || otherOrder.orderId);
-            foundDuplicate = true;
-            console.log("Filtered duplicate order:", {
-              kept: { id: order.orderId || order.id, time: order.time },
-              removed: {
-                id: otherOrder.orderId || otherOrder.id,
-                time: otherOrder.time,
-              },
-              timeDiff: timeDifference + "ms",
-            });
-          }
-        }
-      }
-
-      // Add the order to deduplicated list
-      deduplicated.push(order);
-      processedOrderIds.add(order.id || order.orderId);
-    }
-
-    return deduplicated;
-  }, [allOrders, filters]);
-
-  // Pagination logic for filtered results
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    return filteredOrders.slice(startIndex, endIndex);
-  }, [filteredOrders, page, limit]);
-
-  // Calculate pagination info
-  const total = filteredOrders.length;
-  const totalPages = Math.ceil(total / limit);
+  // Calculate pagination info using server data
+  const total = totalFromApi;
   const startItem = total > 0 ? (page - 1) * limit + 1 : 0;
   const endItem = Math.min(page * limit, total);
 
@@ -517,6 +264,11 @@ export function OrdersTable() {
     return pages;
   };
 
+  // Show loading state for initial load
+  if (isLoading) {
+    return <OrdersTableLoading />;
+  }
+
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -547,11 +299,14 @@ export function OrdersTable() {
               <CardDescription>
                 Просмотр и управление всеми заказами в системе
                 {isFetching && (
-                  <span className="ml-2 text-blue-600">• Обновление...</span>
+                  <span className="ml-2 text-blue-600 animate-pulse">
+                    • Загружаем данные...
+                  </span>
                 )}
-                {total !== allOrders.length && (
+                {!isFetching && (
                   <span className="ml-2 text-green-600">
-                    • Показано {total} из {allOrders.length} заказов
+                    • Показано {allOrders.length} заказов (стр. {page} из{" "}
+                    {totalPages})
                   </span>
                 )}
               </CardDescription>

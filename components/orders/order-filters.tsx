@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Calendar, Filter, X, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +68,26 @@ export function OrderFilters({
   onReset,
 }: OrderFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState(filters.search);
+
+  // Debounce search input
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (localSearch !== filters.search) {
+        onFiltersChange({
+          ...filters,
+          search: localSearch,
+        });
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [localSearch, filters, onFiltersChange]);
+
+  // Update local search when filters change externally (like reset)
+  useEffect(() => {
+    setLocalSearch(filters.search);
+  }, [filters.search]);
 
   const updateFilter = (key: keyof OrderFilters, value: string) => {
     onFiltersChange({
@@ -171,15 +191,18 @@ export function OrderFilters({
               <div className="relative">
                 <Input
                   placeholder="Поиск по ID заказа, клиенту, email, ID игрока..."
-                  value={filters.search}
-                  onChange={(e) => updateFilter("search", e.target.value)}
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
                   className="pr-8"
                 />
-                {filters.search && (
+                {localSearch && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => updateFilter("search", "")}
+                    onClick={() => {
+                      setLocalSearch("");
+                      updateFilter("search", "");
+                    }}
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
                   >
                     <X className="h-3 w-3" />
