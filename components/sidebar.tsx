@@ -23,6 +23,7 @@ import {
   Wrench,
   Menu,
   X,
+  Gem,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -102,6 +103,12 @@ const navGroups = [
         title: "Платежные методы",
         href: "/dashboard/payment-methods",
         icon: CreditCard,
+        badge: null,
+      },
+      {
+        title: "Цены на алмазы",
+        href: "/dashboard/diamond-price",
+        icon: Gem,
         badge: null,
       },
     ],

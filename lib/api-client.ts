@@ -763,4 +763,47 @@ export const api = {
       AxiosResponse<{ message: string; count: number }>
     > => apiClient.post("/design-services/admin/initialize"),
   },
+
+  diamondPrice: {
+    // Get all diamond prices (admin only)
+    getAll: (): Promise<
+      AxiosResponse<import("@/types/diamond-price").DiamondPrice[]>
+    > => apiClient.get("/diamond-price"),
+
+    // Get active diamond price (public)
+    getActive: (
+      currency?: string
+    ): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
+      apiClient.get("/diamond-price/active", { params: { currency } }),
+
+    // Get diamond price by ID (admin only)
+    getById: (
+      id: number
+    ): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
+      apiClient.get(`/diamond-price/${id}`),
+
+    // Create new diamond price (admin only)
+    create: (data: {
+      price_per_diamond: number;
+      currency?: string;
+    }): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
+      apiClient.post("/diamond-price", data),
+
+    // Update diamond price (admin only)
+    update: (
+      id: number,
+      data: { price_per_diamond?: number; currency?: string }
+    ): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
+      apiClient.patch(`/diamond-price/${id}`, data),
+
+    // Activate diamond price (admin only)
+    activate: (
+      id: number
+    ): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
+      apiClient.patch(`/diamond-price/${id}/activate`),
+
+    // Delete diamond price (admin only)
+    delete: (id: number): Promise<AxiosResponse<void>> =>
+      apiClient.delete(`/diamond-price/${id}`),
+  },
 };
