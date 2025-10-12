@@ -37,7 +37,7 @@ export const OrderService = {
   getOrders: async (params?: OrderListParams) => {
     // Set default limit to one million if not specified
     const defaultParams = {
-      limit: 100000,
+      limit: 10000,
       ...params,
     };
     const response = await api.orders.getAll(defaultParams);
@@ -83,7 +83,7 @@ export const OrderService = {
 
   getAllForAdmin: async ({
     page,
-    limit = 100000, // Set default limit to one million
+    limit = 10000, // Set default limit to one million
     removeDuplicates = true, // Enable duplicate filtering by default
   }: { page?: number; limit?: number; removeDuplicates?: boolean } = {}) => {
     const res = await api.orders.getAllForAdmin({
