@@ -82,6 +82,12 @@ export function PaymentMethodForm({
   paymentMethod,
   onSuccess,
 }: PaymentMethodFormProps) {
+  console.log("🔍 PaymentMethodForm mounted with:", {
+    paymentMethod,
+    isMoneta: paymentMethod?.isMoneta,
+    hasIsMonetaField: 'isMoneta' in (paymentMethod || {}),
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(
@@ -117,6 +123,11 @@ export function PaymentMethodForm({
   const watchedCurrency = watch("currency");
   const watchedIsActive = watch("isActive");
   const watchedIsMoneta = watch("isMoneta");
+
+  // Debug: Watch isMoneta changes
+  React.useEffect(() => {
+    console.log("👀 watchedIsMoneta changed:", watchedIsMoneta);
+  }, [watchedIsMoneta]);
 
   // Icon upload handlers
   const handleIconSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,10 +247,16 @@ export function PaymentMethodForm({
         icon: iconPath || undefined,
       };
 
+      console.log("📤 Submitting payment method:", payload);
+      console.log("📋 Form data isMoneta:", data.isMoneta);
+      console.log("📋 Watched isMoneta:", watchedIsMoneta);
+
       if (paymentMethod) {
-        await updateMutation.mutateAsync(payload);
+        const result = await updateMutation.mutateAsync(payload);
+        console.log("✅ Update response:", result);
       } else {
-        await createMutation.mutateAsync(payload as CreatePaymentMethodDto);
+        const result = await createMutation.mutateAsync(payload as CreatePaymentMethodDto);
+        console.log("✅ Create response:", result);
       }
     } catch (error) {
       console.error("Form submission error:", error);
