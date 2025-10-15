@@ -1319,6 +1319,8 @@ export function ProductsTable() {
                     price: item.price || 0,
                     sku: item.sku || "",
                     discountPercent: item.discountPercent || undefined,
+                    isActive:
+                      item.isActive !== undefined ? item.isActive : true,
                     error: item.error,
                   })
                 ),
