@@ -2065,21 +2065,85 @@ export function ProductForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel className="text-primary">Статус</FormLabel>
-                        <div className="flex items-center space-x-2 mt-2">
+                        <div className="flex flex-col space-y-3 mt-2">
                           <FormControl>
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4"
-                              checked={field.value !== false}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
+                            <div className="flex items-center space-x-3">
+                              <div className="relative">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only"
+                                  checked={field.value !== false}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                  id={`switch-${index}`}
+                                />
+                                <label
+                                  htmlFor={`switch-${index}`}
+                                  className={`
+                                    relative inline-flex items-center justify-center w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ease-in-out
+                                    ${
+                                      field.value !== false
+                                        ? "bg-green-500 hover:bg-green-600"
+                                        : "bg-gray-300 hover:bg-gray-400"
+                                    }
+                                  `}
+                                >
+                                  <span
+                                    className={`
+                                      absolute w-4 h-4 bg-white rounded-full shadow-lg transform transition-transform duration-200 ease-in-out
+                                      ${
+                                        field.value !== false
+                                          ? "translate-x-2.5"
+                                          : "-translate-x-2.5"
+                                      }
+                                    `}
+                                  />
+                                </label>
+                              </div>
+                              <div className="flex flex-col">
+                                <span
+                                  className={`text-sm font-medium ${
+                                    field.value !== false
+                                      ? "text-green-700"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  {field.value !== false
+                                    ? "Активен"
+                                    : "Отключен"}
+                                </span>
+                                <div
+                                  className={`flex items-center space-x-1 ${
+                                    field.value !== false
+                                      ? "text-green-600"
+                                      : "text-gray-400"
+                                  }`}
+                                >
+                                  {field.value !== false ? (
+                                    <>
+                                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                      <span className="text-xs">
+                                        Доступен для покупки
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                                      <span className="text-xs">
+                                        Скрыт от пользователей
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </FormControl>
-                          <FormLabel className="text-sm text-gray-600 font-normal">
-                            Активен
-                          </FormLabel>
                         </div>
-                        <FormDescription className="text-gray-600 text-xs">
-                          Пакет доступен для покупки
+                        <FormDescription className="text-gray-600 text-xs mt-2">
+                          {field.value !== false
+                            ? "Пакет отображается пользователям и доступен для покупки"
+                            : "Пакет скрыт от пользователей и недоступен для покупки"}
                         </FormDescription>
                       </FormItem>
                     )}
