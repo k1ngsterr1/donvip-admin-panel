@@ -806,4 +806,57 @@ export const api = {
     delete: (id: number): Promise<AxiosResponse<void>> =>
       apiClient.delete(`/diamond-price/${id}`),
   },
+
+  diamondPackages: {
+    // Get all diamond packages (admin only)
+    getAll: (): Promise<AxiosResponse<any[]>> =>
+      apiClient.get("/diamond-packages"),
+
+    // Get diamond packages by game ID (admin only)
+    getByGameId: (gameId: number): Promise<AxiosResponse<any[]>> =>
+      apiClient.get(`/diamond-packages/${gameId}`),
+
+    // Update package status (admin only)
+    updateStatus: (
+      id: number,
+      isActive: boolean
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.patch(`/diamond-packages/${id}/status`, {
+        is_active: isActive,
+      }),
+
+    // Update package (admin only)
+    update: (
+      id: number,
+      data: {
+        amount?: number;
+        price?: number;
+        original_price?: number;
+        discount_percent?: number;
+        is_popular?: boolean;
+        is_active?: boolean;
+        sort_order?: number;
+        sku?: string;
+      }
+    ): Promise<AxiosResponse<any>> =>
+      apiClient.patch(`/diamond-packages/${id}`, data),
+
+    // Create new package (admin only)
+    create: (data: {
+      product_id: number;
+      amount: number;
+      price: number;
+      original_price?: number;
+      discount_percent?: number;
+      is_popular?: boolean;
+      is_active?: boolean;
+      sort_order?: number;
+      sku?: string;
+    }): Promise<AxiosResponse<any>> =>
+      apiClient.post("/diamond-packages", data),
+
+    // Delete package (admin only)
+    delete: (id: number): Promise<AxiosResponse<void>> =>
+      apiClient.delete(`/diamond-packages/${id}`),
+  },
 };
