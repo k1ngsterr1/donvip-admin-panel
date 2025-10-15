@@ -110,6 +110,10 @@ export function EditProductDialog({
           sku: item.sku || "",
           quantity: quantity, // Add quantity field
           amount: quantity, // Add amount field with same value as quantity
+          isActive:
+            (item as any).isActive !== undefined
+              ? (item as any).isActive
+              : true, // Add isActive field with default true
         };
       });
 

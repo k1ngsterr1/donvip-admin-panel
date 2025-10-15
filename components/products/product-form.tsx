@@ -64,6 +64,7 @@ const replenishmentItemSchema = z.object({
   type: z.string().min(1, "Type is required"),
   sku: z.string().min(1, "SKU is required"),
   discountPercent: z.coerce.number().min(0).max(90).optional(),
+  isActive: z.boolean(),
 });
 
 // Create a file validation schema
@@ -847,6 +848,7 @@ export function ProductForm({
         type: "",
         sku: "",
         discountPercent: undefined,
+        isActive: true,
       },
     ]);
   };
@@ -1850,7 +1852,7 @@ export function ProductForm({
               {form.watch("replenishment").map((_, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 p-4 border rounded-md"
+                  className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 p-4 border rounded-md"
                 >
                   <FormField
                     control={form.control}
@@ -2055,6 +2057,33 @@ export function ProductForm({
                         </FormItem>
                       );
                     }}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`replenishment.${index}.isActive`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-primary">Статус</FormLabel>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              checked={field.value !== false}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm text-gray-600 font-normal">
+                            Активен
+                          </FormLabel>
+                        </div>
+                        <FormDescription className="text-gray-600 text-xs">
+                          Пакет доступен для покупки
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
               ))}
