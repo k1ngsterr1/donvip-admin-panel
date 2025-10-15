@@ -2252,50 +2252,20 @@ export function ProductForm({
                                     />
                                   </label>
                                 </div>
-                                <div className="flex flex-col">
-                                  <span
-                                    className={`text-sm font-medium ${
-                                      field.value !== false
-                                        ? "text-green-700"
-                                        : "text-gray-500"
-                                    }`}
-                                  >
-                                    {field.value !== false
-                                      ? "Активен"
-                                      : "Отключен"}
-                                  </span>
-                                  <div
-                                    className={`flex items-center space-x-1 ${
-                                      field.value !== false
-                                        ? "text-green-600"
-                                        : "text-gray-400"
-                                    }`}
-                                  >
-                                    {field.value !== false ? (
-                                      <>
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                        <span className="text-xs">
-                                          Доступен для покупки
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full" />
-                                        <span className="text-xs">
-                                          Скрыт от пользователей
-                                        </span>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
+                                <span
+                                  className={`text-sm font-medium ${
+                                    field.value !== false
+                                      ? "text-green-700"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  {field.value !== false
+                                    ? "Активен"
+                                    : "Отключен"}
+                                </span>
                               </div>
                             </FormControl>
                           </div>
-                          <FormDescription className="text-gray-600 text-xs mt-2">
-                            {field.value !== false
-                              ? "Пакет отображается пользователям и доступен для покупки"
-                              : "Пакет скрыт от пользователей и недоступен для покупки"}
-                          </FormDescription>
                         </FormItem>
                       )}
                     />
