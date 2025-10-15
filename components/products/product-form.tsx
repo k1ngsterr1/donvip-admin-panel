@@ -64,7 +64,7 @@ const replenishmentItemSchema = z.object({
   type: z.string().min(1, "Type is required"),
   sku: z.string().min(1, "SKU is required"),
   discountPercent: z.coerce.number().min(0).max(90).optional(),
-  isActive: z.boolean(),
+  isActive: z.boolean().optional(),
 });
 
 // Create a file validation schema
@@ -2081,7 +2081,6 @@ export function ProductForm({
                         <FormDescription className="text-gray-600 text-xs">
                           Пакет доступен для покупки
                         </FormDescription>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
