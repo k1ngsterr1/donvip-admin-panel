@@ -786,13 +786,18 @@ export const api = {
     create: (data: {
       price_per_diamond: number;
       currency?: string;
+      custom_amount_enabled?: boolean;
     }): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
       apiClient.post("/diamond-price", data),
 
     // Update diamond price (admin only)
     update: (
       id: number,
-      data: { price_per_diamond?: number; currency?: string }
+      data: {
+        price_per_diamond?: number;
+        currency?: string;
+        custom_amount_enabled?: boolean;
+      }
     ): Promise<AxiosResponse<import("@/types/diamond-price").DiamondPrice>> =>
       apiClient.patch(`/diamond-price/${id}`, data),
 
