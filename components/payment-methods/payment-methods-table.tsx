@@ -321,8 +321,20 @@ export function PaymentMethodsTable() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div>
-                        <p className="font-medium">{method.name}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{method.name}</p>
+                          {method.isMoneta && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              Moneta
+                            </Badge>
+                          )}
+                          {method.isDukPay && (
+                            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                              DukPay
+                            </Badge>
+                          )}
+                        </div>
                         {method.description && (
                           <p className="text-sm text-muted-foreground line-clamp-1">
                             {method.description}

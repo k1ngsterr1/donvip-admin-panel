@@ -13,6 +13,7 @@ export interface PaymentMethod {
   fee?: number;
   isActive: boolean;
   isMoneta?: boolean; // Flag for Moneta payment methods
+  isDukPay?: boolean; // Flag for DukPay payment methods
   description?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -28,6 +29,7 @@ export interface CreatePaymentMethodDto {
   fee?: number;
   isActive?: boolean;
   isMoneta?: boolean;
+  isDukPay?: boolean;
   description?: string;
   icon?: string;
 }
@@ -42,6 +44,7 @@ export interface UpdatePaymentMethodDto {
   fee?: number;
   isActive?: boolean;
   isMoneta?: boolean;
+  isDukPay?: boolean;
   description?: string;
   icon?: string;
 }

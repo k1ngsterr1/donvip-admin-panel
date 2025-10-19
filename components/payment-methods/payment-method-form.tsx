@@ -64,6 +64,7 @@ interface FormData {
   fee: string;
   isActive: boolean;
   isMoneta: boolean;
+  isDukPay: boolean;
   description: string;
   icon: string;
 }
@@ -114,6 +115,7 @@ export function PaymentMethodForm({
       fee: paymentMethod?.fee?.toString() || "",
       isActive: paymentMethod?.isActive ?? true,
       isMoneta: paymentMethod?.isMoneta ?? false,
+      isDukPay: paymentMethod?.isDukPay ?? false,
       description: paymentMethod?.description || "",
       icon: paymentMethod?.icon || "",
     },
@@ -123,6 +125,7 @@ export function PaymentMethodForm({
   const watchedCurrency = watch("currency");
   const watchedIsActive = watch("isActive");
   const watchedIsMoneta = watch("isMoneta");
+  const watchedIsDukPay = watch("isDukPay");
 
   // Debug: Watch isMoneta changes
   React.useEffect(() => {
@@ -243,13 +246,16 @@ export function PaymentMethodForm({
         fee: data.fee ? parseFloat(data.fee) : undefined,
         isActive: data.isActive,
         isMoneta: data.isMoneta,
+        isDukPay: data.isDukPay,
         description: data.description || undefined,
         icon: iconPath || undefined,
       };
 
       console.log("📤 Submitting payment method:", payload);
       console.log("📋 Form data isMoneta:", data.isMoneta);
+      console.log("📋 Form data isDukPay:", data.isDukPay);
       console.log("📋 Watched isMoneta:", watchedIsMoneta);
+      console.log("📋 Watched isDukPay:", watchedIsDukPay);
 
       if (paymentMethod) {
         const result = await updateMutation.mutateAsync(payload);
@@ -401,7 +407,7 @@ export function PaymentMethodForm({
                 rows={2}
               />
             </div>
-            {/* Toggle switches for isActive and isMoneta */}
+            {/* Toggle switches for isActive, isMoneta, and isDukPay */}
             <div className="md:col-span-2 space-y-4 pt-4 border-t">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
@@ -428,6 +434,20 @@ export function PaymentMethodForm({
                   id="isMoneta"
                   checked={watchedIsMoneta}
                   onCheckedChange={(checked) => setValue("isMoneta", checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="isDukPay">Использовать DukPay</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Обрабатывать платежи через платежный шлюз DukPay (для России)
+                  </p>
+                </div>
+                <Switch
+                  id="isDukPay"
+                  checked={watchedIsDukPay}
+                  onCheckedChange={(checked) => setValue("isDukPay", checked)}
                 />
               </div>
             </div>
