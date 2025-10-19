@@ -106,6 +106,7 @@ interface ReplenishmentOption {
   sku?: string;
   error?: string;
   discountPercent?: number;
+  isActive?: boolean;
 }
 
 interface Product {
@@ -1095,7 +1096,11 @@ export function ProductsTable() {
                                           (option, index) => (
                                             <div
                                               key={index}
-                                              className="p-3 border rounded-md flex justify-between items-center bg-white hover:bg-muted/5 transition-colors"
+                                              className={`p-3 border rounded-md flex justify-between items-center bg-white hover:bg-muted/5 transition-all duration-200 ${
+                                                option.isActive !== false
+                                                  ? "opacity-100 border-gray-200"
+                                                  : "opacity-60 border-gray-300 bg-gray-50"
+                                              }`}
                                             >
                                               <div>
                                                 <div className="flex items-center gap-2">
@@ -1119,6 +1124,30 @@ export function ProductsTable() {
                                                       -{option.discountPercent}%
                                                     </Badge>
                                                   )}
+                                                  <Badge
+                                                    variant={
+                                                      option.isActive !== false
+                                                        ? "default"
+                                                        : "secondary"
+                                                    }
+                                                    className={`px-2 py-0.5 flex items-center gap-1 ${
+                                                      option.isActive !== false
+                                                        ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+                                                        : "bg-gray-100 text-gray-600 border-gray-200"
+                                                    }`}
+                                                  >
+                                                    <div
+                                                      className={`w-2 h-2 rounded-full ${
+                                                        option.isActive !==
+                                                        false
+                                                          ? "bg-green-500 animate-pulse"
+                                                          : "bg-gray-400"
+                                                      }`}
+                                                    />
+                                                    {option.isActive !== false
+                                                      ? "Активен"
+                                                      : "Отключен"}
+                                                  </Badge>
                                                 </div>
                                                 <div className="text-xs text-muted-foreground mt-1">
                                                   {option.sku
@@ -1319,6 +1348,8 @@ export function ProductsTable() {
                     price: item.price || 0,
                     sku: item.sku || "",
                     discountPercent: item.discountPercent || undefined,
+                    isActive:
+                      item.isActive !== undefined ? item.isActive : true,
                     error: item.error,
                   })
                 ),

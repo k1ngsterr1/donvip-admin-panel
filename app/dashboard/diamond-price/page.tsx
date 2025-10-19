@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Plus,
   Edit,
@@ -44,6 +45,7 @@ export default function DiamondPricePage() {
   const [formData, setFormData] = useState({
     price_per_diamond: "",
     currency: "RUB",
+    custom_amount_enabled: true,
   });
 
   const currencies = [
@@ -91,6 +93,7 @@ export default function DiamondPricePage() {
       await api.diamondPrice.create({
         price_per_diamond: parseFloat(formData.price_per_diamond),
         currency: formData.currency,
+        custom_amount_enabled: formData.custom_amount_enabled,
       });
 
       toast({
@@ -99,7 +102,11 @@ export default function DiamondPricePage() {
       });
 
       setCreateDialogOpen(false);
-      setFormData({ price_per_diamond: "", currency: "RUB" });
+      setFormData({
+        price_per_diamond: "",
+        currency: "RUB",
+        custom_amount_enabled: true,
+      });
       fetchDiamondPrices();
     } catch (error) {
       console.error("Error creating diamond price:", error);
@@ -130,6 +137,7 @@ export default function DiamondPricePage() {
       await api.diamondPrice.update(editingPrice.id, {
         price_per_diamond: parseFloat(formData.price_per_diamond),
         currency: formData.currency,
+        custom_amount_enabled: formData.custom_amount_enabled,
       });
 
       toast({
@@ -139,7 +147,11 @@ export default function DiamondPricePage() {
 
       setEditDialogOpen(false);
       setEditingPrice(null);
-      setFormData({ price_per_diamond: "", currency: "RUB" });
+      setFormData({
+        price_per_diamond: "",
+        currency: "RUB",
+        custom_amount_enabled: true,
+      });
       fetchDiamondPrices();
     } catch (error) {
       console.error("Error updating diamond price:", error);
@@ -194,6 +206,7 @@ export default function DiamondPricePage() {
     setFormData({
       price_per_diamond: price.price_per_diamond.toString(),
       currency: price.currency,
+      custom_amount_enabled: price.custom_amount_enabled,
     });
     setEditDialogOpen(true);
   };
@@ -278,6 +291,24 @@ export default function DiamondPricePage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="custom_amount_enabled"
+                  checked={formData.custom_amount_enabled}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      custom_amount_enabled: checked === true,
+                    }))
+                  }
+                />
+                <Label
+                  htmlFor="custom_amount_enabled"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Разрешить произвольное количество алмазов
+                </Label>
+              </div>
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleCreate} className="flex-1">
                   Создать
@@ -329,6 +360,14 @@ export default function DiamondPricePage() {
                     <p className="text-sm text-muted-foreground">
                       Валюта: {price.currency} • Создана:{" "}
                       {new Date(price.created_at).toLocaleString("ru-RU")}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Произвольное количество:{" "}
+                      {price.custom_amount_enabled ? (
+                        <span className="text-green-600">✓ Включено</span>
+                      ) : (
+                        <span className="text-red-600">✗ Отключено</span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -411,6 +450,24 @@ export default function DiamondPricePage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="edit_custom_amount_enabled"
+                checked={formData.custom_amount_enabled}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    custom_amount_enabled: checked === true,
+                  }))
+                }
+              />
+              <Label
+                htmlFor="edit_custom_amount_enabled"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Разрешить произвольное количество алмазов
+              </Label>
             </div>
             <div className="flex gap-2 pt-4">
               <Button onClick={handleEdit} className="flex-1">

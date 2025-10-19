@@ -64,6 +64,7 @@ const replenishmentItemSchema = z.object({
   type: z.string().min(1, "Type is required"),
   sku: z.string().min(1, "SKU is required"),
   discountPercent: z.coerce.number().min(0).max(90).optional(),
+  isActive: z.boolean().optional(),
 });
 
 // Create a file validation schema
@@ -847,6 +848,7 @@ export function ProductForm({
         type: "",
         sku: "",
         discountPercent: undefined,
+        isActive: true,
       },
     ]);
   };
@@ -866,922 +868,1058 @@ export function ProductForm({
       <div className="p-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Alert className="mb-6">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              <AlertTitle>Обязательное поле</AlertTitle>
-              <AlertDescription>
-                Изображение товара обязательно для загрузки. Поддерживаемые
-                форматы: JPG, PNG, WebP, SVG.
-              </AlertDescription>
-            </Alert>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900">
+                    Важная информация
+                  </h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Изображение товара обязательно для загрузки. Поддерживаемые
+                    форматы: JPG, PNG, WebP, SVG.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Название товара
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Bigo LIVE"
-                          {...field}
-                          className="text-primary"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="order_number"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Порядковый номер
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="number" min={1} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">Описание</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Подробное описание товара..."
-                          className="min-h-[120px] text-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description_en"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Описание (EN)
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Подробное описание товара на английском..."
-                          className="min-h-[120px] text-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">Тип</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Clear smile_api_game when changing type
-                          if (value !== "Smile") {
-                            form.setValue("smile_api_game", "");
-                          }
-                          // Clear donatbank_product_id when changing type
-                          if (value !== "DonatBank") {
-                            form.setValue("donatbank_product_id", "");
-                          }
-                        }}
-                        value={field.value}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <svg
+                        className="h-5 w-5 text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                       >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder="Выберите тип"
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        Основная информация
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        Заполните базовые данные товара
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Название товара
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Bigo LIVE"
+                              {...field}
                               className="text-primary"
                             />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Bigo" className="text-primary">
-                            Bigo
-                          </SelectItem>
-                          <SelectItem value="Smile" className="text-primary">
-                            Smile
-                          </SelectItem>
-                          <SelectItem
-                            value="DonatBank"
-                            className="text-primary"
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="order_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Порядковый номер
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" min={1} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Описание
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Подробное описание товара..."
+                              className="min-h-[120px] text-primary"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="description_en"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Описание (EN)
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Подробное описание товара на английском..."
+                              className="min-h-[120px] text-primary"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">Тип</FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              // Clear smile_api_game when changing type
+                              if (value !== "Smile") {
+                                form.setValue("smile_api_game", "");
+                              }
+                              // Clear donatbank_product_id when changing type
+                              if (value !== "DonatBank") {
+                                form.setValue("donatbank_product_id", "");
+                              }
+                            }}
+                            value={field.value}
                           >
-                            DonatBank
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription className="text-gray-600">
-                        Выберите тип товара (Bigo, Smile или DonatBank)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Only show Smile API Game field when product type is Smile */}
-                {productType === "Smile" && (
-                  <FormField
-                    control={form.control}
-                    name="smile_api_game"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">
-                          Smile API Game
-                        </FormLabel>
-                        <div className="flex gap-2">
-                          <FormControl className="flex-1">
-                            <Select
-                              onValueChange={(value) => {
-                                console.log("Selected game value:", value);
-                                console.log(
-                                  "Current smileProducts:",
-                                  smileProducts
-                                );
-                                // Set the value directly without any conditions
-                                field.onChange(value);
-                                form.setValue("smile_api_game", value, {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                  shouldTouch: true,
-                                });
-
-                                // Only reset replenishment items for valid game IDs (not placeholders)
-                                if (value && !value.startsWith("_")) {
-                                  console.log(
-                                    "Selected new game, fetching SKUs"
-                                  );
-                                  // Don't reset replenishment items - let user manage them
-                                  // Force refetch SKUs for the new game
-                                  setTimeout(() => {
-                                    refetchSmileSKUs();
-                                  }, 100);
-                                }
-                              }}
-                              value={field.value || "_placeholder"}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Выберите игру" />
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder="Выберите тип"
+                                  className="text-primary"
+                                />
                               </SelectTrigger>
-                              <SelectContent>
-                                {/* LOGS for DonatBank packages dropdown */}
-                                {String(productType) === "DonatBank"
-                                  ? [
-                                      <SelectItem
-                                        key="_placeholder"
-                                        value="_placeholder"
-                                        disabled
-                                      >
-                                        Выберите пакет
-                                      </SelectItem>,
-                                      donatBankPackages?.product_info
-                                        ?.packages_list &&
-                                      Object.keys(
-                                        donatBankPackages.product_info
-                                          .packages_list
-                                      ).length > 0
-                                        ? Object.entries(
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Bigo" className="text-primary">
+                                Bigo
+                              </SelectItem>
+                              <SelectItem
+                                value="Smile"
+                                className="text-primary"
+                              >
+                                Smile
+                              </SelectItem>
+                              <SelectItem
+                                value="DonatBank"
+                                className="text-primary"
+                              >
+                                DonatBank
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription className="text-gray-600">
+                            Выберите тип товара (Bigo, Smile или DonatBank)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Only show Smile API Game field when product type is Smile */}
+                    {productType === "Smile" && (
+                      <FormField
+                        control={form.control}
+                        name="smile_api_game"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-primary">
+                              Smile API Game
+                            </FormLabel>
+                            <div className="flex gap-2">
+                              <FormControl className="flex-1">
+                                <Select
+                                  onValueChange={(value) => {
+                                    console.log("Selected game value:", value);
+                                    console.log(
+                                      "Current smileProducts:",
+                                      smileProducts
+                                    );
+                                    // Set the value directly without any conditions
+                                    field.onChange(value);
+                                    form.setValue("smile_api_game", value, {
+                                      shouldValidate: true,
+                                      shouldDirty: true,
+                                      shouldTouch: true,
+                                    });
+
+                                    // Only reset replenishment items for valid game IDs (not placeholders)
+                                    if (value && !value.startsWith("_")) {
+                                      console.log(
+                                        "Selected new game, fetching SKUs"
+                                      );
+                                      // Don't reset replenishment items - let user manage them
+                                      // Force refetch SKUs for the new game
+                                      setTimeout(() => {
+                                        refetchSmileSKUs();
+                                      }, 100);
+                                    }
+                                  }}
+                                  value={field.value || "_placeholder"}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Выберите игру" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {/* LOGS for DonatBank packages dropdown */}
+                                    {String(productType) === "DonatBank"
+                                      ? [
+                                          <SelectItem
+                                            key="_placeholder"
+                                            value="_placeholder"
+                                            disabled
+                                          >
+                                            Выберите пакет
+                                          </SelectItem>,
+                                          donatBankPackages?.product_info
+                                            ?.packages_list &&
+                                          Object.keys(
                                             donatBankPackages.product_info
                                               .packages_list
-                                          ).map(([key, value]) => (
-                                            <SelectItem key={key} value={key}>
-                                              {typeof value === "object"
-                                                ? JSON.stringify(value)
-                                                : String(value)}
-                                            </SelectItem>
-                                          ))
-                                        : [
+                                          ).length > 0
+                                            ? Object.entries(
+                                                donatBankPackages.product_info
+                                                  .packages_list
+                                              ).map(([key, value]) => (
+                                                <SelectItem
+                                                  key={key}
+                                                  value={key}
+                                                >
+                                                  {typeof value === "object"
+                                                    ? JSON.stringify(value)
+                                                    : String(value)}
+                                                </SelectItem>
+                                              ))
+                                            : [
+                                                <SelectItem
+                                                  key="_no_packages"
+                                                  value="_no_packages"
+                                                  disabled
+                                                >
+                                                  Нет доступных пакетов
+                                                </SelectItem>,
+                                              ],
+                                        ]
+                                      : [
+                                          <SelectItem
+                                            key="_placeholder"
+                                            value="_placeholder"
+                                            disabled
+                                          >
+                                            Выберите игру
+                                          </SelectItem>,
+                                          loadingSmileProducts ? (
                                             <SelectItem
-                                              key="_no_packages"
-                                              value="_no_packages"
+                                              key="_loading"
+                                              value="_loading"
                                               disabled
                                             >
-                                              Нет доступных пакетов
-                                            </SelectItem>,
-                                          ],
-                                    ]
-                                  : [
-                                      <SelectItem
-                                        key="_placeholder"
-                                        value="_placeholder"
-                                        disabled
-                                      >
-                                        Выберите игру
-                                      </SelectItem>,
-                                      loadingSmileProducts ? (
-                                        <SelectItem
-                                          key="_loading"
-                                          value="_loading"
-                                          disabled
-                                        >
-                                          Загрузка...
-                                        </SelectItem>
-                                      ) : Array.isArray(smileProducts) &&
-                                        smileProducts.length > 0 ? (
-                                        smileProducts.map((game: any) => (
-                                          <SelectItem
-                                            key={game.apiGame}
-                                            value={game.apiGame}
-                                          >
-                                            {game.name}
-                                          </SelectItem>
-                                        ))
-                                      ) : (
-                                        <SelectItem
-                                          key="_no_games"
-                                          value="_no_games"
-                                          disabled
-                                        >
-                                          Нет доступных игр
-                                        </SelectItem>
-                                      ),
-                                    ]}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              console.log("Refreshing Smile products");
-                              refetchSmileProducts();
-                            }}
-                            disabled={loadingSmileProducts}
-                            title="Обновить список игр"
-                          >
-                            <RefreshCw
-                              className={`h-4 w-4 ${
-                                loadingSmileProducts ? "animate-spin" : ""
-                              }`}
-                            />
-                          </Button>
-                        </div>
-                        <FormDescription className="text-gray-600">
-                          Выберите игру из Smile API для интеграции. SKU будут
-                          загружены автоматически.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {/* Only show DonatBank Product field when product type is DonatBank */}
-                {productType === "DonatBank" && (
-                  <FormField
-                    control={form.control}
-                    name="donatbank_product_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">
-                          DonatBank Product
-                        </FormLabel>
-                        <div className="flex gap-2">
-                          <FormControl className="flex-1">
-                            <Select
-                              onValueChange={(value) => {
-                                console.log(
-                                  "Selected DonatBank product ID:",
-                                  value
-                                );
-                                console.log(
-                                  "Current donatBankProducts:",
-                                  donatBankProducts
-                                );
-                                // Set the value directly
-                                field.onChange(value);
-                                form.setValue("donatbank_product_id", value, {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                  shouldTouch: true,
-                                });
-                              }}
-                              value={field.value || "_placeholder"}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Выберите продукт" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem
-                                  key="_placeholder"
-                                  value="_placeholder"
-                                  disabled
-                                >
-                                  Выберите продукт
-                                </SelectItem>
-                                {loadingDonatBankProducts ? (
-                                  <SelectItem
-                                    key="_loading"
-                                    value="_loading"
-                                    disabled
-                                  >
-                                    Загрузка...
-                                  </SelectItem>
-                                ) : Array.isArray(donatBankProducts) &&
-                                  donatBankProducts.length > 0 ? (
-                                  <>
-                                    {console.log(
-                                      "RENDERING DONATBANK PRODUCTS:",
-                                      donatBankProducts
-                                    )}
-                                    {donatBankProducts.map((product: any) => {
-                                      console.log(
-                                        "Rendering product:",
-                                        product
-                                      );
-                                      return (
-                                        <SelectItem
-                                          key={product.id}
-                                          value={product.id}
-                                        >
-                                          {product.name}
-                                        </SelectItem>
-                                      );
-                                    })}
-                                  </>
-                                ) : (
-                                  <>
-                                    {console.log("NO PRODUCTS - Debug info:", {
-                                      donatBankProducts,
-                                      isArray: Array.isArray(donatBankProducts),
-                                      length: donatBankProducts?.length,
-                                      loadingDonatBankProducts,
-                                    })}
-                                    <SelectItem
-                                      key="_no_products"
-                                      value="_no_products"
-                                      disabled
-                                    >
-                                      Нет доступных продуктов
-                                    </SelectItem>
-                                  </>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              console.log("Refreshing DonatBank products");
-                              refetchDonatBankProducts();
-                            }}
-                            disabled={loadingDonatBankProducts}
-                            title="Обновить список продуктов"
-                          >
-                            <RefreshCw
-                              className={`h-4 w-4 ${
-                                loadingDonatBankProducts ? "animate-spin" : ""
-                              }`}
-                            />
-                          </Button>
-                        </div>
-                        <FormDescription className="text-gray-600">
-                          Выберите продукт из DonatBank API для интеграции.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                <FormField
-                  control={form.control}
-                  name="currency_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Currency Name
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="USD"
-                          {...field}
-                          className="text-primary"
-                        />
-                      </FormControl>
-                      <FormDescription className="text-gray-600">
-                        Name of the currency (e.g., USD, EUR, RUB)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="isServerRequired"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-primary">
-                          Server ID Required
-                        </FormLabel>
-                        <FormDescription className="text-gray-600">
-                          Check this if users need to provide a server ID for
-                          this product
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="requireUserId"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-primary">
-                          User ID Required
-                        </FormLabel>
-                        <FormDescription className="text-gray-600">
-                          Check this if users need to provide a user ID for
-                          purchase
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="requireServer"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-primary">
-                          Server Required
-                        </FormLabel>
-                        <FormDescription className="text-gray-600">
-                          Check this if server information is required for
-                          purchase
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="requireEmail"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-primary">
-                          Email Required
-                        </FormLabel>
-                        <FormDescription className="text-gray-600">
-                          Check this if email is required for purchase
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="requireUID"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-primary">
-                          UID Required
-                        </FormLabel>
-                        <FormDescription className="text-gray-600">
-                          Check this if UID is required for purchase
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="currency_image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-primary">
-                        Currency Image
-                      </FormLabel>
-                      <div className="mt-2 flex flex-col space-y-4">
-                        {!previewCurrencyImage ? (
-                          <div className="flex h-24 w-full items-center justify-center bg-muted rounded-md border border-dashed">
-                            <div className="text-center">
-                              <FileImage className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">
-                                Upload currency icon image
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Recommended: 64x64px
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative h-24 w-24 overflow-hidden rounded-md border">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 z-10 h-6 w-6"
-                              onClick={removeCurrencyImage}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                            <Image
-                              src={previewCurrencyImage || "/placeholder.svg"}
-                              alt="Currency icon preview"
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() =>
-                                document
-                                  .getElementById("currency-file-upload")
-                                  ?.click()
-                              }
-                              className="w-full"
-                            >
-                              <FileImage className="h-4 w-4 mr-2" />
-                              Choose Currency Icon
-                            </Button>
-                            {selectedCurrencyFile && (
+                                              Загрузка...
+                                            </SelectItem>
+                                          ) : Array.isArray(smileProducts) &&
+                                            smileProducts.length > 0 ? (
+                                            smileProducts.map((game: any) => (
+                                              <SelectItem
+                                                key={game.apiGame}
+                                                value={game.apiGame}
+                                              >
+                                                {game.name}
+                                              </SelectItem>
+                                            ))
+                                          ) : (
+                                            <SelectItem
+                                              key="_no_games"
+                                              value="_no_games"
+                                              disabled
+                                            >
+                                              Нет доступных игр
+                                            </SelectItem>
+                                          ),
+                                        ]}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
                               <Button
                                 type="button"
-                                variant="destructive"
+                                variant="outline"
                                 size="icon"
-                                onClick={removeCurrencyImage}
+                                onClick={() => {
+                                  console.log("Refreshing Smile products");
+                                  refetchSmileProducts();
+                                }}
+                                disabled={loadingSmileProducts}
+                                title="Обновить список игр"
                               >
-                                <Trash className="h-4 w-4" />
+                                <RefreshCw
+                                  className={`h-4 w-4 ${
+                                    loadingSmileProducts ? "animate-spin" : ""
+                                  }`}
+                                />
                               </Button>
-                            )}
-                          </div>
-                          <Input
-                            id="currency-file-upload"
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.webp,.svg"
-                            onChange={handleCurrencyImageChange}
-                            className="hidden"
-                          />
-                          {selectedCurrencyFile && (
-                            <div className="text-xs text-muted-foreground">
-                              Selected file: {selectedCurrencyFile.name} (
-                              {Math.round(selectedCurrencyFile.size / 1024)} KB)
                             </div>
-                          )}
-                          {currencyFileError && (
-                            <Alert variant="destructive" className="py-2">
-                              <AlertCircle className="h-4 w-4 mr-2" />
-                              <span className="text-sm">
-                                {currencyFileError}
-                              </span>
-                            </Alert>
-                          )}
+                            <FormDescription className="text-gray-600">
+                              Выберите игру из Smile API для интеграции. SKU
+                              будут загружены автоматически.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Only show DonatBank Product field when product type is DonatBank */}
+                    {productType === "DonatBank" && (
+                      <FormField
+                        control={form.control}
+                        name="donatbank_product_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-primary">
+                              DonatBank Product
+                            </FormLabel>
+                            <div className="flex gap-2">
+                              <FormControl className="flex-1">
+                                <Select
+                                  onValueChange={(value) => {
+                                    console.log(
+                                      "Selected DonatBank product ID:",
+                                      value
+                                    );
+                                    console.log(
+                                      "Current donatBankProducts:",
+                                      donatBankProducts
+                                    );
+                                    // Set the value directly
+                                    field.onChange(value);
+                                    form.setValue(
+                                      "donatbank_product_id",
+                                      value,
+                                      {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                        shouldTouch: true,
+                                      }
+                                    );
+                                  }}
+                                  value={field.value || "_placeholder"}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Выберите продукт" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem
+                                      key="_placeholder"
+                                      value="_placeholder"
+                                      disabled
+                                    >
+                                      Выберите продукт
+                                    </SelectItem>
+                                    {loadingDonatBankProducts ? (
+                                      <SelectItem
+                                        key="_loading"
+                                        value="_loading"
+                                        disabled
+                                      >
+                                        Загрузка...
+                                      </SelectItem>
+                                    ) : Array.isArray(donatBankProducts) &&
+                                      donatBankProducts.length > 0 ? (
+                                      <>
+                                        {console.log(
+                                          "RENDERING DONATBANK PRODUCTS:",
+                                          donatBankProducts
+                                        )}
+                                        {donatBankProducts.map(
+                                          (product: any) => {
+                                            console.log(
+                                              "Rendering product:",
+                                              product
+                                            );
+                                            return (
+                                              <SelectItem
+                                                key={product.id}
+                                                value={product.id}
+                                              >
+                                                {product.name}
+                                              </SelectItem>
+                                            );
+                                          }
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        {console.log(
+                                          "NO PRODUCTS - Debug info:",
+                                          {
+                                            donatBankProducts,
+                                            isArray:
+                                              Array.isArray(donatBankProducts),
+                                            length: donatBankProducts?.length,
+                                            loadingDonatBankProducts,
+                                          }
+                                        )}
+                                        <SelectItem
+                                          key="_no_products"
+                                          value="_no_products"
+                                          disabled
+                                        >
+                                          Нет доступных продуктов
+                                        </SelectItem>
+                                      </>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                  console.log("Refreshing DonatBank products");
+                                  refetchDonatBankProducts();
+                                }}
+                                disabled={loadingDonatBankProducts}
+                                title="Обновить список продуктов"
+                              >
+                                <RefreshCw
+                                  className={`h-4 w-4 ${
+                                    loadingDonatBankProducts
+                                      ? "animate-spin"
+                                      : ""
+                                  }`}
+                                />
+                              </Button>
+                            </div>
+                            <FormDescription className="text-gray-600">
+                              Выберите продукт из DonatBank API для интеграции.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    <FormField
+                      control={form.control}
+                      name="currency_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Currency Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="USD"
+                              {...field}
+                              className="text-primary"
+                            />
+                          </FormControl>
                           <FormDescription className="text-gray-600">
-                            Upload an icon for the currency. This will be
-                            displayed next to the currency name.
+                            Name of the currency (e.g., USD, EUR, RUB)
                           </FormDescription>
-                        </div>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="isServerRequired"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-primary">
+                              Server ID Required
+                            </FormLabel>
+                            <FormDescription className="text-gray-600">
+                              Check this if users need to provide a server ID
+                              for this product
+                            </FormDescription>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="requireUserId"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-primary">
+                              User ID Required
+                            </FormLabel>
+                            <FormDescription className="text-gray-600">
+                              Check this if users need to provide a user ID for
+                              purchase
+                            </FormDescription>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="requireServer"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-primary">
+                              Server Required
+                            </FormLabel>
+                            <FormDescription className="text-gray-600">
+                              Check this if server information is required for
+                              purchase
+                            </FormDescription>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="requireEmail"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-primary">
+                              Email Required
+                            </FormLabel>
+                            <FormDescription className="text-gray-600">
+                              Check this if email is required for purchase
+                            </FormDescription>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="requireUID"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-primary">
+                              UID Required
+                            </FormLabel>
+                            <FormDescription className="text-gray-600">
+                              Check this if UID is required for purchase
+                            </FormDescription>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="currency_image"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Currency Image
+                          </FormLabel>
+                          <div className="mt-2 flex flex-col space-y-4">
+                            {!previewCurrencyImage ? (
+                              <div className="flex h-24 w-full items-center justify-center bg-muted rounded-md border border-dashed">
+                                <div className="text-center">
+                                  <FileImage className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                                  <p className="text-sm text-muted-foreground">
+                                    Upload currency icon image
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Recommended: 64x64px
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="relative h-24 w-24 overflow-hidden rounded-md border">
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-2 right-2 z-10 h-6 w-6"
+                                  onClick={removeCurrencyImage}
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                                <Image
+                                  src={
+                                    previewCurrencyImage || "/placeholder.svg"
+                                  }
+                                  alt="Currency icon preview"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() =>
+                                    document
+                                      .getElementById("currency-file-upload")
+                                      ?.click()
+                                  }
+                                  className="w-full"
+                                >
+                                  <FileImage className="h-4 w-4 mr-2" />
+                                  Choose Currency Icon
+                                </Button>
+                                {selectedCurrencyFile && (
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    onClick={removeCurrencyImage}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                              <Input
+                                id="currency-file-upload"
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.webp,.svg"
+                                onChange={handleCurrencyImageChange}
+                                className="hidden"
+                              />
+                              {selectedCurrencyFile && (
+                                <div className="text-xs text-muted-foreground">
+                                  Selected file: {selectedCurrencyFile.name} (
+                                  {Math.round(selectedCurrencyFile.size / 1024)}{" "}
+                                  KB)
+                                </div>
+                              )}
+                              {currencyFileError && (
+                                <Alert variant="destructive" className="py-2">
+                                  <AlertCircle className="h-4 w-4 mr-2" />
+                                  <span className="text-sm">
+                                    {currencyFileError}
+                                  </span>
+                                </Alert>
+                              )}
+                              <FormDescription className="text-gray-600">
+                                Upload an icon for the currency. This will be
+                                displayed next to the currency name.
+                              </FormDescription>
+                            </div>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <FormItem>
-                  <FormLabel className="text-primary">
-                    Изображение товара <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <div className="mt-2 flex flex-col space-y-4">
-                    {!previewImage ? (
-                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed border-red-300">
-                        <div className="text-center">
-                          <FileImage className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                          <p className="text-sm text-red-600 font-medium">
-                            Требуется загрузить изображение
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Поддерживаемые форматы: JPG, PNG, WebP, SVG
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="relative h-40 w-full overflow-hidden rounded-md border">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 z-10 h-6 w-6"
-                          onClick={removeImage}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                        <Image
-                          src={previewImage || "/placeholder.svg"}
-                          alt="Product preview"
-                          fill
-                          className="object-cover"
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <svg
+                        className="h-5 w-5 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        Медиа файлы
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        Загрузите изображения товара и валюты
+                      </p>
+                    </div>
+                  </div>
+                  <FormItem>
+                    <FormLabel className="text-primary">
+                      Изображение товара <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <div className="mt-2 flex flex-col space-y-4">
+                      {!previewImage ? (
+                        <div
+                          className="group flex h-48 w-full items-center justify-center bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border-2 border-dashed border-red-300 hover:border-red-400 transition-all duration-200 cursor-pointer"
                           onClick={() =>
                             document.getElementById("file-upload")?.click()
                           }
-                          className="w-full"
                         >
-                          <FileImage className="h-4 w-4 mr-2" />
-                          Выбрать изображение
-                        </Button>
-                        {selectedFile && (
+                          <div className="text-center p-6">
+                            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-red-200 transition-colors">
+                              <FileImage className="h-8 w-8 text-red-600" />
+                            </div>
+                            <p className="text-lg font-medium text-red-700 mb-2">
+                              Загрузите изображение товара
+                            </p>
+                            <p className="text-sm text-red-600 mb-4">
+                              Обязательное поле для создания товара
+                            </p>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                                JPG
+                              </span>
+                              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                                PNG
+                              </span>
+                              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                                WebP
+                              </span>
+                              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                                SVG
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-gray-200 shadow-lg group hover:shadow-xl transition-all duration-200">
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
+                            className="absolute top-2 right-2 z-10 h-6 w-6"
                             onClick={removeImage}
                           >
                             <Trash className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={async () => {
-                          try {
-                            setFileError(null);
-                            const defaultFile = await createDefaultImageFile();
-                            setSelectedFile(defaultFile);
-
-                            // Set the value in the form
-                            form.setValue("image", defaultFile, {
-                              shouldValidate: true,
-                              shouldDirty: true,
-                              shouldTouch: true,
-                            });
-
-                            // Create preview URL for the image
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setPreviewImage(reader.result as string);
-                            };
-                            reader.readAsDataURL(defaultFile);
-                          } catch (error) {
-                            console.error(
-                              "Error generating default image:",
-                              error
-                            );
-                            setFileError(
-                              "Ошибка при создании изображения по умолчанию"
-                            );
-                          }
-                        }}
-                        className="w-full mt-2"
-                      >
-                        <FileImage className="h-4 w-4 mr-2" />
-                        Создать стандартное изображение
-                      </Button>
-                      <Input
-                        id="file-upload"
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp,.svg"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-                      {selectedFile && (
-                        <div className="text-xs text-muted-foreground">
-                          Выбран файл: {selectedFile.name} (
-                          {Math.round(selectedFile.size / 1024)} KB)
+                          <Image
+                            src={previewImage || "/placeholder.svg"}
+                            alt="Product preview"
+                            fill
+                            className="object-cover"
+                          />
                         </div>
                       )}
-                      {fileError && (
-                        <Alert variant="destructive" className="py-2">
-                          <AlertCircle className="h-4 w-4 mr-2" />
-                          <span className="text-sm">{fileError}</span>
-                        </Alert>
-                      )}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge
-                          variant="outline"
-                          className="bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          JPG
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200"
-                        >
-                          PNG
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-purple-50 text-purple-700 border-purple-200"
-                        >
-                          WebP
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-amber-50 text-amber-700 border-amber-200"
-                        >
-                          SVG
-                        </Badge>
-                      </div>
-                      <FormDescription className="text-gray-600">
-                        Загрузите изображение товара. Максимальный размер: 10MB.
-                      </FormDescription>
-                    </div>
-                  </div>
-                </FormItem>
-                <FormItem className="mt-6">
-                  <FormLabel className="text-primary">Currency Image</FormLabel>
-                  <div className="mt-2 flex flex-col space-y-4">
-                    {!previewCurrencyImage ? (
-                      <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed">
-                        <div className="text-center">
-                          <FileImage className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">
-                            Загрузите изображение валюты
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Рекомендуемый размер: 64x64px
-                          </p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
+                              document.getElementById("file-upload")?.click()
+                            }
+                            className="w-full"
+                          >
+                            <FileImage className="h-4 w-4 mr-2" />
+                            Выбрать изображение
+                          </Button>
+                          {selectedFile && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={removeImage}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="relative h-40 w-full overflow-hidden rounded-md border">
                         <Button
                           type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 z-10 h-6 w-6"
-                          onClick={removeCurrencyImage}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                        <Image
-                          src={previewCurrencyImage || "/placeholder.svg"}
-                          alt="Currency image preview"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() =>
-                            document
-                              .getElementById("currency-file-upload-2")
-                              ?.click()
-                          }
-                          className="w-full"
+                          variant="secondary"
+                          onClick={async () => {
+                            try {
+                              setFileError(null);
+                              const defaultFile =
+                                await createDefaultImageFile();
+                              setSelectedFile(defaultFile);
+
+                              // Set the value in the form
+                              form.setValue("image", defaultFile, {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                                shouldTouch: true,
+                              });
+
+                              // Create preview URL for the image
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setPreviewImage(reader.result as string);
+                              };
+                              reader.readAsDataURL(defaultFile);
+                            } catch (error) {
+                              console.error(
+                                "Error generating default image:",
+                                error
+                              );
+                              setFileError(
+                                "Ошибка при создании изображения по умолчанию"
+                              );
+                            }
+                          }}
+                          className="w-full mt-2"
                         >
                           <FileImage className="h-4 w-4 mr-2" />
-                          Выбрать изображение валюты
+                          Создать стандартное изображение
                         </Button>
-                        {selectedCurrencyFile && (
+                        <Input
+                          id="file-upload"
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.webp,.svg"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                        {selectedFile && (
+                          <div className="text-xs text-muted-foreground">
+                            Выбран файл: {selectedFile.name} (
+                            {Math.round(selectedFile.size / 1024)} KB)
+                          </div>
+                        )}
+                        {fileError && (
+                          <Alert variant="destructive" className="py-2">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            <span className="text-sm">{fileError}</span>
+                          </Alert>
+                        )}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200"
+                          >
+                            JPG
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
+                            PNG
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-purple-50 text-purple-700 border-purple-200"
+                          >
+                            WebP
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-amber-50 text-amber-700 border-amber-200"
+                          >
+                            SVG
+                          </Badge>
+                        </div>
+                        <FormDescription className="text-gray-600">
+                          Загрузите изображение товара. Максимальный размер:
+                          10MB.
+                        </FormDescription>
+                      </div>
+                    </div>
+                  </FormItem>
+                  <FormItem className="mt-6">
+                    <FormLabel className="text-primary">
+                      Currency Image
+                    </FormLabel>
+                    <div className="mt-2 flex flex-col space-y-4">
+                      {!previewCurrencyImage ? (
+                        <div className="flex h-40 w-full items-center justify-center bg-muted rounded-md border border-dashed">
+                          <div className="text-center">
+                            <FileImage className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">
+                              Загрузите изображение валюты
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Рекомендуемый размер: 64x64px
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative h-40 w-full overflow-hidden rounded-md border">
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
+                            className="absolute top-2 right-2 z-10 h-6 w-6"
                             onClick={removeCurrencyImage}
                           >
                             <Trash className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                      <Input
-                        id="currency-file-upload-2"
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp,.svg"
-                        onChange={handleCurrencyImageChange}
-                        className="hidden"
-                      />
-                      {selectedCurrencyFile && (
-                        <div className="text-xs text-muted-foreground">
-                          Выбран файл: {selectedCurrencyFile.name} (
-                          {Math.round(selectedCurrencyFile.size / 1024)} KB)
+                          <Image
+                            src={previewCurrencyImage || "/placeholder.svg"}
+                            alt="Currency image preview"
+                            fill
+                            className="object-cover"
+                          />
                         </div>
                       )}
-                      {currencyFileError && (
-                        <Alert variant="destructive" className="py-2">
-                          <AlertCircle className="h-4 w-4 mr-2" />
-                          <span className="text-sm">{currencyFileError}</span>
-                        </Alert>
-                      )}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge
-                          variant="outline"
-                          className="bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          JPG
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200"
-                        >
-                          PNG
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-purple-50 text-purple-700 border-purple-200"
-                        >
-                          WebP
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-amber-50 text-amber-700 border-amber-200"
-                        >
-                          SVG
-                        </Badge>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
+                              document
+                                .getElementById("currency-file-upload-2")
+                                ?.click()
+                            }
+                            className="w-full"
+                          >
+                            <FileImage className="h-4 w-4 mr-2" />
+                            Выбрать изображение валюты
+                          </Button>
+                          {selectedCurrencyFile && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={removeCurrencyImage}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <Input
+                          id="currency-file-upload-2"
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.webp,.svg"
+                          onChange={handleCurrencyImageChange}
+                          className="hidden"
+                        />
+                        {selectedCurrencyFile && (
+                          <div className="text-xs text-muted-foreground">
+                            Выбран файл: {selectedCurrencyFile.name} (
+                            {Math.round(selectedCurrencyFile.size / 1024)} KB)
+                          </div>
+                        )}
+                        {currencyFileError && (
+                          <Alert variant="destructive" className="py-2">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            <span className="text-sm">{currencyFileError}</span>
+                          </Alert>
+                        )}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200"
+                          >
+                            JPG
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
+                            PNG
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-purple-50 text-purple-700 border-purple-200"
+                          >
+                            WebP
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-amber-50 text-amber-700 border-amber-200"
+                          >
+                            SVG
+                          </Badge>
+                        </div>
+                        <FormDescription className="text-gray-600">
+                          Загрузите изображение валюты. Максимальный размер:
+                          10MB.
+                        </FormDescription>
                       </div>
-                      <FormDescription className="text-gray-600">
-                        Загрузите изображение валюты. Максимальный размер: 10MB.
-                      </FormDescription>
                     </div>
-                  </div>
-                </FormItem>
+                  </FormItem>
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <FormLabel className="text-primary">
-                  Варианты пополнения
-                </FormLabel>
-                <div className="flex gap-2">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <svg
+                    className="h-5 w-5 text-purple-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Варианты пополнения
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Настройте доступные пакеты и их цены
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mb-6">
+                <div></div>
+                <div className="flex gap-3">
                   {productType === "Smile" && selectedSmileGame && (
                     <Button
                       type="button"
@@ -1789,7 +1927,7 @@ export function ProductForm({
                       size="sm"
                       onClick={() => refetchSmileSKUs()}
                       disabled={loadingSmileSKUs}
-                      className="text-primary"
+                      className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
                     >
                       <RefreshCw
                         className={`h-4 w-4 mr-2 ${
@@ -1801,10 +1939,8 @@ export function ProductForm({
                   )}
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    className="bg-primary text-white"
                     onClick={addReplenishmentItem}
+                    className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg transition-all duration-200"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Добавить вариант
@@ -1850,226 +1986,347 @@ export function ProductForm({
               {form.watch("replenishment").map((_, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 p-4 border rounded-md"
+                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm hover:shadow-md transition-all duration-200"
                 >
-                  <FormField
-                    control={form.control}
-                    name={`replenishment.${index}.amount`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">
-                          Количество
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={1}
-                            {...field}
-                            className="text-primary"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`replenishment.${index}.type`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">Тип</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="diamonds"
-                            {...field}
-                            className="text-primary"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`replenishment.${index}.price`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">Цена (₽)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            className="text-primary"
-                            min={0.01}
-                            step={0.01}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`replenishment.${index}.sku`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-primary">SKU</FormLabel>
-                        <div className="flex items-center space-x-2">
-                          <FormControl className="flex-1">
-                            {productType === "Smile" ? (
-                              <Select
-                                value={field.value || ""}
-                                onValueChange={field.onChange}
-                                disabled={loadingSmileSKUs}
-                              >
-                                <SelectTrigger className="text-primary">
-                                  <SelectValue placeholder="Выберите SKU" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {loadingSmileSKUs ? (
-                                    <SelectItem value="_loading" disabled>
-                                      Загрузка SKU...
-                                    </SelectItem>
-                                  ) : Array.isArray(smileSKUs) &&
-                                    smileSKUs.length > 0 ? (
-                                    smileSKUs.map((sku: any) => (
-                                      <SelectItem
-                                        key={sku.id}
-                                        value={sku.id}
-                                        className="text-primary"
-                                      >
-                                        {sku.code} - {sku.amount}{" "}
-                                        {sku.name || "единиц"} (₽{sku.price})
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem value="_empty" disabled>
-                                      Нет доступных SKU
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            ) : productType === "DonatBank" ? (
-                              <Select
-                                value={field.value || ""}
-                                onValueChange={field.onChange}
-                                disabled={loadingDonatBankPackages}
-                              >
-                                <SelectTrigger className="text-primary">
-                                  <SelectValue placeholder="Выберите пакет" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {loadingDonatBankPackages ? (
-                                    <SelectItem value="_loading" disabled>
-                                      Загрузка пакетов...
-                                    </SelectItem>
-                                  ) : donatBankPackages &&
-                                    donatBankPackages.product_info &&
-                                    donatBankPackages.product_info
-                                      .packages_list &&
-                                    Object.keys(
-                                      donatBankPackages.product_info
-                                        .packages_list
-                                    ).length > 0 ? (
-                                    Object.entries(
-                                      donatBankPackages.product_info
-                                        .packages_list
-                                    ).map(([, pkg]: [string, any]) => (
-                                      <SelectItem
-                                        key={pkg.id}
-                                        value={pkg.id}
-                                        className="text-primary"
-                                      >
-                                        {pkg.name} (₽{pkg.price})
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem value="_empty" disabled>
-                                      Нет доступных пакетов
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <Input
-                                placeholder="ML001"
-                                {...field}
-                                value={field.value || ""}
-                                className="text-primary"
-                              />
-                            )}
-                          </FormControl>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeReplenishmentItem(index)}
-                            disabled={form.watch("replenishment").length <= 1}
-                          >
-                            <Trash className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                        <FormDescription className="text-gray-600">
-                          {productType === "Smile"
-                            ? "Выберите SKU из списка доступных для Smile API"
-                            : productType === "DonatBank"
-                            ? "Выберите пакет из списка доступных для DonatBank"
-                            : "Уникальный идентификатор товара"}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`replenishment.${index}.discountPercent`}
-                    render={({ field }) => {
-                      console.log(`Field discountPercent[${index}]:`, {
-                        fieldValue: field.value,
-                        formValue: form.getValues(
-                          `replenishment.${index}.discountPercent`
-                        ),
-                        rawValue: form.getValues(`replenishment.${index}`),
-                      });
-
-                      return (
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-purple-600">
+                          #{index + 1}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Пакет {index + 1}
+                      </h3>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeReplenishmentItem(index)}
+                      disabled={form.watch("replenishment").length <= 1}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash className="h-4 w-4 mr-2" />
+                      Удалить
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <FormField
+                      control={form.control}
+                      name={`replenishment.${index}.amount`}
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-primary">
-                            Скидка (%)
+                            Количество
                           </FormLabel>
                           <FormControl>
                             <Input
+                              type="number"
+                              min={1}
+                              {...field}
                               className="text-primary"
-                              placeholder="0-90"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`replenishment.${index}.type`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">Тип</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="diamonds"
+                              {...field}
+                              className="text-primary"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`replenishment.${index}.price`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">
+                            Цена (₽)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              className="text-primary"
+                              min={0.01}
+                              step={0.01}
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription className="text-gray-600 text-xs">
-                            Процент скидки (опционально)
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`replenishment.${index}.sku`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-primary">SKU</FormLabel>
+                          <div className="flex items-center space-x-2">
+                            <FormControl className="flex-1">
+                              {productType === "Smile" ? (
+                                <Select
+                                  value={field.value || ""}
+                                  onValueChange={field.onChange}
+                                  disabled={loadingSmileSKUs}
+                                >
+                                  <SelectTrigger className="text-primary">
+                                    <SelectValue placeholder="Выберите SKU" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {loadingSmileSKUs ? (
+                                      <SelectItem value="_loading" disabled>
+                                        Загрузка SKU...
+                                      </SelectItem>
+                                    ) : Array.isArray(smileSKUs) &&
+                                      smileSKUs.length > 0 ? (
+                                      smileSKUs.map((sku: any) => (
+                                        <SelectItem
+                                          key={sku.id}
+                                          value={sku.id}
+                                          className="text-primary"
+                                        >
+                                          {sku.code} - {sku.amount}{" "}
+                                          {sku.name || "единиц"} (₽{sku.price})
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <SelectItem value="_empty" disabled>
+                                        Нет доступных SKU
+                                      </SelectItem>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              ) : productType === "DonatBank" ? (
+                                <Select
+                                  value={field.value || ""}
+                                  onValueChange={field.onChange}
+                                  disabled={loadingDonatBankPackages}
+                                >
+                                  <SelectTrigger className="text-primary">
+                                    <SelectValue placeholder="Выберите пакет" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {loadingDonatBankPackages ? (
+                                      <SelectItem value="_loading" disabled>
+                                        Загрузка пакетов...
+                                      </SelectItem>
+                                    ) : donatBankPackages &&
+                                      donatBankPackages.product_info &&
+                                      donatBankPackages.product_info
+                                        .packages_list &&
+                                      Object.keys(
+                                        donatBankPackages.product_info
+                                          .packages_list
+                                      ).length > 0 ? (
+                                      Object.entries(
+                                        donatBankPackages.product_info
+                                          .packages_list
+                                      ).map(([, pkg]: [string, any]) => (
+                                        <SelectItem
+                                          key={pkg.id}
+                                          value={pkg.id}
+                                          className="text-primary"
+                                        >
+                                          {pkg.name} (₽{pkg.price})
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <SelectItem value="_empty" disabled>
+                                        Нет доступных пакетов
+                                      </SelectItem>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <Input
+                                  placeholder="ML001"
+                                  {...field}
+                                  value={field.value || ""}
+                                  className="text-primary"
+                                />
+                              )}
+                            </FormControl>
+                          </div>
+                          <FormDescription className="text-gray-600">
+                            {productType === "Smile"
+                              ? "Выберите SKU из списка доступных для Smile API"
+                              : productType === "DonatBank"
+                              ? "Выберите пакет из списка доступных для DonatBank"
+                              : "Уникальный идентификатор товара"}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
-                      );
-                    }}
-                  />
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`replenishment.${index}.discountPercent`}
+                      render={({ field }) => {
+                        console.log(`Field discountPercent[${index}]:`, {
+                          fieldValue: field.value,
+                          formValue: form.getValues(
+                            `replenishment.${index}.discountPercent`
+                          ),
+                          rawValue: form.getValues(`replenishment.${index}`),
+                        });
+
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-primary">
+                              Скидка (%)
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                className="text-primary"
+                                placeholder="0-90"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription className="text-gray-600 text-xs">
+                              Процент скидки (опционально)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`replenishment.${index}.isActive`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-primary">Статус</FormLabel>
+                          <div className="flex flex-col space-y-3 mt-2">
+                            <FormControl>
+                              <div className="flex items-center space-x-3">
+                                <div className="relative">
+                                  <input
+                                    type="checkbox"
+                                    className="sr-only"
+                                    checked={field.value !== false}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                    id={`switch-${index}`}
+                                  />
+                                  <label
+                                    htmlFor={`switch-${index}`}
+                                    className={`
+                                    relative inline-flex items-center justify-center w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 ease-in-out
+                                    ${
+                                      field.value !== false
+                                        ? "bg-green-500 hover:bg-green-600"
+                                        : "bg-gray-300 hover:bg-gray-400"
+                                    }
+                                  `}
+                                  >
+                                    <span
+                                      className={`
+                                      absolute w-4 h-4 bg-white rounded-full shadow-lg transform transition-transform duration-200 ease-in-out
+                                      ${
+                                        field.value !== false
+                                          ? "translate-x-2.5"
+                                          : "-translate-x-2.5"
+                                      }
+                                    `}
+                                    />
+                                  </label>
+                                </div>
+                                <span
+                                  className={`text-sm font-medium ${
+                                    field.value !== false
+                                      ? "text-green-700"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  {field.value !== false
+                                    ? "Активен"
+                                    : "Отключен"}
+                                </span>
+                              </div>
+                            </FormControl>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
 
-            <Button
-              type="submit"
-              className="bg-primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {productId ? "Обновить товар" : "Создать товар"}
-            </Button>
+            <div className="flex items-center justify-center pt-6">
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                )}
+                {isSubmitting ? (
+                  "Сохранение..."
+                ) : (
+                  <>
+                    {productId ? (
+                      <>
+                        <svg
+                          className="mr-3 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                        Обновить товар
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="mr-3 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        Создать товар
+                      </>
+                    )}
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </div>

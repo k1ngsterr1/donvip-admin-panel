@@ -109,7 +109,11 @@ export function EditProductDialog({
           type: item.type || "diamonds",
           sku: item.sku || "",
           quantity: quantity, // Add quantity field
-          amount: quantity, // Add amount field with same value as quantity
+          amount: item.amount || quantity, // Use item.amount if available, fallback to quantity
+          isActive:
+            (item as any).isActive !== undefined
+              ? (item as any).isActive
+              : true, // Add isActive field with default true
         };
       });
 
@@ -199,22 +203,29 @@ export function EditProductDialog({
                 parsedProduct.images ||
                 (parsedProduct.image ? [parsedProduct.image] : []),
               replenishment: Array.isArray(parsedProduct.replenishment)
-                ? parsedProduct.replenishment.filter(
-                    (
-                      item
-                    ): item is {
-                      price: number;
-                      amount: number;
-                      type: string;
-                      sku: string;
-                    } =>
-                      typeof item === "object" &&
-                      item !== null &&
-                      typeof item.price === "number" &&
-                      typeof item.amount === "number" &&
-                      typeof item.type === "string" &&
-                      typeof item.sku === "string"
-                  )
+                ? parsedProduct.replenishment
+                    .filter(
+                      (
+                        item
+                      ): item is {
+                        price: number;
+                        amount: number;
+                        type: string;
+                        sku: string;
+                        isActive?: boolean;
+                      } =>
+                        typeof item === "object" &&
+                        item !== null &&
+                        typeof item.price === "number" &&
+                        typeof item.amount === "number" &&
+                        typeof item.type === "string" &&
+                        typeof item.sku === "string"
+                    )
+                    .map((item) => ({
+                      ...item,
+                      isActive:
+                        item.isActive !== undefined ? item.isActive : true,
+                    }))
                 : [],
               smile_api_game: parsedProduct.smile_api_game,
               donatbank_product_id: parsedProduct.donatbank_product_id,
