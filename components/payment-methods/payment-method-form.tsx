@@ -86,7 +86,7 @@ export function PaymentMethodForm({
   console.log("🔍 PaymentMethodForm mounted with:", {
     paymentMethod,
     isMoneta: paymentMethod?.isMoneta,
-    hasIsMonetaField: 'isMoneta' in (paymentMethod || {}),
+    hasIsMonetaField: "isMoneta" in (paymentMethod || {}),
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -261,7 +261,9 @@ export function PaymentMethodForm({
         const result = await updateMutation.mutateAsync(payload);
         console.log("✅ Update response:", result);
       } else {
-        const result = await createMutation.mutateAsync(payload as CreatePaymentMethodDto);
+        const result = await createMutation.mutateAsync(
+          payload as CreatePaymentMethodDto
+        );
         console.log("✅ Create response:", result);
       }
     } catch (error) {
@@ -441,7 +443,8 @@ export function PaymentMethodForm({
                 <div className="space-y-0.5">
                   <Label htmlFor="isDukPay">Использовать DukPay</Label>
                   <p className="text-sm text-muted-foreground">
-                    Обрабатывать платежи через платежный шлюз DukPay (для России)
+                    Обрабатывать платежи через платежный шлюз DukPay (для
+                    России)
                   </p>
                 </div>
                 <Switch
