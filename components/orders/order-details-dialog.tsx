@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { User, Calendar, CreditCard } from "lucide-react";
 import { StatusBadge } from "../status-badge/status-badge";
 import { Order } from "./order";
@@ -26,6 +27,13 @@ export function OrderDetailsDialog({
 }: OrderDetailsDialogProps) {
   if (!order) return null;
   let replenishment = { amount: 0, price: 0 };
+
+  // Проверяем, является ли это кастомным заказом
+  const isCustomOrder =
+    order.response &&
+    typeof order.response === "object" &&
+    "custom_amount" in order.response &&
+    "custom_price" in order.response;
 
   try {
     if (order.product?.replenishment) {
@@ -63,8 +71,18 @@ export function OrderDetailsDialog({
   } catch (err) {
     console.log("Error when parsing replenishment in getAllForAdmin", err);
   }
+
+  // Для кастомного заказа используем данные из response
+  if (isCustomOrder) {
+    replenishment = {
+      amount: order.response.custom_amount,
+      price: order.response.custom_price,
+    };
+  }
+
   console.log("ORDER", order.product.replenishment);
   console.log("REPLENISMENT", replenishment);
+  console.log("IS CUSTOM ORDER", isCustomOrder);
 
   return (
     <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
@@ -94,16 +112,36 @@ export function OrderDetailsDialog({
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Пакет</p>
-              <p className="font-medium text-primary">
-                {order.product.name} {replenishment.amount}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-primary">
+                  {isCustomOrder
+                    ? // Для кастомного заказа только количество
+                      `${replenishment.amount} шт.`
+                    : // Для обычного заказа название + количество
+                      `${order.product.name} ${replenishment.amount}`}
+                </p>
+                {isCustomOrder && (
+                  <Badge variant="secondary" className="text-xs">
+                    Кастомное значение
+                  </Badge>
+                )}
+              </div>
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">Цена</p>
-              <p className="font-medium text-primary">
-                {order.price ? String(order.price).replace(/\s*\?/g, "") : "—"}{" "}
-                ₽
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-primary">
+                  {order.price
+                    ? String(order.price).replace(/\s*\?/g, "")
+                    : "—"}{" "}
+                  ₽
+                </p>
+                {isCustomOrder && (
+                  <Badge variant="outline" className="text-xs">
+                    Кастомная цена: {replenishment.price} ₽
+                  </Badge>
+                )}
+              </div>
             </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-muted-foreground">

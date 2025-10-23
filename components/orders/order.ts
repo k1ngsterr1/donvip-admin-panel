@@ -5,6 +5,7 @@ export interface Order {
   orderId?: string;
   price?: number | string;
   amount?: number;
+  diamonds?: number;
   type?: string;
   payment?: string;
   account_id?: string;

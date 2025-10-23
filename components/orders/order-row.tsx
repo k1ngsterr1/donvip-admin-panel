@@ -111,9 +111,41 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
               className="w-8 h-8 rounded-md object-cover"
             />
           )}
-          <span className="text-sm font-medium text-primary">
-            {order.product?.name ?? "—"}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-primary">
+              {order.product?.name ?? "—"}
+            </span>
+            {/* Отображение количества для кастомных заказов */}
+            {(() => {
+              // Проверяем, является ли заказ кастомным
+              const isCustomOrder =
+                order.response &&
+                typeof order.response === "object" &&
+                "custom_amount" in order.response;
+
+              if (isCustomOrder) {
+                return (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Badge variant="secondary" className="text-xs">
+                      Кастом
+                    </Badge>
+                    {order.response.custom_amount} шт.
+                  </span>
+                );
+              }
+
+              // Для обычных заказов показываем diamonds если есть
+              if (order.diamonds) {
+                return (
+                  <span className="text-xs text-muted-foreground">
+                    {order.diamonds} шт.
+                  </span>
+                );
+              }
+
+              return null;
+            })()}
+          </div>
         </div>
       </TableCell>
 
