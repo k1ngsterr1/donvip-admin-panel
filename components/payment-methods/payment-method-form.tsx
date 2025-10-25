@@ -464,7 +464,8 @@ export function PaymentMethodForm({
                 <div className="space-y-0.5">
                   <Label htmlFor="isPay4Game">Использовать Pay4Game</Label>
                   <p className="text-sm text-muted-foreground">
-                    Обрабатывать платежи через платежный шлюз Pay4Game (СБП, карты, SberPay)
+                    Обрабатывать платежи через платежный шлюз Pay4Game (СБП,
+                    карты, SberPay)
                   </p>
                 </div>
                 <Switch
