@@ -14,6 +14,7 @@ export interface PaymentMethod {
   isActive: boolean;
   isMoneta?: boolean; // Flag for Moneta payment methods
   isDukPay?: boolean; // Flag for DukPay payment methods
+  isPay4Game?: boolean; // Flag for Pay4Game payment methods
   description?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -30,6 +31,7 @@ export interface CreatePaymentMethodDto {
   isActive?: boolean;
   isMoneta?: boolean;
   isDukPay?: boolean;
+  isPay4Game?: boolean;
   description?: string;
   icon?: string;
 }
@@ -45,6 +47,7 @@ export interface UpdatePaymentMethodDto {
   isActive?: boolean;
   isMoneta?: boolean;
   isDukPay?: boolean;
+  isPay4Game?: boolean;
   description?: string;
   icon?: string;
 }

@@ -65,6 +65,7 @@ interface FormData {
   isActive: boolean;
   isMoneta: boolean;
   isDukPay: boolean;
+  isPay4Game: boolean;
   description: string;
   icon: string;
 }
@@ -116,6 +117,7 @@ export function PaymentMethodForm({
       isActive: paymentMethod?.isActive ?? true,
       isMoneta: paymentMethod?.isMoneta ?? false,
       isDukPay: paymentMethod?.isDukPay ?? false,
+      isPay4Game: paymentMethod?.isPay4Game ?? false,
       description: paymentMethod?.description || "",
       icon: paymentMethod?.icon || "",
     },
@@ -126,6 +128,7 @@ export function PaymentMethodForm({
   const watchedIsActive = watch("isActive");
   const watchedIsMoneta = watch("isMoneta");
   const watchedIsDukPay = watch("isDukPay");
+  const watchedIsPay4Game = watch("isPay4Game");
 
   // Debug: Watch isMoneta changes
   React.useEffect(() => {
@@ -247,6 +250,7 @@ export function PaymentMethodForm({
         isActive: data.isActive,
         isMoneta: data.isMoneta,
         isDukPay: data.isDukPay,
+        isPay4Game: data.isPay4Game,
         description: data.description || undefined,
         icon: iconPath || undefined,
       };
@@ -254,8 +258,10 @@ export function PaymentMethodForm({
       console.log("📤 Submitting payment method:", payload);
       console.log("📋 Form data isMoneta:", data.isMoneta);
       console.log("📋 Form data isDukPay:", data.isDukPay);
+      console.log("📋 Form data isPay4Game:", data.isPay4Game);
       console.log("📋 Watched isMoneta:", watchedIsMoneta);
       console.log("📋 Watched isDukPay:", watchedIsDukPay);
+      console.log("📋 Watched isPay4Game:", watchedIsPay4Game);
 
       if (paymentMethod) {
         const result = await updateMutation.mutateAsync(payload);
@@ -451,6 +457,20 @@ export function PaymentMethodForm({
                   id="isDukPay"
                   checked={watchedIsDukPay}
                   onCheckedChange={(checked) => setValue("isDukPay", checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="isPay4Game">Использовать Pay4Game</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Обрабатывать платежи через платежный шлюз Pay4Game (СБП, карты, SberPay)
+                  </p>
+                </div>
+                <Switch
+                  id="isPay4Game"
+                  checked={watchedIsPay4Game}
+                  onCheckedChange={(checked) => setValue("isPay4Game", checked)}
                 />
               </div>
             </div>
