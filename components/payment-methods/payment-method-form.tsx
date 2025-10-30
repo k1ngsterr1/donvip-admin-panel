@@ -59,8 +59,6 @@ interface FormData {
   code: string;
   country: string;
   currency: string;
-  minAmount: string;
-  maxAmount: string;
   fee: string;
   isActive: boolean;
   isMoneta: boolean;
@@ -111,8 +109,6 @@ export function PaymentMethodForm({
       code: paymentMethod?.code || "",
       country: paymentMethod?.country || "",
       currency: paymentMethod?.currency || "",
-      minAmount: paymentMethod?.minAmount?.toString() || "",
-      maxAmount: paymentMethod?.maxAmount?.toString() || "",
       fee: paymentMethod?.fee?.toString() || "",
       isActive: paymentMethod?.isActive ?? true,
       isMoneta: paymentMethod?.isMoneta ?? false,
@@ -244,8 +240,6 @@ export function PaymentMethodForm({
         code: data.code,
         country: data.country,
         currency: data.currency,
-        minAmount: data.minAmount ? parseFloat(data.minAmount) : undefined,
-        maxAmount: data.maxAmount ? parseFloat(data.maxAmount) : undefined,
         fee: data.fee ? parseFloat(data.fee) : undefined,
         isActive: data.isActive,
         isMoneta: data.isMoneta,
@@ -474,6 +468,33 @@ export function PaymentMethodForm({
                   onCheckedChange={(checked) => setValue("isPay4Game", checked)}
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Financial Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <DollarSign className="h-5 w-5" />
+              Финансовые настройки
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4">
+            <div className="space-y-2 max-w-md">
+              <Label htmlFor="fee">Комиссия (%)</Label>
+              <Input
+                id="fee"
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                {...register("fee")}
+                placeholder="0"
+              />
+              <p className="text-xs text-muted-foreground">
+                Комиссия платежной системы в процентах
+              </p>
             </div>
           </CardContent>
         </Card>

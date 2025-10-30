@@ -10,7 +10,7 @@ export interface PaymentMethod {
   sortOrder?: number; // Added sortOrder field from API response
   minAmount?: number;
   maxAmount?: number;
-  fee?: number;
+  fee?: number; // Commission/fee in percent
   isActive: boolean;
   isMoneta?: boolean; // Flag for Moneta payment methods
   isDukPay?: boolean; // Flag for DukPay payment methods
