@@ -90,10 +90,13 @@ export function OrderFilters({
   }, [filters.search]);
 
   const updateFilter = (key: keyof OrderFilters, value: string) => {
-    onFiltersChange({
+    console.log("🎛️ UpdateFilter called:", key, "=", value);
+    const newFilters = {
       ...filters,
       [key]: value,
-    });
+    };
+    console.log("🎛️ New filters object:", newFilters);
+    onFiltersChange(newFilters);
   };
 
   const getActiveFiltersCount = () => {

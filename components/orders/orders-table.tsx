@@ -86,6 +86,15 @@ export function OrdersTable() {
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ["orders", page, limit, filters],
     queryFn: async () => {
+      console.log(
+        "🚀 QueryFn triggered! Page:",
+        page,
+        "Limit:",
+        limit,
+        "Filters:",
+        filters
+      );
+
       const params: any = {
         page,
         limit,
@@ -154,6 +163,7 @@ export function OrdersTable() {
   };
 
   const handleFiltersChange = (newFilters: OrderFiltersType) => {
+    console.log("🔄 Filters changed:", newFilters);
     setFilters(newFilters);
   };
 
