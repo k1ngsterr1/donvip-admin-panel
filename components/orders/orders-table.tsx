@@ -104,7 +104,11 @@ export function OrdersTable() {
       if (filters.providerStatus !== "all")
         params.providerStatus = filters.providerStatus;
 
+      console.log("🔍 API Request params:", params);
+      console.log("🔍 Current filters:", filters);
+
       const response = await api.orders.getAllForAdmin(params);
+      console.log("📦 API Response:", response.data);
       return response.data;
     },
     staleTime: 30 * 1000, // Cache for 30 seconds
