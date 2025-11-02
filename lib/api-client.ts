@@ -231,6 +231,14 @@ export const api = {
       limit?: number;
       page?: number;
       search?: string;
+      status?: string;
+      paymentMethod?: string;
+      productId?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      minAmount?: string;
+      maxAmount?: string;
+      providerStatus?: string;
       removeDuplicates?: boolean;
     }) => apiClient.get("/order/admin/history", { params }),
     createDonatBankOrder: (data: DonatBankCreateOrderDto) =>
