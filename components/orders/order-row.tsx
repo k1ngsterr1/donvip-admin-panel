@@ -76,11 +76,43 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
         </div>
       </TableCell>
       <TableCell>
-        <div>
-          <p className="mt-1 text-sm font-medium text-primary">
-            {order.price ? String(order.price).replace(/\s*\?/g, "") : "—"}{" "}
-            {order.method === "CreditCard" ? "₸" : "₽"}
-          </p>
+        <div className="space-y-1">
+          {order.original_price &&
+          order.final_price &&
+          order.original_price !== order.final_price ? (
+            <>
+              <p className="text-xs text-muted-foreground line-through">
+                {order.original_price} {order.currency || "₽"}
+              </p>
+              <p className="text-sm font-medium text-primary">
+                {order.final_price} {order.currency || "₽"}
+              </p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {order.package_discount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    -{order.package_discount}% пакет
+                  </Badge>
+                )}
+                {order.telegram_discount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    -{order.telegram_discount}% TG
+                  </Badge>
+                )}
+                {order.coupon_discount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    -{order.coupon_discount} купон
+                  </Badge>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm font-medium text-primary">
+              {order.price
+                ? String(order.price).replace(/\s*\?/g, "")
+                : order.final_price || "—"}{" "}
+              {order.currency || (order.method === "CreditCard" ? "₸" : "₽")}
+            </p>
+          )}
         </div>
       </TableCell>
       <TableCell>

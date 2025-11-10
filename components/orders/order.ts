@@ -26,4 +26,12 @@ export interface Order {
     email?: string;
     username?: string;
   };
+
+  // Discount information
+  original_price?: number;
+  package_discount?: number;
+  telegram_discount?: number;
+  coupon_discount?: number;
+  final_price?: number;
+  currency?: string;
 }
