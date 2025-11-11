@@ -28,6 +28,11 @@ export interface OrderAnalytics {
   totalOrders: number;
   totalRevenue: number;
   averageOrderValue: number;
+  telegramDiscounts?: {
+    totalOrders: number;
+    totalDiscountAmount: number;
+    percentage: number;
+  };
 }
 
 export const OrderService = {

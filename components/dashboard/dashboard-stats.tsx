@@ -1,5 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingCart, Package, DollarSign, BarChart3 } from "lucide-react";
+import {
+  ShoppingCart,
+  Package,
+  DollarSign,
+  BarChart3,
+  MessageCircle,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useEffect } from "react";
@@ -17,6 +23,11 @@ interface DashboardStatsProps {
     totalOrders: number;
     totalRevenue: string;
     packages: PackageInfo[];
+    telegramDiscounts?: {
+      totalOrders: number;
+      totalDiscountAmount: number;
+      percentage: number;
+    };
   };
 }
 
@@ -29,6 +40,11 @@ export function DashboardStats({
     totalOrders: 0,
     totalRevenue: "0",
     packages: [],
+    telegramDiscounts: {
+      totalOrders: 0,
+      totalDiscountAmount: 0,
+      percentage: 0,
+    },
   };
 
   // Use provided data or fall back to default
@@ -53,8 +69,8 @@ export function DashboardStats({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-[120px] w-full" />
           ))}
         </div>
@@ -65,7 +81,7 @@ export function DashboardStats({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Заказы</CardTitle>
@@ -111,6 +127,29 @@ export function DashboardStats({
               {packages.length > 0
                 ? `${packages.length} различных продуктов`
                 : "Нет данных о товарах"}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="dashboard-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Telegram скидки
+            </CardTitle>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsData.telegramDiscounts?.totalOrders || 0}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {statsData.telegramDiscounts && statsData.totalOrders > 0
+                ? `${statsData.telegramDiscounts.percentage.toFixed(
+                    1
+                  )}% заказов, ₽${statsData.telegramDiscounts.totalDiscountAmount.toFixed(
+                    2
+                  )} скидок`
+                : "Нет данных о скидках"}
             </p>
           </CardContent>
         </Card>
