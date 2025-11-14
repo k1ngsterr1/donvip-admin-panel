@@ -94,8 +94,11 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
                   </Badge>
                 )}
                 {order.telegram_discount > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    -{order.telegram_discount}% TG
+                  <Badge
+                    variant="default"
+                    className="text-xs bg-blue-600 hover:bg-blue-700"
+                  >
+                    📱 -{order.telegram_discount}% TG
                   </Badge>
                 )}
                 {order.coupon_discount > 0 && (

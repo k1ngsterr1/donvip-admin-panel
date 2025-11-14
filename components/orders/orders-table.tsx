@@ -60,6 +60,7 @@ const defaultFilters: OrderFiltersType = {
   minAmount: "",
   maxAmount: "",
   providerStatus: "all",
+  hasTelegramDiscount: "all",
 };
 
 export function OrdersTable() {
@@ -134,12 +135,31 @@ export function OrdersTable() {
     data?.total || data?.pagination?.total || allOrders.length;
   const totalPages = Math.ceil(totalFromApi / limit);
 
-  // Since filtering and pagination are now done server-side, we just use the orders from API
-  const filteredOrders = allOrders;
-  const paginatedOrders = allOrders; // API already returns paginated results
+  // Apply client-side telegram discount filter
+  const filteredOrders = useMemo(() => {
+    if (filters.hasTelegramDiscount === "all") {
+      return allOrders;
+    }
 
-  // Calculate pagination info using server data
-  const total = totalFromApi;
+    return allOrders.filter((order) => {
+      const hasTelegramDiscount =
+        order.telegram_discount && Number(order.telegram_discount) > 0;
+
+      if (filters.hasTelegramDiscount === "yes") {
+        return hasTelegramDiscount;
+      } else if (filters.hasTelegramDiscount === "no") {
+        return !hasTelegramDiscount;
+      }
+
+      return true;
+    });
+  }, [allOrders, filters.hasTelegramDiscount]);
+
+  // Since filtering and pagination are now done server-side, we just use the filtered orders
+  const paginatedOrders = filteredOrders; // API already returns paginated results
+
+  // Calculate pagination info using filtered data
+  const total = filteredOrders.length;
   const startItem = total > 0 ? (page - 1) * limit + 1 : 0;
   const endItem = Math.min(page * limit, total);
 

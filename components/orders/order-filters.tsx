@@ -30,6 +30,7 @@ export interface OrderFilters {
   minAmount: string;
   maxAmount: string;
   providerStatus: string;
+  hasTelegramDiscount: string; // 'all' | 'yes' | 'no'
 }
 
 interface OrderFiltersProps {
@@ -60,6 +61,12 @@ const providerStatusOptions = [
   { value: "success", label: "Успешно" },
   { value: "failed", label: "Ошибка" },
   { value: "cancelled", label: "Отменено" },
+];
+
+const telegramDiscountOptions = [
+  { value: "all", label: "Все заказы" },
+  { value: "yes", label: "С Telegram скидкой 📱" },
+  { value: "no", label: "Без Telegram скидки" },
 ];
 
 export function OrderFilters({
@@ -131,6 +138,13 @@ export function OrderFilters({
         (opt) => opt.value === filters.providerStatus
       )?.label;
       labels.push(`Провайдер: ${providerLabel}`);
+    }
+
+    if (filters.hasTelegramDiscount && filters.hasTelegramDiscount !== "all") {
+      const telegramLabel = telegramDiscountOptions.find(
+        (opt) => opt.value === filters.hasTelegramDiscount
+      )?.label;
+      labels.push(telegramLabel || "");
     }
 
     if (filters.productId) {
@@ -286,6 +300,28 @@ export function OrderFilters({
                   </SelectTrigger>
                   <SelectContent>
                     {providerStatusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Telegram Discount Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="hasTelegramDiscount">Telegram скидка</Label>
+                <Select
+                  value={filters.hasTelegramDiscount}
+                  onValueChange={(value) =>
+                    updateFilter("hasTelegramDiscount", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все заказы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {telegramDiscountOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

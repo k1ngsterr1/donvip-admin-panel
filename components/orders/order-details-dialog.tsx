@@ -181,6 +181,45 @@ export function OrderDetailsDialog({
             )}
           </div>
 
+          {/* Discount Information Section */}
+          {(order.telegram_discount ||
+            order.package_discount ||
+            order.coupon_discount) && (
+            <div className="border-t pt-4">
+              <p className="text-sm font-semibold mb-3">Примененные скидки</p>
+              <div className="space-y-2">
+                {order.package_discount &&
+                  Number(order.package_discount) > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Скидка пакета
+                      </span>
+                      <Badge variant="secondary">
+                        {order.package_discount}%
+                      </Badge>
+                    </div>
+                  )}
+                {order.telegram_discount &&
+                  Number(order.telegram_discount) > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Telegram скидка
+                      </span>
+                      <Badge variant="default" className="bg-blue-600">
+                        {order.telegram_discount}% 📱
+                      </Badge>
+                    </div>
+                  )}
+                {order.coupon_discount && Number(order.coupon_discount) > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Купон</span>
+                    <Badge variant="outline">-{order.coupon_discount} ₽</Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>
               Закрыть
