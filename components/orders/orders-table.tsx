@@ -113,6 +113,8 @@ export function OrdersTable() {
       if (filters.maxAmount) params.maxAmount = filters.maxAmount;
       if (filters.providerStatus !== "all")
         params.providerStatus = filters.providerStatus;
+      if (filters.hasTelegramDiscount !== "all")
+        params.hasTelegramDiscount = filters.hasTelegramDiscount;
 
       console.log("🔍 API Request params:", params);
       console.log("🔍 Current filters:", filters);
@@ -135,25 +137,8 @@ export function OrdersTable() {
     data?.total || data?.pagination?.total || allOrders.length;
   const totalPages = Math.ceil(totalFromApi / limit);
 
-  // Apply client-side telegram discount filter
-  const filteredOrders = useMemo(() => {
-    if (filters.hasTelegramDiscount === "all") {
-      return allOrders;
-    }
-
-    return allOrders.filter((order) => {
-      const hasTelegramDiscount =
-        order.telegram_discount && Number(order.telegram_discount) > 0;
-
-      if (filters.hasTelegramDiscount === "yes") {
-        return hasTelegramDiscount;
-      } else if (filters.hasTelegramDiscount === "no") {
-        return !hasTelegramDiscount;
-      }
-
-      return true;
-    });
-  }, [allOrders, filters.hasTelegramDiscount]);
+  // Backend now handles all filtering including telegram discount
+  const filteredOrders = allOrders;
 
   // Since filtering and pagination are now done server-side, we just use the filtered orders
   const paginatedOrders = filteredOrders; // API already returns paginated results

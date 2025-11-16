@@ -31,6 +31,7 @@ export interface Order {
   original_price?: number;
   package_discount?: number;
   telegram_discount?: number;
+  has_telegram_discount?: boolean;
   coupon_discount?: number;
   final_price?: number;
   currency?: string;
