@@ -200,15 +200,26 @@ export function PaymentMethodsTable() {
     });
   };
 
-  // Filter methods based on search
+  // Filter methods based on search and sort by sortOrder and name
   const filteredMethods =
-    paymentMethods?.data?.filter(
-      (method) =>
-        method.name.toLowerCase().includes(search.toLowerCase()) ||
-        method.code.toLowerCase().includes(search.toLowerCase()) ||
-        method.country.toLowerCase().includes(search.toLowerCase()) ||
-        method.currency.toLowerCase().includes(search.toLowerCase())
-    ) || [];
+    paymentMethods?.data
+      ?.filter(
+        (method) =>
+          method.name.toLowerCase().includes(search.toLowerCase()) ||
+          method.code.toLowerCase().includes(search.toLowerCase()) ||
+          method.country.toLowerCase().includes(search.toLowerCase()) ||
+          method.currency.toLowerCase().includes(search.toLowerCase())
+      )
+      .sort((a, b) => {
+        // First sort by sortOrder (default to 0 if undefined)
+        const orderA = a.sortOrder ?? 0;
+        const orderB = b.sortOrder ?? 0;
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        // Then sort by name
+        return a.name.localeCompare(b.name);
+      }) || [];
 
   if (isLoading) {
     return (
