@@ -200,26 +200,42 @@ export function PaymentMethodsTable() {
     });
   };
 
-  // Filter methods based on search and sort by sortOrder and name
+  // Filter and group methods by currency
   const filteredMethods =
-    paymentMethods?.data
-      ?.filter(
-        (method) =>
-          method.name.toLowerCase().includes(search.toLowerCase()) ||
-          method.code.toLowerCase().includes(search.toLowerCase()) ||
-          method.country.toLowerCase().includes(search.toLowerCase()) ||
-          method.currency.toLowerCase().includes(search.toLowerCase())
-      )
-      .sort((a, b) => {
-        // First sort by sortOrder (default to 0 if undefined)
-        const orderA = a.sortOrder ?? 0;
-        const orderB = b.sortOrder ?? 0;
-        if (orderA !== orderB) {
-          return orderA - orderB;
-        }
-        // Then sort by name
-        return a.name.localeCompare(b.name);
-      }) || [];
+    paymentMethods?.data?.filter(
+      (method) =>
+        method.name.toLowerCase().includes(search.toLowerCase()) ||
+        method.code.toLowerCase().includes(search.toLowerCase()) ||
+        method.country.toLowerCase().includes(search.toLowerCase()) ||
+        method.currency.toLowerCase().includes(search.toLowerCase())
+    ) || [];
+
+  // Group by currency
+  const methodsByCurrency = filteredMethods.reduce((acc, method) => {
+    const currency = method.currency;
+    if (!acc[currency]) {
+      acc[currency] = [];
+    }
+    acc[currency].push(method);
+    return acc;
+  }, {} as Record<string, typeof filteredMethods>);
+
+  // Sort methods within each currency group
+  Object.keys(methodsByCurrency).forEach((currency) => {
+    methodsByCurrency[currency].sort((a, b) => {
+      // First sort by sortOrder (default to 0 if undefined)
+      const orderA = a.sortOrder ?? 0;
+      const orderB = b.sortOrder ?? 0;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      // Then sort by name
+      return a.name.localeCompare(b.name);
+    });
+  });
+
+  // Get sorted currency list
+  const currencies = Object.keys(methodsByCurrency).sort();
 
   if (isLoading) {
     return (
@@ -324,199 +340,216 @@ export function PaymentMethodsTable() {
       {/* Results info */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          Найдено {filteredMethods.length} платежных методов
+          Найдено {filteredMethods.length} платежных методов в{" "}
+          {currencies.length} валютах
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead className="font-medium">Иконка</TableHead>
-              <TableHead className="font-medium">Название</TableHead>
-              <TableHead className="font-medium">Код</TableHead>
-              <TableHead className="font-medium">Страна</TableHead>
-              <TableHead className="font-medium">Валюта</TableHead>
-              <TableHead className="font-medium">Комиссия</TableHead>
-              <TableHead className="font-medium">Статус</TableHead>
-              <TableHead className="text-right font-medium">Действия</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredMethods.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
-                  <div className="flex flex-col items-center gap-3">
-                    <CreditCard className="h-12 w-12 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-muted-foreground">
-                        Нет платежных методов
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Добавьте первый платежный метод для начала работы
-                      </p>
-                    </div>
+      {/* Tables grouped by currency */}
+      {currencies.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="font-medium text-muted-foreground">
+              Нет платежных методов
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Добавьте первый платежный метод для начала работы
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        currencies.map((currency) => (
+          <Card key={currency} className="overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                    <DollarSign className="h-5 w-5 text-primary" />
                   </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredMethods.map((method) => (
-                <TableRow key={method.id} className="hover:bg-muted/30">
-                  <TableCell>
-                    <div className="flex items-center justify-center">
-                      {method.icon ? (
-                        <img
-                          src={getIconUrl(method.icon) || ""}
-                          alt={method.name}
-                          className="h-8 w-8 object-contain rounded"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
-                          <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <CardTitle className="text-lg">{currency}</CardTitle>
+                    <CardDescription>
+                      {methodsByCurrency[currency].length} методов оплаты
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="text-sm">
+                  {methodsByCurrency[currency].filter((m) => m.isActive).length}{" "}
+                  активных
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="font-medium">Иконка</TableHead>
+                    <TableHead className="font-medium">Название</TableHead>
+                    <TableHead className="font-medium">Код</TableHead>
+                    <TableHead className="font-medium">Страна</TableHead>
+                    <TableHead className="font-medium">Комиссия</TableHead>
+                    <TableHead className="font-medium">Статус</TableHead>
+                    <TableHead className="text-right font-medium">
+                      Действия
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {methodsByCurrency[currency].map((method) => (
+                    <TableRow key={method.id} className="hover:bg-muted/30">
+                      <TableCell>
+                        <div className="flex items-center justify-center">
+                          {method.icon ? (
+                            <img
+                              src={getIconUrl(method.icon) || ""}
+                              alt={method.name}
+                              className="h-8 w-8 object-contain rounded"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{method.name}</p>
+                              {method.isMoneta && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                                >
+                                  Moneta
+                                </Badge>
+                              )}
+                              {method.isDukPay && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-purple-50 text-purple-700 border-purple-200"
+                                >
+                                  DukPay
+                                </Badge>
+                              )}
+                            </div>
+                            {method.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {method.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono">
+                          {method.code}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{method.name}</p>
-                          {method.isMoneta && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-                            >
-                              Moneta
-                            </Badge>
-                          )}
-                          {method.isDukPay && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs bg-purple-50 text-purple-700 border-purple-200"
-                            >
-                              DukPay
-                            </Badge>
-                          )}
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          {method.country}
                         </div>
-                        {method.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {method.description}
-                          </p>
+                      </TableCell>
+
+                      <TableCell>
+                        {method.fee ? (
+                          <span>{method.fee}%</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
                         )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="font-mono">
-                      {method.code}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      {method.country}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      {method.currency}
-                    </div>
-                  </TableCell>
-
-                  <TableCell>
-                    {method.fee ? (
-                      <span>{method.fee}%</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={method.isActive ? "default" : "secondary"}
-                      className={
-                        method.isActive
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : "bg-gray-50 text-gray-600 border-gray-200"
-                      }
-                    >
-                      {method.isActive ? (
-                        <>
-                          <Power className="h-3 w-3 mr-1" />
-                          Активен
-                        </>
-                      ) : (
-                        <>
-                          <PowerOff className="h-3 w-3 mr-1" />
-                          Неактивен
-                        </>
-                      )}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {/* Move Up Button */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveUp(method.id)}
-                        disabled={moveUpMutation.isPending}
-                        title="Переместить вверх"
-                        className="h-8 w-8 hover:bg-muted"
-                      >
-                        <ArrowUp className="h-4 w-4" />
-                      </Button>
-
-                      {/* Move Down Button */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveDown(method.id)}
-                        disabled={moveDownMutation.isPending}
-                        title="Переместить вниз"
-                        className="h-8 w-8 hover:bg-muted"
-                      >
-                        <ArrowDown className="h-4 w-4" />
-                      </Button>
-
-                      {/* More Actions Menu */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={method.isActive ? "default" : "secondary"}
+                          className={
+                            method.isActive
+                              ? "bg-green-50 text-green-700 border-green-200"
+                              : "bg-gray-50 text-gray-600 border-gray-200"
+                          }
+                        >
+                          {method.isActive ? (
+                            <>
+                              <Power className="h-3 w-3 mr-1" />
+                              Активен
+                            </>
+                          ) : (
+                            <>
+                              <PowerOff className="h-3 w-3 mr-1" />
+                              Неактивен
+                            </>
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {/* Move Up Button */}
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="hover:bg-muted h-8 w-8"
+                            onClick={() => handleMoveUp(method.id)}
+                            disabled={moveUpMutation.isPending}
+                            title="Переместить вверх"
+                            className="h-8 w-8 hover:bg-muted"
                           >
-                            <MoreHorizontal className="h-4 w-4" />
+                            <ArrowUp className="h-4 w-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Действия</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleEdit(method)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Редактировать
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(method)}
-                            className="text-red-600 focus:text-red-600 hover:bg-red-50"
+
+                          {/* Move Down Button */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleMoveDown(method.id)}
+                            disabled={moveDownMutation.isPending}
+                            title="Переместить вниз"
+                            className="h-8 w-8 hover:bg-muted"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Удалить
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+
+                          {/* More Actions Menu */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="hover:bg-muted h-8 w-8"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleEdit(method)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Редактировать
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(method)}
+                                className="text-red-600 focus:text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Удалить
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ))
+      )}
 
       {/* Create Dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
