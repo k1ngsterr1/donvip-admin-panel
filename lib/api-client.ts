@@ -341,6 +341,14 @@ export const api = {
 
     deleteIcon: (id: number) =>
       apiClient.delete(`/payment/payment-methods/${id}/icon`),
+
+    // Order management endpoints
+    moveUp: (id: number) =>
+      apiClient.post(`/payment/payment-methods/${id}/move-up`),
+    moveDown: (id: number) =>
+      apiClient.post(`/payment/payment-methods/${id}/move-down`),
+    reorder: (id: number, newOrder: number) =>
+      apiClient.post(`/payment/payment-methods/${id}/reorder`, { newOrder }),
   },
 
   techworks: {

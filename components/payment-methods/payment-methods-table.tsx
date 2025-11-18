@@ -35,6 +35,8 @@ import {
   AlertCircle,
   Globe,
   DollarSign,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
@@ -128,6 +130,44 @@ export function PaymentMethodsTable() {
     },
   });
 
+  // Move up mutation
+  const moveUpMutation = useMutation({
+    mutationFn: (id: number) => PaymentMethodService.movePaymentMethodUp(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payment-methods"] });
+      toast({
+        title: "Успешно",
+        description: "Платежный метод перемещен вверх.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось переместить платежный метод.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Move down mutation
+  const moveDownMutation = useMutation({
+    mutationFn: (id: number) => PaymentMethodService.movePaymentMethodDown(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payment-methods"] });
+      toast({
+        title: "Успешно",
+        description: "Платежный метод перемещен вниз.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось переместить платежный метод.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDelete = (method: PaymentMethod) => {
     setDeleteConfirmMethod(method);
   };
@@ -140,6 +180,14 @@ export function PaymentMethodsTable() {
 
   const handleEdit = (method: PaymentMethod) => {
     setEditingMethod(method);
+  };
+
+  const handleMoveUp = (id: number) => {
+    moveUpMutation.mutate(id);
+  };
+
+  const handleMoveDown = (id: number) => {
+    moveDownMutation.mutate(id);
   };
 
   const handleFormSuccess = () => {
@@ -325,12 +373,18 @@ export function PaymentMethodsTable() {
                         <div className="flex items-center gap-2">
                           <p className="font-medium">{method.name}</p>
                           {method.isMoneta && (
-                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                            >
                               Moneta
                             </Badge>
                           )}
                           {method.isDukPay && (
-                            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-purple-50 text-purple-700 border-purple-200"
+                            >
                               DukPay
                             </Badge>
                           )}
@@ -391,33 +445,60 @@ export function PaymentMethodsTable() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="hover:bg-muted"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Действия</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleEdit(method)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Редактировать
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(method)}
-                          className="text-red-600 focus:text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Удалить
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center justify-end gap-1">
+                      {/* Move Up Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveUp(method.id)}
+                        disabled={moveUpMutation.isPending}
+                        title="Переместить вверх"
+                        className="h-8 w-8 hover:bg-muted"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+
+                      {/* Move Down Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveDown(method.id)}
+                        disabled={moveDownMutation.isPending}
+                        title="Переместить вниз"
+                        className="h-8 w-8 hover:bg-muted"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+
+                      {/* More Actions Menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:bg-muted h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleEdit(method)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Редактировать
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(method)}
+                            className="text-red-600 focus:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Удалить
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

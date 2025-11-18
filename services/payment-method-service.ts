@@ -169,4 +169,31 @@ export const PaymentMethodService = {
     const response = await api.paymentMethods.deleteIcon(id);
     return response.data;
   },
+
+  /**
+   * Move payment method up in display order
+   */
+  movePaymentMethodUp: async (id: number): Promise<PaymentMethod> => {
+    const response = await api.paymentMethods.moveUp(id);
+    return response.data;
+  },
+
+  /**
+   * Move payment method down in display order
+   */
+  movePaymentMethodDown: async (id: number): Promise<PaymentMethod> => {
+    const response = await api.paymentMethods.moveDown(id);
+    return response.data;
+  },
+
+  /**
+   * Reorder payment method to specific position
+   */
+  reorderPaymentMethod: async (
+    id: number,
+    newOrder: number
+  ): Promise<PaymentMethod> => {
+    const response = await api.paymentMethods.reorder(id, newOrder);
+    return response.data;
+  },
 };
