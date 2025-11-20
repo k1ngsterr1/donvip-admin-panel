@@ -113,7 +113,7 @@ export function OrderRow({ order, onViewDetails }: OrderRowProps) {
               {order.price
                 ? String(order.price).replace(/\s*\?/g, "")
                 : order.final_price || "—"}{" "}
-              {order.currency || (order.method === "CreditCard" ? "₸" : "₽")}
+              {order.currency || "₽"}
             </p>
           )}
         </div>
